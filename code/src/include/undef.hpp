@@ -1,3 +1,7 @@
+// ===================================================== //
+// from https://github.com/DominikHorn/hashing-benchmark //
+// ===================================================== //
+
 #undef forceinline
 #undef likely
 #undef unlikely

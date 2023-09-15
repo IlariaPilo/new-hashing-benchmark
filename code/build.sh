@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# ===================================================== #
+# from https://github.com/DominikHorn/hashing-benchmark #
+# ===================================================== #
+
 # Setup script
 cd "$(dirname "$0")"
 source .env

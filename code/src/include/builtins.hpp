@@ -1,3 +1,7 @@
+// ===================================================== //
+// from https://github.com/DominikHorn/hashing-benchmark //
+// ===================================================== //
+
 #include "undef.hpp"
 
 /// prevent unused warnings

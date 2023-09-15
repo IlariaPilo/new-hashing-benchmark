@@ -1,3 +1,7 @@
+# ===================================================== #
+# from https://github.com/DominikHorn/hashing-benchmark #
+# ===================================================== #
+
 cmake_minimum_required(VERSION 3.19)
 project("new-hashing-benchmark" VERSION 1.0
   DESCRIPTION "TODO"
