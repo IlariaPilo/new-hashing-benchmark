@@ -2,7 +2,9 @@
 #ifndef __HASH_CAT__
 #define __HASH_CAT__
 
-#include"header.hpp"
+#include <unordered_map>
+#include <string>
+#include <iostream>
 
 enum class HashCategories {
     LEARNED,

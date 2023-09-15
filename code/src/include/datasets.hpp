@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "include/convenience/builtins.hpp"
+#include "builtins.hpp"
 
 namespace dataset {
 template <class T>

@@ -14,7 +14,7 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 
 #target_link_libraries(${PROJECT_NAME} INTERFACE )
 #target_sources(${PROJECT_NAME} INTERFACE masters_thesis.hpp include/)
-target_sources(${PROJECT_NAME} INTERFACE hash_categories.hpp header.hpp)
+target_sources(${PROJECT_NAME} INTERFACE include/)
 
 # Benchmark and test code
 get_directory_property(hasParent PARENT_DIRECTORY)
