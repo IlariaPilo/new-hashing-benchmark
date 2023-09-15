@@ -4,8 +4,6 @@
 #include <algorithm>
 #include <unistd.h>
 
-#include"include/header.hpp"
-
 /* ======== options ======== */
     std::string input_dir = "";
     std::string output_dir = "";
@@ -77,7 +75,6 @@ int pars_args(int argc, char* argv[]) {
     }
     return 0;
 }
-
 
 int main(int argc, char* argv[]) {
     // get thread number

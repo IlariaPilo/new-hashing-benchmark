@@ -105,11 +105,7 @@ enum class ID {
   FB = 3,
   OSM = 4,
   WIKI = 5,
-  NORMAL = 6,
-  Variance_2=7,
-  Variance_4=8,
-  Variance_half=9,
-  Variance_quarter=10
+  NORMAL = 6
 };
 
 inline std::string name(ID id) {
@@ -127,21 +123,13 @@ inline std::string name(ID id) {
     case ID::OSM:
       return "osm";
     case ID::WIKI:
-      return "wiki";
-    case ID::Variance_2:
-      return "Variance_2";
-    case ID::Variance_4:
-      return "Variance_4";
-    case ID::Variance_half:
-      return "Variance_half";
-    case ID::Variance_quarter:
-      return "Variance_quarter";    
+      return "wiki"; 
   }
   return "unnamed";
 };
 
 template <class Data = std::uint64_t>
-std::vector<Data> load_cached(ID id, size_t dataset_size) {
+std::vector<Data> load_cached(ID id, size_t dataset_size, std::string dataset_directory = "") {
   static std::random_device rd;
   static std::default_random_engine rng(rd());
 
@@ -180,115 +168,6 @@ std::vector<Data> load_cached(ID id, size_t dataset_size) {
       for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
       break;
     }
-    case ID::Variance_2: {
-      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
-      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
-
-      std::sort(ds.begin(),ds.end());
-
-      double constant=1.414;
-
-      for(size_t i=0;i<ds.size();i++)
-      {
-        uint64_t temp=i*std::pow(2, 40)/ds.size();
-        uint64_t diff=0;
-        if(temp>ds[i])
-        {
-          diff=temp-ds[i];
-          ds[i]=temp-(diff*constant);
-        }
-        else
-        {
-          diff=ds[i]-temp;
-          ds[i]=temp+(diff*constant);
-        }
-      }
-
-      break;
-    }
-
-    case ID::Variance_4: {
-      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
-      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
-
-      std::sort(ds.begin(),ds.end());
-
-      double constant=2;
-
-      for(size_t i=0;i<ds.size();i++)
-      {
-        uint64_t temp=i*std::pow(2, 40)/ds.size();
-        uint64_t diff=0;
-        if(temp>ds[i])
-        {
-          diff=temp-ds[i];
-          ds[i]=temp-(diff*constant);
-        }
-        else
-        {
-          diff=ds[i]-temp;
-          ds[i]=temp+(diff*constant);
-        }
-      }
-
-      break;
-    }
-
-    case ID::Variance_half: {
-      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
-      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
-
-      std::sort(ds.begin(),ds.end());
-
-      double constant=1.414;
-
-      for(size_t i=0;i<ds.size();i++)
-      {
-        uint64_t temp=i*std::pow(2, 40)/ds.size();
-        uint64_t diff=0;
-        if(temp>ds[i])
-        {
-          diff=temp-ds[i];
-          ds[i]=temp-(diff/constant);
-        }
-        else
-        {
-          diff=ds[i]-temp;
-          ds[i]=temp+(diff/constant);
-        }
-      }
-
-      break;
-    }
-
-    case ID::Variance_quarter: {
-      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
-      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
-
-      std::sort(ds.begin(),ds.end());
-
-      double constant=2;
-
-      for(size_t i=0;i<ds.size();i++)
-      {
-        uint64_t temp=i*std::pow(2, 40)/ds.size();
-        uint64_t diff=0;
-        if(temp>ds[i])
-        {
-          diff=temp-ds[i];
-          ds[i]=temp-(diff/constant);
-        }
-        else
-        {
-          diff=ds[i]-temp;
-          ds[i]=temp+(diff/constant);
-        }
-      }
-
-      break;
-    }
-
-
     case ID::NORMAL: {
       const auto mean = 100.0;
       const auto std_dev = 20.0;
@@ -312,7 +191,7 @@ std::vector<Data> load_cached(ID id, size_t dataset_size) {
     }
     case ID::FB: {
       if (ds_fb.empty()) {
-        ds_fb = load<Data>("../data/fb_200M_uint64");
+        ds_fb = load<Data>(dataset_directory+"/fb_200M_uint64");
         std::shuffle(ds_fb.begin(), ds_fb.end(),rng);
       }
       // ds file does not exist
@@ -320,84 +199,50 @@ std::vector<Data> load_cached(ID id, size_t dataset_size) {
       size_t j=0;
       size_t i = 0;
 
-      // for(int itr=1;itr<ds_fb.size();)
-      // {
-      //   std::cout<<" itr: "<<itr<<" fb val: "<<log2(ds_fb[itr]-ds_fb[itr-1])<<std::endl;
-      //   itr+=10000000;
-      // }
-
-
       // sampling this way is only valid since ds_fb is shuffled!
-      for (; j < ds_fb.size() && i < ds.size(); j++)
-      {
-        if(log2(ds_fb[j])<35.01 || log2(ds_fb[j])>35.99)
-        {
+      for (; j < ds_fb.size() && i < ds.size(); j++) {
+        if(log2(ds_fb[j])<35.01 || log2(ds_fb[j])>35.99){
           continue;
         }
         ds[i] = ds_fb[j]-pow(2,35);
-
         i++;
       }
-
-      // std::cout<<" j is: "<<j<<" i is: "<<i<<std::endl;
       break;
     }
     case ID::OSM: {
       if (ds_osm.empty()) {
-        ds_osm = load<Data>("../data/osm_cellids_200M_uint64");
+        ds_osm = load<Data>(dataset_directory+"/osm_cellids_200M_uint64");
         std::shuffle(ds_osm.begin(), ds_osm.end(),rng);
       }
-
-
-      // for(int itr=1;itr<ds_osm.size();)
-      // {
-      //   std::cout<<" itr: "<<itr<<" osm val: "<<log2(ds_osm[itr]-ds_osm[itr-1])<<std::endl;
-      //   itr+=10000000;
-      // }
       // ds file does not exist
       if (ds_osm.empty()) return {};
        size_t j=0;
        size_t i = 0;
       // sampling this way is only valid since ds_osm is shuffled!
-      for (; j < ds_osm.size() && i < ds.size(); j++)
-        {
-          if(log2(ds_osm[j])<62.01 || log2(ds_osm[j])>62.99)
-          {
+      for (; j < ds_osm.size() && i < ds.size(); j++) {
+          if(log2(ds_osm[j])<62.01 || log2(ds_osm[j])>62.99){
             continue;
           }
           ds[i] = ds_osm[j]-pow(2,62);
           i++;
         }
-
         // std::cout<<" j is: "<<j<<" i is: "<<i<<std::endl;
       break;
     }
     case ID::WIKI: {
       if (ds_wiki.empty()) {
-        ds_wiki = load<Data>("../data/wiki_ts_200M_uint64");
+        ds_wiki = load<Data>(dataset_directory+"/wiki_ts_200M_uint64");
         std::shuffle(ds_wiki.begin(), ds_wiki.end(),rng);
       }
-
-      // for(int itr=1;itr<ds_wiki.size();)
-      // {
-      //   std::cout<<" itr: "<<itr<<" wiki val: "<<log2(ds_wiki[itr]-ds_wiki[itr-1])<<std::endl;
-      //   itr+=10000000;
-      // }
       // ds file does not exist
       if (ds_wiki.empty()) return {};
        size_t j=0;
        size_t i = 0;
       // sampling this way is only valid since ds_wiki is shuffled!
-      for (; j < ds_wiki.size() && i < ds.size(); j++)
-      {
-        // if(ds_wiki[j]>std::pow(2,30))
-        // {
-        //   continue;
-        // }
+      for (; j < ds_wiki.size() && i < ds.size(); j++) {
         ds[i] = ds_wiki[j];
         i++;
       }  
-
       // std::cout<<" j is: "<<j<<" i is: "<<i<<std::endl;
       break;
     }
