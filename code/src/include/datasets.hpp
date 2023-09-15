@@ -1,23 +1,49 @@
-// ===================================================== //
-// from https://github.com/DominikHorn/hashing-benchmark //
-// ===================================================== //
-
+// ============================================================== //
+// extended from https://github.com/DominikHorn/hashing-benchmark //
+// ============================================================== //
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <random>
 #include <stdexcept>
 #include <string>
-#include <unordered_map>
 #include <vector>
+#include <unordered_map>
+#include <cstdint>
+#include <omp.h>
 
 #include "builtins.hpp"
 
 namespace dataset {
+
+// Defines all IDs of the datasets.
+enum class ID {
+  SEQUENTIAL = 0,
+  GAPPED_10 = 1,
+  UNIFORM = 2,
+  FB = 3,
+  OSM = 4,
+  WIKI = 5,
+  NORMAL = 6,
+  // to count the number of elements
+  COUNT
+};
+constexpr int ID_COUNT = static_cast<int>(ID::COUNT);
+// Define the reverse ID
+const std::unordered_map<int, ID> REVERSE_ID = {
+    {0, ID::SEQUENTIAL},
+    {1, ID::GAPPED_10},
+    {2, ID::UNIFORM},
+    {3, ID::FB},
+    {4, ID::OSM},
+    {5, ID::WIKI},
+    {6, ID::NORMAL}
+};
+
+// ------------------ utility things ------------------ //
 template <class T>
 static void deduplicate_and_sort(std::vector<T>& vec) {
   std::sort(vec.begin(), vec.end());
@@ -25,10 +51,6 @@ static void deduplicate_and_sort(std::vector<T>& vec) {
   vec.shrink_to_fit();
 }
 
-/**
- * Loads the datasets values into memory
- * @return a sorted and deduplicated list of all members of the dataset
- */
 template <class Key>
 std::vector<Key> load(const std::string& filepath) {
 
@@ -69,7 +91,9 @@ std::vector<Key> load(const std::string& filepath) {
     // Parse file
     uint64_t num_elements = read_little_endian_8(buffer, 0);
 
-    assert(num_elements <= max_num_elements);
+    if (num_elements > max_num_elements) {
+      throw std::runtime_error("\033[1;91mAssertion failed\033[0m num_elements<=max_num_elements\n           [num_elements] " + std::to_string(num_elements) + "\n           [max_num_elements] " + std::to_string(max_num_elements) + "\n");
+    }
     switch (sizeof(Key)) {
       case sizeof(std::uint64_t):
         for (uint64_t i = 0; i < num_elements; i++) {
@@ -98,38 +122,16 @@ std::vector<Key> load(const std::string& filepath) {
   return dataset;
 }
 
-enum class ID {
-  SEQUENTIAL = 0,
-  GAPPED_10 = 1,
-  UNIFORM = 2,
-  FB = 3,
-  OSM = 4,
-  WIKI = 5,
-  NORMAL = 6
-};
+std::vector<ID> get_id_slice(int threadID, size_t thread_num);
 
-inline std::string name(ID id) {
-  switch (id) {
-    case ID::SEQUENTIAL:
-      return "seq";
-    case ID::GAPPED_10:
-      return "gap_10";
-    case ID::UNIFORM:
-      return "uniform";
-    case ID::NORMAL:
-      return "normal";
-    case ID::FB:
-      return "fb";
-    case ID::OSM:
-      return "osm";
-    case ID::WIKI:
-      return "wiki"; 
-  }
-  return "unnamed";
-};
 
-template <class Data = std::uint64_t>
-std::vector<Data> load_cached(ID id, size_t dataset_size, std::string dataset_directory = "") {
+// ------------------ functions to be called from outside ------------------ //
+/**
+ * Loads the datasets values into memory
+ * @return a sorted and deduplicated list of all members of the dataset
+ */
+template <class Data>
+std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::string dataset_directory) {
   static std::random_device rd;
   static std::default_random_engine rng(rd());
 
@@ -176,9 +178,12 @@ std::vector<Data> load_cached(ID id, size_t dataset_size, std::string dataset_di
         // cutoff after 3 * std_dev
         const auto rand_val = std::max(mean - 3 * std_dev,
                                        std::min(mean + 3 * std_dev, dist(rng)));
-
-        assert(rand_val >= mean - 3 * std_dev);
-        assert(rand_val <= mean + 3 * std_dev);
+        if (rand_val < mean - 3 * std_dev) {
+          throw std::runtime_error("\033[1;91mAssertion failed\033[0m rand_val>=mean-3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
+        }
+        if (rand_val > mean + 3 * std_dev) {
+          throw std::runtime_error("\033[1;91mAssertion failed\033[0m rand_val<=mean+3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
+        }
 
         // rescale to [0, 2^50)
         const auto rescaled =
@@ -216,8 +221,8 @@ std::vector<Data> load_cached(ID id, size_t dataset_size, std::string dataset_di
       }
       // ds file does not exist
       if (ds_osm.empty()) return {};
-       size_t j=0;
-       size_t i = 0;
+      size_t j=0;
+      size_t i = 0;
       // sampling this way is only valid since ds_osm is shuffled!
       for (; j < ds_osm.size() && i < ds.size(); j++) {
           if(log2(ds_osm[j])<62.01 || log2(ds_osm[j])>62.99){
@@ -226,7 +231,6 @@ std::vector<Data> load_cached(ID id, size_t dataset_size, std::string dataset_di
           ds[i] = ds_osm[j]-pow(2,62);
           i++;
         }
-        // std::cout<<" j is: "<<j<<" i is: "<<i<<std::endl;
       break;
     }
     case ID::WIKI: {
@@ -242,8 +246,7 @@ std::vector<Data> load_cached(ID id, size_t dataset_size, std::string dataset_di
       for (; j < ds_wiki.size() && i < ds.size(); j++) {
         ds[i] = ds_wiki[j];
         i++;
-      }  
-      // std::cout<<" j is: "<<j<<" i is: "<<i<<std::endl;
+      }
       break;
     }
     default:
@@ -270,7 +273,127 @@ std::vector<Data> load_cached(ID id, size_t dataset_size, std::string dataset_di
   } else {
     it->second.insert({dataset_size, ds});
   }
-
   return ds;
 }
-};  // namespace dataset
+
+// Returns the dataset name, given the ID
+inline std::string name(ID id) {
+  switch (id) {
+    case ID::SEQUENTIAL:
+      return "seq";
+    case ID::GAPPED_10:
+      return "gap_10";
+    case ID::UNIFORM:
+      return "uniform";
+    case ID::NORMAL:
+      return "normal";
+    case ID::FB:
+      return "fb";
+    case ID::OSM:
+      return "osm";
+    case ID::WIKI:
+      return "wiki";
+    case ID::COUNT:
+      return "# of available datasets"; 
+  }
+  return "unnamed";
+};
+
+
+// =============================== Dataset class =============================== //
+template <class Data = std::uint64_t>
+class Dataset {
+  public:
+    Dataset(ID id, size_t dataset_size, std::string dataset_directory = "") : id(id) {
+      this->ds = load_cached<Data>(id, dataset_size, dataset_directory);
+      this->dataset_size = ds.size();
+    }
+    ID get_id() const {
+      return id;
+    }
+    size_t get_size() const {
+      return dataset_size;
+    }
+    const std::vector<Data>& get_ds() const {
+      return ds;
+    }
+    // Default constructor
+    Dataset() :
+        id(ID::COUNT), dataset_size(0) {
+      ds.clear();
+    }
+    // Destructor
+    ~Dataset() {
+    }
+    // Copy constructor
+    Dataset(const Dataset& other) : 
+        id(other.id), dataset_size(other.dataset_size), ds(other.ds) {
+    }
+    // Copy assignment operator
+    Dataset& operator=(const Dataset& other) {
+      if (this != &other) { // Check for self-assignment
+        id = other.id;
+        dataset_size = other.dataset_size;
+        ds = other.ds; // Copy the ds vector
+      }
+      return *this;
+    }
+    // Move constructor
+    Dataset(Dataset&& other) noexcept : 
+        id(other.id), dataset_size(other.dataset_size), ds(std::move(other.ds)) {
+    }
+    // Move assignment operator
+    Dataset& operator=(Dataset&& other) noexcept {
+      if (this != &other) {  // Check for self-assignment
+        id = other.id;
+        dataset_size = other.dataset_size;
+        // Move the ds vector and reset the source object
+        ds = std::move(other.ds);
+      }
+      return *this;
+    }
+
+  private:
+    ID id;
+    size_t dataset_size;
+    std::vector<Data> ds;
+};
+
+// =============================== CollectionDS class =============================== //
+template <class Data = std::uint64_t>
+class CollectionDS {
+public:
+    CollectionDS(size_t dataset_size, std::string dataset_directory, size_t thread_num) : collection(ID_COUNT){
+      // remove useless threads
+      if (thread_num > ID_COUNT)
+          thread_num = ID_COUNT;
+      // start parallel computation
+      #pragma omp parallel num_threads(thread_num)
+      {
+          int threadID = omp_get_thread_num();
+          std::vector<ID> ids = get_id_slice(threadID, thread_num);
+
+          for (auto id : ids) {
+            // put the object into the array
+            int i = static_cast<int>(id);
+            collection[i] = Dataset<Data>(id, dataset_size, dataset_directory);
+          }
+      }
+    }
+    const Dataset<Data>& get_ds(ID id) {
+      int i = static_cast<int>(id);
+      return collection[i];
+    }
+    const Dataset<Data>& get_ds(int i) {
+      return collection[i];
+    }
+    const std::vector<Dataset<Data>>& get_collection() {
+      return collection;
+    }
+
+private:
+    std::vector<Dataset<Data>> collection;
+};
+// ============================================================================= //
+
+}

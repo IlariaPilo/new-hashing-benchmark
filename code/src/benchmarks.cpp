@@ -3,11 +3,18 @@
 #include <vector>
 #include <algorithm>
 #include <unistd.h>
+#include <cstdint>
+
+#include "include/output_json.hpp"
+#include "include/benchmark_logic.hpp"
+#include "include/function_aliases.hpp"
+
+#define MAX_SIZE 100000000      // 10^8, 100M
 
 /* ======== options ======== */
     std::string input_dir = "";
     std::string output_dir = "";
-    int threads;
+    size_t threads;
     std::string filter = "";
 /* ========================= */
 
@@ -21,7 +28,7 @@ void show_usage() {
     std::cout << "  -f, --filter FILTER       Type of benchmarks to execute (default: all)" << std::endl;
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
-int pars_args(int argc, char* argv[]) {
+int pars_args(const int& argc, char* const* const& argv) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--help" || arg == "-h") {
@@ -90,6 +97,66 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    std::cout << std::endl << "\033[1;96m===================== \033[0m" << std::endl;
+    std::cout << "\033[1;96m= hashing-benchmark = \033[0m" << std::endl;
+    std::cout << "\033[1;96m===================== \033[0m" << std::endl;
+    std::cout << "Running on " << threads << " threads." << std::endl << std::endl;
 
+    // Create a JsonWriter instance (for the output file)
+    JsonOutput writer(output_dir, argv[0]);
+    
+    // Create the collection of datasets
+    std::cout << "Starting dataset loading procedure... ";
+    dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
+    std::cout << "done!" << std::endl << std::endl;
+
+    for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
+        if (ds.get_ds().size() != ds.get_size()) {
+            // Throw a runtime exception
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
+        }
+    }
+
+    // Benchmark array definition
+    std::vector<bm::BMtype<Data,Key>> bm_list = {
+        // RMI
+        &bm::collision_stats<RMIHash_2,Data,Key>,
+        &bm::collision_stats<RMIHash_10,Data,Key>,
+        &bm::collision_stats<RMIHash_100,Data,Key>,
+        &bm::collision_stats<RMIHash_1k,Data,Key>,
+        &bm::collision_stats<RMIHash_10k,Data,Key>,
+        &bm::collision_stats<RMIHash_100k,Data,Key>,
+        &bm::collision_stats<RMIHash_1M,Data,Key>,
+        &bm::collision_stats<RMIHash_10M,Data,Key>,
+        &bm::collision_stats<RMIHash_100M,Data,Key>,
+        // RadixSpline
+        &bm::collision_stats<RadixSplineHash_4,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_16,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_128,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_1k,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_100k,Data,Key>,
+        // PGM
+        &bm::collision_stats<PGMHash_2,Data,Key>,
+        &bm::collision_stats<PGMHash_32,Data,Key>,
+        &bm::collision_stats<PGMHash_100,Data,Key>,
+        &bm::collision_stats<PGMHash_1k,Data,Key>,
+        &bm::collision_stats<PGMHash_100k,Data,Key>,
+        // Classic
+        &bm::collision_stats<MURMUR,Data,Key>,
+        &bm::collision_stats<MultPrime64,Data,Key>,
+        &bm::collision_stats<FibonacciPrime64,Data,Key>,
+        &bm::collision_stats<AquaHash,Data,Key>,
+        &bm::collision_stats<XXHash3,Data,Key>,
+        // Perfect
+        &bm::collision_stats<MWHC,Data,Key>,
+        &bm::collision_stats<BitMWHC,Data,Key>,
+        &bm::collision_stats<RecSplit,Data,Key>
+    };
+
+    // Run!
+    std::cout << "Begin benchmarking... " << std::endl;
+    bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
+    std::cout << "done!" << std::endl << std::endl;
+    
     return 0;
 }

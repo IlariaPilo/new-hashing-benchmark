@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.19)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -march=native -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -march=native -fopenmp")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -fsanitize=address,leak,undefined")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
@@ -25,8 +25,9 @@ include(${PROJECT_SOURCE_DIR}/thirdparty/hashing.cmake)
 include(${PROJECT_SOURCE_DIR}/thirdparty/learned_hashing.cmake)
 include(${PROJECT_SOURCE_DIR}/thirdparty/exotic_hashing.cmake)
 include(${PROJECT_SOURCE_DIR}/thirdparty/hashtable.cmake)
+include(${PROJECT_SOURCE_DIR}/thirdparty/json.cmake)
 
 # ==== Benchmark executable ====
-add_executable(benchmarks benchmarks.cpp)
+add_executable(benchmarks datasets.cpp benchmarks.cpp)
 
-target_link_libraries(benchmarks PRIVATE ${PROJECT_NAME} ${HASHING_LIBRARY} ${LEARNED_HASHING_LIBRARY} ${EXOTIC_HASHING_LIBRARY} ${HASHTABLE_LIBRARY})
+target_link_libraries(benchmarks PRIVATE ${PROJECT_NAME} ${HASHING_LIBRARY} ${LEARNED_HASHING_LIBRARY} ${EXOTIC_HASHING_LIBRARY} ${HASHTABLE_LIBRARY} nlohmann_json::nlohmann_json)
