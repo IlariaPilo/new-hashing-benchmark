@@ -39,7 +39,6 @@ HashCategories get_category(std::string full_name) {
     return HashCategories::UNKNOWN;
 }
 
-
 // Function to check if a type is "learned"
 // To be called as : if (is_learned<RMIHash>()) ...
 template <typename T>
@@ -67,6 +66,7 @@ HashCategories get_fn_type() {
 }
 
 // Define a helper type trait to check if 'train' member function exists with the desired signature
+// Thanks to https://blog.quasar.ai/2015/04/12/sfinae-hell-detecting-template-methods
 template <typename T>
 struct has_train_method {
     struct dummy { /* something */ };
@@ -85,6 +85,7 @@ struct has_train_method {
 };
 
 // Define a helper type trait to check if 'construct' member function exists
+// Thanks to https://blog.quasar.ai/2015/04/12/sfinae-hell-detecting-template-methods
 template <typename T>
 struct has_construct_method {
     struct dummy { /* something */ };
