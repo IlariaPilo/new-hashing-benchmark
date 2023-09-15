@@ -25,8 +25,9 @@ include(${PROJECT_SOURCE_DIR}/thirdparty/hashing.cmake)
 include(${PROJECT_SOURCE_DIR}/thirdparty/learned_hashing.cmake)
 include(${PROJECT_SOURCE_DIR}/thirdparty/exotic_hashing.cmake)
 include(${PROJECT_SOURCE_DIR}/thirdparty/hashtable.cmake)
+include(${PROJECT_SOURCE_DIR}/thirdparty/json.cmake)
 
 # ==== Benchmark executable ====
 add_executable(benchmarks benchmarks.cpp)
 
-target_link_libraries(benchmarks PRIVATE ${PROJECT_NAME} ${HASHING_LIBRARY} ${LEARNED_HASHING_LIBRARY} ${EXOTIC_HASHING_LIBRARY} ${HASHTABLE_LIBRARY})
+target_link_libraries(benchmarks PRIVATE ${PROJECT_NAME} ${HASHING_LIBRARY} ${LEARNED_HASHING_LIBRARY} ${EXOTIC_HASHING_LIBRARY} ${HASHTABLE_LIBRARY} nlohmann_json::nlohmann_json)
