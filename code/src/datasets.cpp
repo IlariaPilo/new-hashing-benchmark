@@ -296,6 +296,7 @@ CollectionDS<Data>::CollectionDS(size_t dataset_size, std::string dataset_direct
     // remove useless threads
     if (thread_num > ID_COUNT)
         thread_num = ID_COUNT;
+    collection.reserve(ID_COUNT);
     // start parallel computation
     #pragma omp parallel num_threads(thread_num)
     {
@@ -306,21 +307,26 @@ CollectionDS<Data>::CollectionDS(size_t dataset_size, std::string dataset_direct
         for (auto id : ids) {
             ss += (std::to_string(static_cast<int>(id)) + " ");       
         }
-        std::cout << ss << std::endl;
+        ss += "\n";
+        std::cout << ss;
 
-        // // Create a big object.
-        // BigObject bigObj;
-
-        // // Insert the big object into the map.
-        // #pragma omp critical
-        // {
-        //     objectMap[objectID] = bigObj;
+        // for (auto id : ids) {
+        //   // put the object into the array
+        //   int i = static_cast<int>(id);
+        //   collection[i] = Dataset(id, dataset_size, dataset_directory);
         // }
-
-        // // Now you can use the 'bigObj' reference within the thread.
-        // // ...
     }
 }
 
+template<class Data>
+Dataset<Data>& CollectionDS<Data>::get_ds(ID id) {
+  int i = static_cast<int>(id);
+  return collection[i];
+}
 };  // namespace dataset
 
+// int main() {
+//   size_t AAA = 3;
+//     dataset::CollectionDS<size_t> collection(AAA, "AAA", AAA);
+//     return 0;
+// }

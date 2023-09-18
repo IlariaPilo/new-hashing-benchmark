@@ -45,18 +45,6 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
 // Returns the dataset name, given the ID
 inline std::string name(ID id);
 
-// =============================== CollectionDS class =============================== //
-template <class Data = std::uint64_t>
-class CollectionDS {
-public:
-    CollectionDS(size_t dataset_size, std::string dataset_directory, size_t thread_num);
-
-    // Declare other member functions if needed.
-
-private:
-    // Declare private members or methods here.
-};
-
 // =============================== Dataset class =============================== //
 template <class Data = std::uint64_t>
 class Dataset {
@@ -80,5 +68,19 @@ class Dataset {
     const size_t dataset_size;
     const std::vector<Data> ds;
 };
+
+// =============================== CollectionDS class =============================== //
+template <class Data = std::uint64_t>
+class CollectionDS {
+public:
+    CollectionDS(size_t dataset_size, std::string dataset_directory, size_t thread_num);
+    Dataset<Data>& get_ds(ID id);
+    // Declare other member functions if needed.
+
+private:
+    std::vector<Dataset<Data>> collection;
+    // Declare private members or methods here.
+};
 // ============================================================================= //
+
 }
