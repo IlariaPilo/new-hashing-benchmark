@@ -299,7 +299,6 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
   } else {
     it->second.insert({dataset_size, ds});
   }
-  std::cout << ds.size() << std::endl;
   return ds;
 }
 
@@ -333,6 +332,7 @@ class Dataset {
   public:
     Dataset(ID id, size_t dataset_size, std::string dataset_directory = "") : id(id) {
       ds = load_cached<Data>(id, dataset_size, dataset_directory);
+      std::cout << ds.size() << std::endl;
       dataset_size = ds.size();
     }
     ID get_id() {
