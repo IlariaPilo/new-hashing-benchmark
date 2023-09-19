@@ -299,7 +299,7 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
   } else {
     it->second.insert({dataset_size, ds});
   }
-
+  std::cout << ds.size() << std::endl;
   return ds;
 }
 
