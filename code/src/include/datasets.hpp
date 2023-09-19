@@ -333,7 +333,7 @@ class Dataset {
     Dataset(ID id, size_t dataset_size, std::string dataset_directory = "") : id(id) {
       ds = load_cached<Data>(id, dataset_size, dataset_directory);
       std::cout << name(id) << "\t" << ds.size() << std::endl;
-      dataset_size = ds.size();
+      this->dataset_size = ds.size();
     }
     ID get_id() {
       return id;
