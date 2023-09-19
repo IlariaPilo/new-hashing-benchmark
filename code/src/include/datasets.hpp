@@ -245,8 +245,8 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
       }
       // ds file does not exist
       if (ds_osm.empty()) return {};
-       size_t j=0;
-       size_t i = 0;
+      size_t j=0;
+      size_t i = 0;
       // sampling this way is only valid since ds_osm is shuffled!
       for (; j < ds_osm.size() && i < ds.size(); j++) {
           if(log2(ds_osm[j])<62.01 || log2(ds_osm[j])>62.99){
@@ -347,6 +347,7 @@ class Dataset {
     // Copy constructor
     Dataset(const Dataset& other) : 
         id(other.id), dataset_size(other.dataset_size), ds(other.ds) {
+      std::cout << "Copy constructor - name " << dataset::name(id) << ", size " << dataset_size << std::endl;
     }
 
     // Copy assignment operator
@@ -356,12 +357,14 @@ class Dataset {
         dataset_size = other.dataset_size;
         ds = other.ds; // Copy the ds vector
       }
+      std::cout << "Copy assignment - name " << dataset::name(id) << ", size " << dataset_size << std::endl;
       return *this;
     }
 
     // Move constructor
     Dataset(Dataset&& other) noexcept : 
         id(std::move(other.id)), dataset_size(std::move(other.dataset_size)), ds(std::move(other.ds)) {
+      std::cout << "Move constructor - name " << dataset::name(id) << ", size " << dataset_size << std::endl;
     }
     // Move assignment operator
     Dataset& operator=(Dataset&& other) noexcept {
@@ -371,6 +374,7 @@ class Dataset {
         // Move the ds vector and reset the source object
         ds = std::move(other.ds);
       }
+      std::cout << "Move assignment - name " << dataset::name(id) << ", size " << dataset_size << std::endl;
       return *this;
     }
 
