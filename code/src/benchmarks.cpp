@@ -3,11 +3,17 @@
 #include <vector>
 #include <algorithm>
 #include <unistd.h>
+#include <cstdint>
+
+#include "include/output_json.hpp"
+#include "include/datasets.hpp"
+
+#define MAX_SIZE 100000000      // 10^8, 100M
 
 /* ======== options ======== */
     std::string input_dir = "";
     std::string output_dir = "";
-    int threads;
+    size_t threads;
     std::string filter = "";
 /* ========================= */
 
@@ -21,7 +27,7 @@ void show_usage() {
     std::cout << "  -f, --filter FILTER       Type of benchmarks to execute (default: all)" << std::endl;
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
-int pars_args(int argc, char* argv[]) {
+int pars_args(const int& argc, char* const* const& argv) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--help" || arg == "-h") {
@@ -90,6 +96,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // Create a JsonWriter instance (for the output file)
+    JsonOutput writer(output_dir, argv[0]);
+    
+    // Create the collection of datasets
+    dataset::CollectionDS<> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
 
     return 0;
 }
