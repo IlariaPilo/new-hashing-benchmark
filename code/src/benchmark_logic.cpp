@@ -36,10 +36,10 @@ std::vector<BMtype<Data,Key>> get_bm_slice(int threadID, size_t thread_num, cons
 }
 
 template <class Data, class Key>
-static void run_bms(const std::vector<BMtype<Data,Key>>& bm_list, 
+void run_bms(const std::vector<BMtype<Data,Key>>& bm_list, 
     size_t thread_num, const dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
     // first of all, check thread compatibility
-    if (thread_num > bmList.size())
+    if (thread_num > bm_list.size())
         thread_num = bm_list.size();
     // begin parallel computation
     #pragma omp parallel num_threads(thread_num)
@@ -61,7 +61,7 @@ static void run_bms(const std::vector<BMtype<Data,Key>>& bm_list,
 }
 
 template <class HashFn, class Data, class Key>
-static void collision_stats(const dataset::Dataset<Data>& ds, JsonOutput& writer) {
+void collision_stats(const dataset::Dataset<Data>& ds, JsonOutput& writer) {
     // Extract variables
     const size_t dataset_size = ds.get_size();
     const std::string dataset_name = dataset::name(ds.get_id());

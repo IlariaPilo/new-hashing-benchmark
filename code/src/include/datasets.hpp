@@ -121,35 +121,7 @@ std::vector<Key> load(const std::string& filepath) {
   return dataset;
 }
 
-std::vector<ID> get_id_slice(int threadID, size_t thread_num) {
-    /* The first thread_num % ID_COUNT elements get thread_num/ID_COUNT + 1 IDs
-       All the others threads get thread_num/ID_COUNT
-     */
-    int mod = ID_COUNT % thread_num;
-    int div = ID_COUNT / thread_num;
-    size_t slice = (size_t)div;
-    /* We also take a look in the past to set the starting point! */
-    int past_mod_threads = -1;      // the ones with +1 in the slice
-    int past_threads = -1;          // all the other ones
-    if (threadID < mod) {
-        slice++;
-        past_mod_threads = threadID;
-        past_threads = 0;
-    } else {
-        past_mod_threads = mod;
-        past_threads = threadID - mod;
-    }
-    /* Define start and end */
-    int start = past_mod_threads*(div+1) + past_threads*div;
-    int end = start+slice;
-
-    /* Create the vector */
-    std::vector<ID> output;
-    output.resize(slice);
-    for(int i=start, j=0; i<end && i<ID_COUNT; i++, j++)
-        output[j] = REVERSE_ID.at(i);
-    return output;
-}
+std::vector<ID> get_id_slice(int threadID, size_t thread_num);
 
 
 // ------------------ functions to be called from outside ------------------ //
