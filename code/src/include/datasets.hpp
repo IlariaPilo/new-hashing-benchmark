@@ -368,6 +368,7 @@ class Dataset {
     }
     // Move assignment operator
     Dataset& operator=(Dataset&& other) noexcept {
+      std::cout << "====================================" << std::endl;
       std::cout << "Move assignment - BEGIN" << std::endl;
       std::cout << "\t[other] name " << dataset::name(other.id) << ", size " << other.dataset_size << std::endl;
       if (this != &other) {  // Check for self-assignment
@@ -376,8 +377,9 @@ class Dataset {
         // Move the ds vector and reset the source object
         ds = std::move(other.ds);
       }
-      std::cout << "Move assignment - END " << std::endl;
       std::cout << "\t[this] name " << dataset::name(id) << ", size " << dataset_size << std::endl;
+      std::cout << "Move assignment - END " << std::endl;
+      std::cout << "====================================" << std::endl;
       return *this;
     }
 
