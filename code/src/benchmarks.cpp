@@ -105,14 +105,14 @@ int main(int argc, char* argv[]) {
     dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
     std::cout << "done!" << std::endl;
 
-    // // Benchmark array definition
-    // std::vector<bm::BMtype<Data,Key>> bm_list = {
-    //     &bm::collision_stats<RMIHash_10,Data,Key>,
-    //     &bm::collision_stats<MURMUR,Data,Key>
-    // };
+    // Benchmark array definition
+    std::vector<bm::BMtype<Data,Key>> bm_list = {
+        &bm::collision_stats<RMIHash_10,Data,Key>,
+        &bm::collision_stats<MURMUR,Data,Key>
+    };
 
-    // // Run!
-    // bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
+    // Run!
+    bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
     
     return 0;
 }
