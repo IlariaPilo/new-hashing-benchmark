@@ -413,6 +413,9 @@ public:
       int i = static_cast<int>(id);
       return collection[i];
     }
+    std::vector<Dataset<Data>>& get_collection() {
+      return collection;
+    }
 
 private:
     std::vector<Dataset<Data>> collection;

@@ -1,6 +1,5 @@
 // Add definition for the tree types of functions
-#ifndef __HASH_CAT__
-#define __HASH_CAT__
+#pragma once
 
 #include <unordered_map>
 #include <string>
@@ -101,5 +100,3 @@ struct has_construct_method {
     typedef decltype(test<T, dummy>(nullptr)) type;
     static const bool value = std::is_same<std::true_type, decltype(test<T, dummy>(nullptr))>::value;
 };
-
-#endif

@@ -6,7 +6,8 @@
 #include <cstdint>
 
 #include "include/output_json.hpp"
-#include "include/datasets.hpp"
+#include "include/benchmark_logic.hpp"
+#include "include/function_aliases.hpp"
 
 #define MAX_SIZE 100000000      // 10^8, 100M
 
@@ -100,14 +101,15 @@ int main(int argc, char* argv[]) {
     JsonOutput writer(output_dir, argv[0]);
     
     // Create the collection of datasets
-    dataset::CollectionDS<> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
+    std::cout << "Starting dataset loading procedure... ";
+    dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
+    std::cout << "done!" << std::endl;
 
-    for (int i=0; i<dataset::ID_COUNT; i++) {
-        dataset::ID id = dataset::REVERSE_ID.at(i);
-        dataset::Dataset<>& ds = collection.get_ds(id);
-        std::cout << "Name: " << dataset::name(ds.get_id()) << std::endl;
-        std::cout << "Size: " << ds.get_size() << std::endl << std::endl;
-    }
-
+    // Benchmark array definition
+    std::vector<bm::BMtype<Data,Key>> bm_list = {
+        &bm::collision_stats<RMIHash_10,Data,Key>,
+        &bm::collision_stats<MURMUR,Data,Key>
+    };
+    
     return 0;
 }

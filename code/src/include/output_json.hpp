@@ -1,6 +1,7 @@
 // ============================ //
 // Thanks ChatGPT for the help! //
 // ============================ //
+#pragma once
 
 #include <iostream>
 #include <fstream>
