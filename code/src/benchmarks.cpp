@@ -102,5 +102,12 @@ int main(int argc, char* argv[]) {
     // Create the collection of datasets
     dataset::CollectionDS<> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
 
+    for (int i=0; i<dataset::ID_COUNT; i++) {
+        dataset::ID id = dataset::REVERSE_ID.at(i);
+        dataset::Dataset<>& ds = collection.get_ds(id);
+        std::cout << "Name: " << dataset::name(ds.get_id()) << std::endl;
+        std::cout << "Size: " << ds.get_size() << std::endl << std::endl;
+    }
+
     return 0;
 }
