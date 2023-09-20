@@ -13,7 +13,6 @@ namespace bm {
     template <class Data = std::uint64_t, class Key = std::uint64_t>
     using BMtype = void(*)(dataset::Dataset<Data>&, JsonOutput&);
 
-
     template <class Data = std::uint64_t, class Key = std::uint64_t>
     std::vector<BMtype<Data,Key>> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype<Data,Key>>& bm_list) {
         int BM_COUNT = bm_list.size();
@@ -77,20 +76,12 @@ namespace bm {
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
-        #if PRINT
-        std::cout << "performing setup... " << std::endl;
-        auto start = std::chrono::steady_clock::now();
-        #endif    
+   
         // ensure keys are sorted
         // std::sort(keys.begin(), keys.end(),
         //         [](const auto& a, const auto& b) { return a < b; });
         // start with the hash function
         HashFn fn;
-
-        #if PRINT
-        std::cout << "has_train<HashFn>: " << has_train_method<HashFn>::value << std::endl;
-        std::cout << "has_construct<HashFn>: " << has_construct_method<HashFn>::value << std::endl;
-        #endif
 
         // LEARNED FN
         if constexpr (has_train_method<HashFn>::value) {
@@ -102,14 +93,6 @@ namespace bm {
             // construct perfect hash table
             fn.construct(ds.begin(), ds.end());
         }
-
-        #if PRINT
-        // measure time elapsed
-        const auto end = std::chrono::steady_clock::now();
-        std::chrono::duration<double> diff = end - start;
-        std::cout << "succeeded in " << std::setw(9) << diff.count() << " seconds"
-                    << std::endl;
-        #endif
 
         // now, start counting collisions
 
@@ -167,10 +150,10 @@ namespace bm {
         benchmark["tot_time_s"] = tot_time.count();
         benchmark["collisions"] = collisions_count;
         benchmark["dataset_name"] = dataset_name;
-        //benchmark["extra"] = extra;
-        benchmark["label"] = "Collisions:" + std::string(typeid(HashFn).name()) + ":" + dataset_name;
-        //    + dataset::name(did) + ":" + dataset::name(probing_dist) + ":" + std::to_string(extra);
-
+        // benchmark["extra"] = extra;
+        benchmark["label"] = "Collisions:" + std::string(typeid(HashFn).name()) + ":" + dataset_name; 
+        //    + ":" + std::to_string(extra);
+        //    + dataset::name(did) + ":" + dataset::name(probing_dist) 
         writer.add_data(benchmark);
     }
 }

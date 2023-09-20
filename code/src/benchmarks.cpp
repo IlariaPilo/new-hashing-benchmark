@@ -112,8 +112,37 @@ int main(int argc, char* argv[]) {
 
     // Benchmark array definition
     std::vector<bm::BMtype<Data,Key>> bm_list = {
+        /* RMI */
         &bm::collision_stats<RMIHash_10,Data,Key>,
-        &bm::collision_stats<MURMUR,Data,Key>
+        &bm::collision_stats<RMIHash_100,Data,Key>,
+        &bm::collision_stats<RMIHash_1k,Data,Key>,
+        &bm::collision_stats<RMIHash_10k,Data,Key>,
+        &bm::collision_stats<RMIHash_100k,Data,Key>,
+        &bm::collision_stats<RMIHash_1M,Data,Key>,
+        &bm::collision_stats<RMIHash_10M,Data,Key>,
+        &bm::collision_stats<RMIHash_100M,Data,Key>,
+        /* RadixSpline */
+        &bm::collision_stats<RadixSplineHash_4,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_16,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_128,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_1k,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_100k,Data,Key>,
+        /* PGM */
+        &bm::collision_stats<PGMHash_2,Data,Key>,
+        &bm::collision_stats<PGMHash_32,Data,Key>,
+        &bm::collision_stats<PGMHash_100,Data,Key>,
+        &bm::collision_stats<PGMHash_1k,Data,Key>,
+        &bm::collision_stats<PGMHash_100k,Data,Key>,
+        /* Classic */
+        &bm::collision_stats<MURMUR,Data,Key>,
+        &bm::collision_stats<MultPrime64,Data,Key>,
+        &bm::collision_stats<FibonacciPrime64,Data,Key>,
+        &bm::collision_stats<AquaHash,Data,Key>,
+        &bm::collision_stats<XXHash3,Data,Key>,
+        /* Perfect */
+        &bm::collision_stats<MWHC,Data,Key>,
+        &bm::collision_stats<BitMWHC,Data,Key>,
+        &bm::collision_stats<RecSplit,Data,Key>
     };
 
     // Run!
