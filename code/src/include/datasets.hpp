@@ -315,11 +315,14 @@ class Dataset {
     const std::vector<Data>& get_ds() {
       return ds;
     }
+    // Default constructor
+    Dataset() : {
+        id(ID::COUNT), dataset_size(0), ds(nullptr)
+    }
     // Copy constructor
     Dataset(const Dataset& other) : 
         id(other.id), dataset_size(other.dataset_size), ds(other.ds) {
     }
-
     // Copy assignment operator
     Dataset& operator=(const Dataset& other) {
       if (this != &other) { // Check for self-assignment
@@ -329,25 +332,18 @@ class Dataset {
       }
       return *this;
     }
-
     // Move constructor
     Dataset(Dataset&& other) noexcept : 
         id(std::move(other.id)), dataset_size(std::move(other.dataset_size)), ds(std::move(other.ds)) {
     }
     // Move assignment operator
     Dataset& operator=(Dataset&& other) noexcept {
-      std::cout << "====================================" << std::endl;
-      std::cout << "Move assignment - BEGIN" << std::endl;
-      std::cout << "\t[other] name " << dataset::name(other.id) << ", size " << other.dataset_size << std::endl;
       if (this != &other) {  // Check for self-assignment
         id = other.id;
         dataset_size = other.dataset_size;
         // Move the ds vector and reset the source object
         ds = std::move(other.ds);
       }
-      std::cout << "\t[this] name " << dataset::name(id) << ", size " << dataset_size << std::endl;
-      std::cout << "Move assignment - END " << std::endl;
-      std::cout << "====================================" << std::endl;
       return *this;
     }
 
