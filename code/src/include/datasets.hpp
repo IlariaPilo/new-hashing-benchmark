@@ -92,7 +92,7 @@ std::vector<Key> load(const std::string& filepath) {
     uint64_t num_elements = read_little_endian_8(buffer, 0);
 
     if (num_elements > max_num_elements) {
-      throw std::runtime_error("\033[91mAssertion failed\033[0m num_elements<=max_num_elements\n           [num_elements] " + std::to_string(num_elements) + "\n           [max_num_elements] " + std::to_string(max_num_elements) + "\n");
+      throw std::runtime_error("\033[1;91mAssertion failed\033[0m num_elements<=max_num_elements\n           [num_elements] " + std::to_string(num_elements) + "\n           [max_num_elements] " + std::to_string(max_num_elements) + "\n");
     }
     switch (sizeof(Key)) {
       case sizeof(std::uint64_t):
@@ -179,10 +179,10 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
         const auto rand_val = std::max(mean - 3 * std_dev,
                                        std::min(mean + 3 * std_dev, dist(rng)));
         if (rand_val < mean - 3 * std_dev) {
-          throw std::runtime_error("\033[91mAssertion failed\033[0m rand_val>=mean-3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
+          throw std::runtime_error("\033[1;91mAssertion failed\033[0m rand_val>=mean-3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
         }
         if (rand_val > mean + 3 * std_dev) {
-          throw std::runtime_error("\033[91mAssertion failed\033[0m rand_val<=mean+3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
+          throw std::runtime_error("\033[1;91mAssertion failed\033[0m rand_val<=mean+3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
         }
 
         // rescale to [0, 2^50)

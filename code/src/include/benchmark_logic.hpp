@@ -84,7 +84,7 @@ namespace bm {
 
         if (ds.size() != dataset_size) {
             // Throw a runtime exception
-            throw std::runtime_error("\033[91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + label + "\n           [ds.size()] " + std::to_string(ds.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + label + "\n           [ds.size()] " + std::to_string(ds.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
    
         // ensure keys are sorted
@@ -156,7 +156,7 @@ namespace bm {
         }
         if (collisions_count+NOT_collisions_count != dataset_size) {
             // Throw a runtime exception
-            throw std::runtime_error("\033[91mAssertion failed\033[0m collisions_count+NOT_collisions_count==dataset_size\n           In --> " + label + "\n           [collisions_count] " + std::to_string(collisions_count) + "\n           [NOT_collisions_count] " + std::to_string(NOT_collisions_count) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m collisions_count+NOT_collisions_count==dataset_size\n           In --> " + label + "\n           [collisions_count] " + std::to_string(collisions_count) + "\n           [NOT_collisions_count] " + std::to_string(NOT_collisions_count) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
 
         json benchmark;
