@@ -97,13 +97,18 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    std::cout << std::endl << "\033[1;96m  ===================== \033[0m" << std::endl;
+    std::cout << "\033[1;96m  = hashing-benchmark = \033[0m" << std::endl;
+    std::cout << "\033[1;96m  ===================== \033[0m" << std::endl;
+    std::cout << "Running on " << threads << " threads." << std::endl << std::endl;
+
     // Create a JsonWriter instance (for the output file)
     JsonOutput writer(output_dir, argv[0]);
     
     // Create the collection of datasets
-    std::cout << "Starting dataset loading procedure... ";
+    std::cout << "Starting dataset loading procedure... " << std::endl;
     dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
-    std::cout << "done!" << std::endl;
+    std::cout << "...done!" << std::endl;
 
     // Benchmark array definition
     std::vector<bm::BMtype<Data,Key>> bm_list = {
@@ -112,7 +117,9 @@ int main(int argc, char* argv[]) {
     };
 
     // Run!
+    std::cout << "Begin benchmarking... " << std::endl;
     bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
+    std::cout << "...done!" << std::endl;
     
     return 0;
 }

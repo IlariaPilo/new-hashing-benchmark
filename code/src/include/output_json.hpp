@@ -33,7 +33,7 @@ public:
         // Open the JSON file for writing
         output_file.open(filename);
         if (!output_file.is_open()) {
-            std::cerr << "Error opening JSON file: " << filename << std::endl;
+            throw std::runtime_error("Error opening JSON file. Check that directory " + file_directory + " exists.");
         } else {
             // First, we make the context
             json_output["context"] = make_context(arg0, local_time);
