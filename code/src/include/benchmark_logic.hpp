@@ -15,7 +15,7 @@ namespace bm {
 
 
     template <class Data = std::uint64_t, class Key = std::uint64_t>
-    std::vector<BMtype<Data,Key>> get_bm_slice(int threadID, size_t thread_num, const std::vector<BMtype<Data,Key>>& bm_list) {
+    std::vector<BMtype<Data,Key>> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype<Data,Key>>& bm_list) {
         int BM_COUNT = bm_list.size();
         int mod = BM_COUNT % thread_num;
         int div = BM_COUNT / thread_num;
@@ -45,7 +45,7 @@ namespace bm {
 
     // thread utility
     template <class Data = std::uint64_t, class Key = std::uint64_t>
-    void run_bms(const std::vector<BMtype<Data,Key>>& bm_list, 
+    void run_bms(std::vector<BMtype<Data,Key>>& bm_list, 
             size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         // first of all, check thread compatibility
         if (thread_num > bm_list.size())
@@ -57,8 +57,8 @@ namespace bm {
             // get slice of benchmarks
             auto slice = get_bm_slice(threadID, thread_num, bm_list);
             // for each ds
-            auto all_ds = collection.get_collection();
-            for (dataset::Dataset<Data> ds : all_ds) {
+            std::vector<dataset::Dataset<Data>>& all_ds = collection.get_collection();
+            for (dataset::Dataset<Data>& ds : all_ds) {
                 // for each function
                 for (BMtype<Data,Key> bm : slice) {
                     // run the function
