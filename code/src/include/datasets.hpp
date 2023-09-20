@@ -316,8 +316,11 @@ class Dataset {
       return ds;
     }
     // Default constructor
-    Dataset() : {
-        id(ID::COUNT), dataset_size(0), ds(nullptr)
+    Dataset() :
+        id(ID::COUNT), dataset_size(0), ds(nullptr) {
+    }
+    // Destructor
+    ~Dataset() {
     }
     // Copy constructor
     Dataset(const Dataset& other) : 
