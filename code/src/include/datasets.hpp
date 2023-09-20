@@ -312,7 +312,7 @@ class Dataset {
     size_t get_size() {
       return dataset_size;
     }
-    const std::vector<Data>& get_ds() {
+    std::vector<Data>& get_ds() {
       return ds;
     }
     // Default constructor
@@ -325,9 +325,11 @@ class Dataset {
     // Copy constructor
     Dataset(const Dataset& other) : 
         id(other.id), dataset_size(other.dataset_size), ds(other.ds) {
+          std::cout << "CC" << std::endl;
     }
     // Copy assignment operator
     Dataset& operator=(const Dataset& other) {
+      std::cout << "CA" << std::endl;
       if (this != &other) { // Check for self-assignment
         id = other.id;
         dataset_size = other.dataset_size;
@@ -338,9 +340,11 @@ class Dataset {
     // Move constructor
     Dataset(Dataset&& other) noexcept : 
         id(std::move(other.id)), dataset_size(std::move(other.dataset_size)), ds(std::move(other.ds)) {
+      std::cout << "MC" << std::endl;
     }
     // Move assignment operator
     Dataset& operator=(Dataset&& other) noexcept {
+      std::cout << "MA" << std::endl;
       if (this != &other) {  // Check for self-assignment
         id = other.id;
         dataset_size = other.dataset_size;
@@ -381,7 +385,7 @@ public:
           for (auto id : ids) {
             // put the object into the array
             int i = static_cast<int>(id);
-            collection[i] = Dataset<Data>(id, dataset_size, dataset_directory);
+            collection.emplace(collection.begin() + i, id, dataset_size, dataset_directory);
           }
       }
     }
