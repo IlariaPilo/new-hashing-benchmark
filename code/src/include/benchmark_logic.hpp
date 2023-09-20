@@ -78,6 +78,13 @@ namespace bm {
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
+
+        const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
+
+        if (ds.size() != dataset_size) {
+            // Throw a runtime exception
+            throw std::runtime_error("Assertion failed: ds.size()==dataset_size\n           In: " + label + "\n           [ds.size()] " + std::to_string(ds.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+        }
    
         // ensure keys are sorted
         // std::sort(keys.begin(), keys.end(),
@@ -136,7 +143,6 @@ namespace bm {
                 break;
             // to remove the warning
             case HashCategories::UNKNOWN:
-                std::cerr << "Warning, hash category is unknown!" << std::endl;
                 break;
             }
             keys[index]++;
@@ -150,7 +156,7 @@ namespace bm {
         }
         if (collisions_count+NOT_collisions_count != dataset_size) {
             // Throw a runtime exception
-            throw std::runtime_error("Assertion failed: collisions_count+NOT_collisions_count!=dataset_size\n           [collisions_count] " + std::to_string(collisions_count) + "\n           [NOT_collisions_count] " + std::to_string(NOT_collisions_count) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+            throw std::runtime_error("Assertion failed: collisions_count+NOT_collisions_count==dataset_size\n           In: " + label + "\n           [collisions_count] " + std::to_string(collisions_count) + "\n           [NOT_collisions_count] " + std::to_string(NOT_collisions_count) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
 
         json benchmark;
@@ -160,10 +166,10 @@ namespace bm {
         benchmark["collisions"] = collisions_count;
         benchmark["dataset_name"] = dataset_name;
         // benchmark["extra"] = extra;
-        benchmark["label"] = "Collisions:" + fn.name() + ":" + dataset_name; 
+        benchmark["label"] = label; 
         //    + ":" + std::to_string(extra);
         //    + dataset::name(did) + ":" + dataset::name(probing_dist) 
-        std::cout << "Collisions:" + fn.name() + ":" + dataset_name + "\n";
+        std::cout << label + "\n";
         writer.add_data(benchmark);
     }
 }
