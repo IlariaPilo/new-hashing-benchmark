@@ -4,7 +4,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cassert>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -92,7 +91,9 @@ std::vector<Key> load(const std::string& filepath) {
     // Parse file
     uint64_t num_elements = read_little_endian_8(buffer, 0);
 
-    assert(num_elements <= max_num_elements);
+    if (num_elements > max_num_elements) {
+      throw std::runtime_error("Assertion failed: num_elements<=max_num_elements\n           [num_elements] " + std::to_string(num_elements) + "\n           [max_num_elements] " + std::to_string(max_num_elements) + "\n");
+    }
     switch (sizeof(Key)) {
       case sizeof(std::uint64_t):
         for (uint64_t i = 0; i < num_elements; i++) {
@@ -177,9 +178,12 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
         // cutoff after 3 * std_dev
         const auto rand_val = std::max(mean - 3 * std_dev,
                                        std::min(mean + 3 * std_dev, dist(rng)));
-
-        assert(rand_val >= mean - 3 * std_dev);
-        assert(rand_val <= mean + 3 * std_dev);
+        if (rand_val < mean - 3 * std_dev) {
+          throw std::runtime_error("Assertion failed: rand_val>=mean-3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
+        }
+        if (rand_val > mean + 3 * std_dev) {
+          throw std::runtime_error("Assertion failed: rand_val<=mean+3*std_dev\n           [rand_val] " + std::to_string(rand_val) + "\n           [mean] " + std::to_string(mean) + "\n           [std_dev] " + std::to_string(std_dev) + "\n");
+        }
 
         // rescale to [0, 2^50)
         const auto rescaled =
