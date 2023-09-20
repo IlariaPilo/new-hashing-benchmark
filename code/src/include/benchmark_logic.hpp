@@ -79,6 +79,7 @@ namespace bm {
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
 
+        HashFn fn;
         const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
 
         if (ds.size() != dataset_size) {
@@ -90,7 +91,6 @@ namespace bm {
         // std::sort(keys.begin(), keys.end(),
         //         [](const auto& a, const auto& b) { return a < b; });
         // start with the hash function
-        HashFn fn;
 
         // LEARNED FN
         if constexpr (has_train_method<HashFn>::value) {
