@@ -34,6 +34,8 @@ namespace bm {
         int start = past_mod_threads*(div+1) + past_threads*div;
         int end = start+slice;
 
+        std::cout << "Thread " + std::to_string(threadID) + ": [" + std::to_string(start) + ", " + std::to_string(end) + ")\n";
+
         /* Create the vector */
         std::vector<BMtype<Data,Key>> output;
         output.resize(slice);
@@ -151,9 +153,10 @@ namespace bm {
         benchmark["collisions"] = collisions_count;
         benchmark["dataset_name"] = dataset_name;
         // benchmark["extra"] = extra;
-        benchmark["label"] = "Collisions:" + std::string(typeid(HashFn).name()) + ":" + dataset_name; 
+        benchmark["label"] = "Collisions:" + fn.name() + ":" + dataset_name; 
         //    + ":" + std::to_string(extra);
         //    + dataset::name(did) + ":" + dataset::name(probing_dist) 
+        std::cout << "Collisions:" + fn.name() + ":" + dataset_name + "\n";
         writer.add_data(benchmark);
     }
 }

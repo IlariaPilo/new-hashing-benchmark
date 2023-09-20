@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
     // Create the collection of datasets
     std::cout << "Starting dataset loading procedure... ";
     dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
-    std::cout << "...done!" << std::endl;
+    std::cout << "done!" << std::endl;
 
     // Benchmark array definition
     std::vector<bm::BMtype<Data,Key>> bm_list = {
@@ -148,7 +148,7 @@ int main(int argc, char* argv[]) {
     // Run!
     std::cout << "Begin benchmarking... ";
     bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
-    std::cout << "...done!" << std::endl;
+    std::cout << "done!" << std::endl;
     
     return 0;
 }
