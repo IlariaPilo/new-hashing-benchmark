@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
         &bm::collision_stats<RMIHash_10,Data,Key>,
         &bm::collision_stats<RMIHash_100,Data,Key>,
         &bm::collision_stats<RMIHash_1k,Data,Key>,
-        &bm::collision_stats<RMIHash_10k,Data,Key>,
+        &bm::collision_stats<RMIHash_10k,Data,Key> /*,
         &bm::collision_stats<RMIHash_100k,Data,Key>,
         &bm::collision_stats<RMIHash_1M,Data,Key>,
         &bm::collision_stats<RMIHash_10M,Data,Key>,
@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
         // Perfect
         &bm::collision_stats<MWHC,Data,Key>,
         &bm::collision_stats<BitMWHC,Data,Key>,
-        &bm::collision_stats<RecSplit,Data,Key>
+        &bm::collision_stats<RecSplit,Data,Key> */
     };
 
     // Run!
