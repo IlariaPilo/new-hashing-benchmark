@@ -113,6 +113,7 @@ namespace bm {
         std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
         std::chrono::duration<double> tot_time(0);
         size_t collisions_count = 0;
+        size_t NOT_collisions_count = 0;
         // ================================================================ //
 
         for (auto data : ds) {
@@ -130,11 +131,12 @@ namespace bm {
                 _end_ = std::chrono::steady_clock::now();
                 if (index >= dataset_size) {
                     // Throw a runtime exception
-                    throw std::runtime_error("Index is out of boundaries ("+std::to_string(index)+")");
+                    throw std::runtime_error("Hash is out of boundaries ("+std::to_string(index)+")");
                 }
                 break;
             // to remove the warning
             case HashCategories::UNKNOWN:
+                std::cerr << "Warning, hash category is unknown!" << std::endl;
                 break;
             }
             keys[index]++;
@@ -144,6 +146,11 @@ namespace bm {
         for (auto k : keys) {
             if (k > 1)
                 collisions_count += k;
+            else NOT_collisions_count += k;
+        }
+        if (collisions_count+NOT_collisions_count != dataset_size) {
+            // Throw a runtime exception
+            throw std::runtime_error("Assertion failed: collisions_count+NOT_collisions_count!=dataset_size\n           [collisions_count] " + std::to_string(collisions_count) + "\n           [NOT_collisions_count] " + std::to_string(NOT_collisions_count) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
 
         json benchmark;
