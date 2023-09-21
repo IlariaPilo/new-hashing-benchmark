@@ -11,7 +11,7 @@
 namespace bm {
     // bm function pointer type
     template <class Data = std::uint64_t, class Key = std::uint64_t>
-    using BMtype = void(*)(dataset::Dataset<Data>&, JsonOutput&);
+    using BMtype = void(*)(const dataset::Dataset<Data>&, JsonOutput&);
 
     template <class Data = std::uint64_t, class Key = std::uint64_t>
     std::vector<BMtype<Data,Key>> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype<Data,Key>>& bm_list) {
@@ -58,8 +58,8 @@ namespace bm {
             // get slice of benchmarks
             auto slice = get_bm_slice(threadID, thread_num, bm_list);
             // for each ds
-            std::vector<dataset::Dataset<Data>>& all_ds = collection.get_collection();
-            for (dataset::Dataset<Data>& ds : all_ds) {
+            const std::vector<dataset::Dataset<Data>>& all_ds = collection.get_collection();
+            for (const dataset::Dataset<Data>& ds : all_ds) {
                 // for each function
                 for (BMtype<Data,Key> bm : slice) {
                     // run the function
@@ -73,7 +73,7 @@ namespace bm {
     // ----------------- benchmarks list ----------------- //
     // collision
     template <class HashFn = std::uint64_t, class Data = std::uint64_t, class Key = std::uint64_t>
-    void collision_stats(dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+    void collision_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());

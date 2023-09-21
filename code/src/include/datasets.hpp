@@ -310,13 +310,13 @@ class Dataset {
       ds = load_cached<Data>(id, dataset_size, dataset_directory);
       this->dataset_size = ds.size();
     }
-    ID get_id() {
+    ID get_id() const {
       return id;
     }
-    size_t get_size() {
+    size_t get_size() const {
       return dataset_size;
     }
-    std::vector<Data>& get_ds() {
+    const std::vector<Data>& get_ds() const {
       return ds;
     }
     // Default constructor
@@ -389,11 +389,11 @@ public:
           }
       }
     }
-    Dataset<Data>& get_ds(ID id) {
+    const Dataset<Data>& get_ds(ID id) {
       int i = static_cast<int>(id);
       return collection[i];
     }
-    std::vector<Dataset<Data>>& get_collection() {
+    const std::vector<Dataset<Data>>& get_collection() {
       return collection;
     }
 
