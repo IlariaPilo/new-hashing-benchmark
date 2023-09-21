@@ -14,6 +14,7 @@ using Key = std::uint64_t;
 using Payload = std::uint64_t;
 
 // Aliases definition
+using RMIHash_2 = learned_hashing::RMIHash<std::uint64_t, 2>;
 using RMIHash_10 = learned_hashing::RMIHash<std::uint64_t, 10>;
 using RMIHash_100 = learned_hashing::RMIHash<std::uint64_t, 100>;
 using RMIHash_1k = learned_hashing::RMIHash<std::uint64_t, 1000>;
