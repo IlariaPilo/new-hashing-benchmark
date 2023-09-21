@@ -161,8 +161,78 @@ namespace bm {
         benchmark["dataset_name"] = dataset_name;
         // benchmark["extra"] = extra;
         benchmark["label"] = label; 
-        //    + ":" + std::to_string(extra);
-        //    + dataset::name(did) + ":" + dataset::name(probing_dist) 
+        std::cout << label + "\n";
+        writer.add_data(benchmark);
+    }
+
+    // collision
+    template <class HashFn = std::uint64_t, class Data = std::uint64_t, class Key = std::uint64_t>
+    void gap_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
+
+        HashFn fn;
+        const std::string label = "Gaps:" + fn.name() + ":" + dataset_name;
+   
+        // ensure keys are sorted
+        // std::sort(keys.begin(), keys.end(),
+        //         [](const auto& a, const auto& b) { return a < b; });
+        // start with the hash function
+
+        // LEARNED FN
+        if constexpr (has_train_method<HashFn>::value) {
+            // train model on sorted data
+            fn.train(ds.begin(), ds.end(), dataset_size);
+        }
+        // PERFECT FN
+        if constexpr (has_construct_method<HashFn>::value) {
+            // construct perfect hash table
+            fn.construct(ds.begin(), ds.end());
+        }
+
+        // now, start counting collisions
+
+        // stores the list of hash values (keys)
+        std::vector<Key> keys;
+        keys.resize(dataset_size, 0);
+
+        HashCategories type = get_fn_type<HashFn>();
+        if (type == HashCategories::UNKNOWN) {
+            std::cerr << "Error: Hash function type is unknown. Failed :c" << std::endl;
+            return;
+        }
+
+        size_t index;
+
+        for (auto data : ds) {
+            /* TODO - remove this useless logic as soon as the index is out of boundaries thing is fixed */
+            switch (type) {
+            case HashCategories::PERFECT:
+            case HashCategories::CLASSIC:
+                index = fn(data) % dataset_size;
+                break;
+            case HashCategories::LEARNED:
+                index = fn(data); // /dataset_size;
+                if (index >= dataset_size) {
+                    // Throw a runtime exception
+                    throw std::runtime_error("Hash is out of boundaries ("+std::to_string(index)+")");
+                }
+                break;
+            // to remove the warning
+            case HashCategories::UNKNOWN:
+                break;
+            }
+            keys.push_back(index);
+        }
+
+        json benchmark;
+
+        benchmark["data_elem_count"] = dataset_size;
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["keys"] = keys;
+        benchmark["label"] = label; 
         std::cout << label + "\n";
         writer.add_data(benchmark);
     }

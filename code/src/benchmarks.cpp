@@ -119,6 +119,8 @@ int main(int argc, char* argv[]) {
 
     // Benchmark array definition
     std::vector<bm::BMtype<Data,Key>> bm_list = {
+        &bm::gap_stats<RMIHash_1M,Data,Key> /*,
+        // ------------- collisions ------------- //
         // RMI
         &bm::collision_stats<RMIHash_2,Data,Key>,
         &bm::collision_stats<RMIHash_10,Data,Key>,
@@ -150,7 +152,7 @@ int main(int argc, char* argv[]) {
         // Perfect
         &bm::collision_stats<MWHC,Data,Key>,
         &bm::collision_stats<BitMWHC,Data,Key>,
-        &bm::collision_stats<RecSplit,Data,Key>
+        &bm::collision_stats<RecSplit,Data,Key> */
     };
 
     // Run!
