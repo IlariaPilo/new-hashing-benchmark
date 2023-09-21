@@ -1,0 +1,1333 @@
+{
+    "benchmarks": [
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_2:seq",
+            "tot_time_s": 2.4357954102368007
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_1000:seq",
+            "tot_time_s": 2.437436715287624
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_1000000:seq",
+            "tot_time_s": 2.4345401041821173
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:radix_spline_err100000_rbits18:seq",
+            "tot_time_s": 2.4860210260355844
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:radix_spline_err128_rbits18:seq",
+            "tot_time_s": 2.4983307848125196
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:radix_spline_err4_rbits18:seq",
+            "tot_time_s": 2.5100831403576724
+        },
+        {
+            "collisions": 6479589,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:pgm_hash_eps32_epsrec32:seq",
+            "tot_time_s": 3.56209780947117
+        },
+        {
+            "collisions": 6602107,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:pgm_hash_eps1024_epsrec1024:seq",
+            "tot_time_s": 3.8769180474175924
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_10:seq",
+            "tot_time_s": 2.4339644433227816
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_10000:seq",
+            "tot_time_s": 2.4287803442329694
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_10000000:seq",
+            "tot_time_s": 2.4430634859011686
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:radix_spline_err1024_rbits18:seq",
+            "tot_time_s": 2.4963815588481455
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:radix_spline_err16_rbits18:seq",
+            "tot_time_s": 2.4841586232862225
+        },
+        {
+            "collisions": 8087457,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:pgm_hash_eps2_epsrec2:seq",
+            "tot_time_s": 3.3739144788480697
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_100:seq",
+            "tot_time_s": 2.4303464500074465
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_100000:seq",
+            "tot_time_s": 2.4285697983116985
+        },
+        {
+            "collisions": 2,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:rmi_hash_100000000:seq",
+            "tot_time_s": 2.4892259706606166
+        },
+        {
+            "collisions": 18211120,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:radix_spline_err128_rbits18:gap_10",
+            "tot_time_s": 2.496824494837828
+        },
+        {
+            "collisions": 63215601,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:murmur_finalizer64:seq",
+            "tot_time_s": 2.190617370881202
+        },
+        {
+            "collisions": 63213453,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:xxh3_64:seq",
+            "tot_time_s": 2.250601798403741
+        },
+        {
+            "collisions": 17863965,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:radix_spline_err4_rbits18:gap_10",
+            "tot_time_s": 2.5574839543898613
+        },
+        {
+            "collisions": 84022151,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:MultFibonacciPrime64:seq",
+            "tot_time_s": 2.256255142274693
+        },
+        {
+            "collisions": 6597655,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:pgm_hash_eps128_epsrec128:seq",
+            "tot_time_s": 3.888524149406764
+        },
+        {
+            "collisions": 8667265,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:pgm_hash_eps100000_epsrec100000:seq",
+            "tot_time_s": 3.8869813465776004
+        },
+        {
+            "collisions": 18205784,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:radix_spline_err100000_rbits18:gap_10",
+            "tot_time_s": 2.492431836902179
+        },
+        {
+            "collisions": 18205472,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_2:gap_10",
+            "tot_time_s": 2.438576014258148
+        },
+        {
+            "collisions": 18212268,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_1000:gap_10",
+            "tot_time_s": 2.4380712523449386
+        },
+        {
+            "collisions": 17735474,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_1000000:gap_10",
+            "tot_time_s": 2.4355946382120783
+        },
+        {
+            "collisions": 18208590,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:radix_spline_err1024_rbits18:gap_10",
+            "tot_time_s": 2.496020591872654
+        },
+        {
+            "collisions": 18183492,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:radix_spline_err16_rbits18:gap_10",
+            "tot_time_s": 2.4980518796639957
+        },
+        {
+            "collisions": 18209606,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_10:gap_10",
+            "tot_time_s": 2.4379812082893033
+        },
+        {
+            "collisions": 18204870,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_10000:gap_10",
+            "tot_time_s": 2.429481111228414
+        },
+        {
+            "collisions": 14529643,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_10000000:gap_10",
+            "tot_time_s": 2.4435800702834882
+        },
+        {
+            "collisions": 18250857,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:pgm_hash_eps32_epsrec32:gap_10",
+            "tot_time_s": 4.0206011591156665
+        },
+        {
+            "collisions": 20992896,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:pgm_hash_eps1024_epsrec1024:gap_10",
+            "tot_time_s": 3.876450282278819
+        },
+        {
+            "collisions": 58483627,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:radix_spline_err128_rbits18:uniform",
+            "tot_time_s": 2.334746899136095
+        },
+        {
+            "collisions": 57534455,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:radix_spline_err4_rbits18:uniform",
+            "tot_time_s": 2.521847325094986
+        },
+        {
+            "collisions": 18206348,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_100:gap_10",
+            "tot_time_s": 2.4318682573663
+        },
+        {
+            "collisions": 18164100,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_100000:gap_10",
+            "tot_time_s": 2.4289531642627393
+        },
+        {
+            "collisions": 17724993,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:pgm_hash_eps2_epsrec2:gap_10",
+            "tot_time_s": 5.919502862854143
+        },
+        {
+            "collisions": 4309024,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:rmi_hash_100000000:gap_10",
+            "tot_time_s": 2.473317810515466
+        },
+        {
+            "collisions": 58485232,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:radix_spline_err1024_rbits18:uniform",
+            "tot_time_s": 2.333597752106889
+        },
+        {
+            "collisions": 58423510,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:radix_spline_err16_rbits18:uniform",
+            "tot_time_s": 2.355542918605781
+        },
+        {
+            "collisions": 63216203,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:aqua0_64:seq",
+            "tot_time_s": 2.187687145716707
+        },
+        {
+            "collisions": 99154140,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:MultHash64:seq",
+            "tot_time_s": 2.2452954474991587
+        },
+        {
+            "collisions": 18217393,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:pgm_hash_eps128_epsrec128:gap_10",
+            "tot_time_s": 4.058082660532194
+        },
+        {
+            "collisions": 58487528,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_2:uniform",
+            "tot_time_s": 2.2789932458016744
+        },
+        {
+            "collisions": 58482410,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_1000:uniform",
+            "tot_time_s": 2.2782123359082327
+        },
+        {
+            "collisions": 19106967,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:pgm_hash_eps100000_epsrec100000:gap_10",
+            "tot_time_s": 3.893121557621248
+        },
+        {
+            "collisions": 58483008,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:radix_spline_err100000_rbits18:uniform",
+            "tot_time_s": 2.3260230500570276
+        },
+        {
+            "collisions": 58288260,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_1000000:uniform",
+            "tot_time_s": 2.2762132077069674
+        },
+        {
+            "collisions": 70481335,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:radix_spline_err128_rbits18:fb",
+            "tot_time_s": 2.1999501608853
+        },
+        {
+            "collisions": 55096309,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:radix_spline_err4_rbits18:fb",
+            "tot_time_s": 2.706078977537308
+        },
+        {
+            "collisions": 58486278,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_10:uniform",
+            "tot_time_s": 2.273904415663529
+        },
+        {
+            "collisions": 58483896,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_10000:uniform",
+            "tot_time_s": 2.2686849436382723
+        },
+        {
+            "collisions": 56428158,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_10000000:uniform",
+            "tot_time_s": 2.286803936757301
+        },
+        {
+            "collisions": 73580645,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:radix_spline_err1024_rbits18:fb",
+            "tot_time_s": 2.174087066323748
+        },
+        {
+            "collisions": 58619258,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:pgm_hash_eps32_epsrec32:uniform",
+            "tot_time_s": 4.440112859621156
+        },
+        {
+            "collisions": 58528599,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:pgm_hash_eps1024_epsrec1024:uniform",
+            "tot_time_s": 3.73667879991455
+        },
+        {
+            "collisions": 63989416,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:radix_spline_err16_rbits18:fb",
+            "tot_time_s": 2.3686393258471483
+        },
+        {
+            "collisions": 58485930,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_100:uniform",
+            "tot_time_s": 2.2727611368564467
+        },
+        {
+            "collisions": 58469058,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_100000:uniform",
+            "tot_time_s": 2.2687366776781355
+        },
+        {
+            "collisions": 45752763,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:rmi_hash_100000000:uniform",
+            "tot_time_s": 2.314151225927962
+        },
+        {
+            "collisions": 58324513,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:pgm_hash_eps2_epsrec2:uniform",
+            "tot_time_s": 5.552250159674391
+        },
+        {
+            "collisions": 74816009,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:radix_spline_err128_rbits18:osm",
+            "tot_time_s": 2.764916004957739
+        },
+        {
+            "collisions": 74100748,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_2:fb",
+            "tot_time_s": 2.119077641274589
+        },
+        {
+            "collisions": 74024355,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_1000:fb",
+            "tot_time_s": 2.119426707296109
+        },
+        {
+            "collisions": 58561136,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:pgm_hash_eps128_epsrec128:uniform",
+            "tot_time_s": 3.807728142574297
+        },
+        {
+            "collisions": 86627937,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:MultFibonacciPrime64:gap_10",
+            "tot_time_s": 2.2565162303141912
+        },
+        {
+            "collisions": 63214375,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:murmur_finalizer64:gap_10",
+            "tot_time_s": 2.186286835733541
+        },
+        {
+            "collisions": 58716785,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:pgm_hash_eps100000_epsrec100000:uniform",
+            "tot_time_s": 3.6343989890874595
+        },
+        {
+            "collisions": 69416184,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_1000000:fb",
+            "tot_time_s": 2.118397925213188
+        },
+        {
+            "collisions": 63439642,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:radix_spline_err4_rbits18:osm",
+            "tot_time_s": 3.3888954613236204
+        },
+        {
+            "collisions": 74055165,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:radix_spline_err100000_rbits18:fb",
+            "tot_time_s": 2.1669962044443216
+        },
+        {
+            "collisions": 74094386,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_10:fb",
+            "tot_time_s": 2.1187670164130683
+        },
+        {
+            "collisions": 73826933,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_10000:fb",
+            "tot_time_s": 2.112091523108857
+        },
+        {
+            "collisions": 78243996,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:radix_spline_err1024_rbits18:osm",
+            "tot_time_s": 2.5567970921565903
+        },
+        {
+            "collisions": 63062663,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_10000000:fb",
+            "tot_time_s": 2.1274739092353148
+        },
+        {
+            "collisions": 72573983,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_100000:fb",
+            "tot_time_s": 2.110757360107401
+        },
+        {
+            "collisions": 74081922,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_100:fb",
+            "tot_time_s": 2.115268616241483
+        },
+        {
+            "collisions": 69664912,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:radix_spline_err16_rbits18:osm",
+            "tot_time_s": 3.0623519182647905
+        },
+        {
+            "collisions": 74399962,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:pgm_hash_eps1024_epsrec1024:fb",
+            "tot_time_s": 3.704778928155686
+        },
+        {
+            "collisions": 27485256,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:radix_spline_err128_rbits18:wiki",
+            "tot_time_s": 2.260324572141683
+        },
+        {
+            "collisions": 70046817,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:pgm_hash_eps32_epsrec32:fb",
+            "tot_time_s": 4.612144975617284
+        },
+        {
+            "collisions": 55425531,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:rmi_hash_100000000:fb",
+            "tot_time_s": 2.1626462802946835
+        },
+        {
+            "collisions": 85552545,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_1000:osm",
+            "tot_time_s": 2.436921499248257
+        },
+        {
+            "collisions": 96630630,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_2:osm",
+            "tot_time_s": 2.4367217913366157
+        },
+        {
+            "collisions": 58397378,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:pgm_hash_eps2_epsrec2:fb",
+            "tot_time_s": 6.105595464888763
+        },
+        {
+            "collisions": 26530482,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:radix_spline_err4_rbits18:wiki",
+            "tot_time_s": 2.6750253700715176
+        },
+        {
+            "collisions": 28578341,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:radix_spline_err1024_rbits18:wiki",
+            "tot_time_s": 2.25779577411412
+        },
+        {
+            "collisions": 74258531,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:pgm_hash_eps100000_epsrec100000:fb",
+            "tot_time_s": 3.3890962245523713
+        },
+        {
+            "collisions": 78219668,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_1000000:osm",
+            "tot_time_s": 2.4325363251929897
+        },
+        {
+            "collisions": 63211574,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:aqua0_64:gap_10",
+            "tot_time_s": 2.1884746667310027
+        },
+        {
+            "collisions": 98993045,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:MultHash64:gap_10",
+            "tot_time_s": 2.2434335625482547
+        },
+        {
+            "collisions": 82652077,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_10000:osm",
+            "tot_time_s": 2.4296984392623084
+        },
+        {
+            "collisions": 94828099,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_10:osm",
+            "tot_time_s": 2.434819664085632
+        },
+        {
+            "collisions": 72946049,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:pgm_hash_eps128_epsrec128:fb",
+            "tot_time_s": 4.740118090163303
+        },
+        {
+            "collisions": 27100034,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:radix_spline_err16_rbits18:wiki",
+            "tot_time_s": 2.3201555582685174
+        },
+        {
+            "collisions": 84281970,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:radix_spline_err100000_rbits18:osm",
+            "tot_time_s": 2.4940352427583776
+        },
+        {
+            "collisions": 62297834,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:radix_spline_err128_rbits18:normal",
+            "tot_time_s": 2.4531303188722626
+        },
+        {
+            "collisions": 75320022,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_10000000:osm",
+            "tot_time_s": 2.4367058861861395
+        },
+        {
+            "collisions": 80389267,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_100000:osm",
+            "tot_time_s": 2.428186947018973
+        },
+        {
+            "collisions": 89078731,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_100:osm",
+            "tot_time_s": 2.4286046302321633
+        },
+        {
+            "collisions": 62307554,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:radix_spline_err1024_rbits18:normal",
+            "tot_time_s": 2.4522048803985825
+        },
+        {
+            "collisions": 61299523,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:radix_spline_err4_rbits18:normal",
+            "tot_time_s": 2.8661590735990097
+        },
+        {
+            "collisions": 80037786,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:pgm_hash_eps1024_epsrec1024:osm",
+            "tot_time_s": 5.486417074923717
+        },
+        {
+            "collisions": 71737359,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:rmi_hash_100000000:osm",
+            "tot_time_s": 2.4427029093762895
+        },
+        {
+            "collisions": 29550982,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_1000:wiki",
+            "tot_time_s": 2.2038349725680635
+        },
+        {
+            "collisions": 88726909,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_2:wiki",
+            "tot_time_s": 2.202202103598264
+        },
+        {
+            "collisions": 74381364,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:pgm_hash_eps32_epsrec32:osm",
+            "tot_time_s": 6.661754927712353
+        },
+        {
+            "collisions": 62247225,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:radix_spline_err16_rbits18:normal",
+            "tot_time_s": 2.489762149213135
+        },
+        {
+            "collisions": 27181180,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_1000000:wiki",
+            "tot_time_s": 2.200072499469864
+        },
+        {
+            "collisions": 58765487,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:MultFibonacciPrime64:uniform",
+            "tot_time_s": 2.1101626947308567
+        },
+        {
+            "collisions": 59081916,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:murmur_finalizer64:uniform",
+            "tot_time_s": 2.0411210028948266
+        },
+        {
+            "collisions": 29289310,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_10000:wiki",
+            "tot_time_s": 2.1969866354720375
+        },
+        {
+            "collisions": 38906374,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_10:wiki",
+            "tot_time_s": 2.1953760104702265
+        },
+        {
+            "collisions": 65291588,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:pgm_hash_eps2_epsrec2:osm",
+            "tot_time_s": 7.744558823822632
+        },
+        {
+            "collisions": 85584641,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:pgm_hash_eps100000_epsrec100000:osm",
+            "tot_time_s": 4.043743813304301
+        },
+        {
+            "collisions": 26471751,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_10000000:wiki",
+            "tot_time_s": 2.203627328501366
+        },
+        {
+            "collisions": 27673725,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_100000:wiki",
+            "tot_time_s": 2.194492946389303
+        },
+        {
+            "collisions": 29825866,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_100:wiki",
+            "tot_time_s": 2.1965947104589176
+        },
+        {
+            "collisions": 29760475,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:radix_spline_err100000_rbits18:wiki",
+            "tot_time_s": 2.254236434255408
+        },
+        {
+            "collisions": 30004892,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:BitMWHC:seq",
+            "tot_time_s": 17.053420678738267
+        },
+        {
+            "collisions": 77039402,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:pgm_hash_eps128_epsrec128:osm",
+            "tot_time_s": 5.567783930713357
+        },
+        {
+            "collisions": 24469970,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:rmi_hash_100000000:wiki",
+            "tot_time_s": 2.1990054203519445
+        },
+        {
+            "collisions": 62304520,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_1000:normal",
+            "tot_time_s": 2.4026410523191406
+        },
+        {
+            "collisions": 75404644,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_2:normal",
+            "tot_time_s": 2.4005951251148567
+        },
+        {
+            "collisions": 29390925,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:pgm_hash_eps1024_epsrec1024:wiki",
+            "tot_time_s": 3.849482951054913
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:MWHC:seq",
+            "tot_time_s": 19.933970316998202
+        },
+        {
+            "collisions": 62109181,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_1000000:normal",
+            "tot_time_s": 2.400556405060131
+        },
+        {
+            "collisions": 59077620,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:aqua0_64:uniform",
+            "tot_time_s": 2.0448232075497206
+        },
+        {
+            "collisions": 62303798,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_10000:normal",
+            "tot_time_s": 2.392529914086713
+        },
+        {
+            "collisions": 62919656,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_10:normal",
+            "tot_time_s": 2.400820009107096
+        },
+        {
+            "collisions": 58945224,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:MultHash64:uniform",
+            "tot_time_s": 2.0951628880422373
+        },
+        {
+            "collisions": 26668696,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:pgm_hash_eps2_epsrec2:wiki",
+            "tot_time_s": 5.412962813111017
+        },
+        {
+            "collisions": 27420510,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:pgm_hash_eps32_epsrec32:wiki",
+            "tot_time_s": 4.5723984169079035
+        },
+        {
+            "collisions": 27592348,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:pgm_hash_eps100000_epsrec100000:wiki",
+            "tot_time_s": 3.537165557847934
+        },
+        {
+            "collisions": 60213420,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_10000000:normal",
+            "tot_time_s": 2.4098947809076816
+        },
+        {
+            "collisions": 62286089,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_100000:normal",
+            "tot_time_s": 2.3911222101280876
+        },
+        {
+            "collisions": 62307736,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_100:normal",
+            "tot_time_s": 2.397006073258571
+        },
+        {
+            "collisions": 62404620,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:radix_spline_err100000_rbits18:normal",
+            "tot_time_s": 2.453496269966219
+        },
+        {
+            "collisions": 52793222,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:rmi_hash_100000000:normal",
+            "tot_time_s": 2.450516564340511
+        },
+        {
+            "collisions": 27801560,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:pgm_hash_eps128_epsrec128:wiki",
+            "tot_time_s": 4.839985099745087
+        },
+        {
+            "collisions": 62318625,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:pgm_hash_eps1024_epsrec1024:normal",
+            "tot_time_s": 3.988263361293009
+        },
+        {
+            "collisions": 54934152,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:MultFibonacciPrime64:fb",
+            "tot_time_s": 1.9623548233722437
+        },
+        {
+            "collisions": 63211353,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:xxh3_64:gap_10",
+            "tot_time_s": 2.253663329307178
+        },
+        {
+            "collisions": 54977124,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:murmur_finalizer64:fb",
+            "tot_time_s": 1.908160663014115
+        },
+        {
+            "collisions": 62140091,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:pgm_hash_eps2_epsrec2:normal",
+            "tot_time_s": 5.876612031329638
+        },
+        {
+            "collisions": 62630362,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:pgm_hash_eps100000_epsrec100000:normal",
+            "tot_time_s": 3.8460700774855927
+        },
+        {
+            "collisions": 62449117,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:pgm_hash_eps32_epsrec32:normal",
+            "tot_time_s": 4.989050367204471
+        },
+        {
+            "collisions": 54987459,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:aqua0_64:fb",
+            "tot_time_s": 1.9020346674705497
+        },
+        {
+            "collisions": 54933107,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:MultHash64:fb",
+            "tot_time_s": 1.9503074937971923
+        },
+        {
+            "collisions": 62340495,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:pgm_hash_eps128_epsrec128:normal",
+            "tot_time_s": 5.200379035483273
+        },
+        {
+            "collisions": 98166483,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:MultFibonacciPrime64:osm",
+            "tot_time_s": 2.239480280643331
+        },
+        {
+            "collisions": 63206326,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:murmur_finalizer64:osm",
+            "tot_time_s": 2.171311105771449
+        },
+        {
+            "collisions": 63216645,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:aqua0_64:osm",
+            "tot_time_s": 2.1681223129134706
+        },
+        {
+            "collisions": 98168094,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:MultHash64:osm",
+            "tot_time_s": 2.224805013657193
+        },
+        {
+            "collisions": 37688260,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:MultFibonacciPrime64:wiki",
+            "tot_time_s": 2.0218615300848253
+        },
+        {
+            "collisions": 57162742,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:murmur_finalizer64:wiki",
+            "tot_time_s": 1.963167493738219
+        },
+        {
+            "collisions": 57156564,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:aqua0_64:wiki",
+            "tot_time_s": 1.9615736449026684
+        },
+        {
+            "collisions": 45675010,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:MultHash64:wiki",
+            "tot_time_s": 2.0109518511979356
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:MWHC:gap_10",
+            "tot_time_s": 19.03764006663704
+        },
+        {
+            "collisions": 62312936,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:MultFibonacciPrime64:normal",
+            "tot_time_s": 2.2031963565492423
+        },
+        {
+            "collisions": 62306207,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:murmur_finalizer64:normal",
+            "tot_time_s": 2.1375884827594467
+        },
+        {
+            "collisions": 59081393,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:xxh3_64:uniform",
+            "tot_time_s": 2.085690964857994
+        },
+        {
+            "collisions": 62300475,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:aqua0_64:normal",
+            "tot_time_s": 2.1382771569105796
+        },
+        {
+            "collisions": 62308207,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:MultHash64:normal",
+            "tot_time_s": 2.191487510547892
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:MWHC:uniform",
+            "tot_time_s": 17.40041814529399
+        },
+        {
+            "collisions": 54982002,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:xxh3_64:fb",
+            "tot_time_s": 1.8742395151350737
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:MWHC:fb",
+            "tot_time_s": 16.00253504733932
+        },
+        {
+            "collisions": 63208648,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:xxh3_64:osm",
+            "tot_time_s": 2.1554044161083197
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:MWHC:osm",
+            "tot_time_s": 18.538717376693253
+        },
+        {
+            "collisions": 57175130,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:xxh3_64:wiki",
+            "tot_time_s": 1.9482009041592427
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:MWHC:wiki",
+            "tot_time_s": 16.810039778617305
+        },
+        {
+            "collisions": 62308496,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:xxh3_64:normal",
+            "tot_time_s": 2.124178168094806
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:MWHC:normal",
+            "tot_time_s": 18.403499440330755
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 100000000,
+            "dataset_name": "seq",
+            "label": "Collisions:RecSplit_leaf12_bucket9:seq",
+            "tot_time_s": 18.72876676925189
+        },
+        {
+            "collisions": 30002552,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:BitMWHC:gap_10",
+            "tot_time_s": 12.940671413787706
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 100000000,
+            "dataset_name": "gap_10",
+            "label": "Collisions:RecSplit_leaf12_bucket9:gap_10",
+            "tot_time_s": 18.720168614286532
+        },
+        {
+            "collisions": 28043358,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:BitMWHC:uniform",
+            "tot_time_s": 11.77781990298244
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 93467925,
+            "dataset_name": "uniform",
+            "label": "Collisions:RecSplit_leaf12_bucket9:uniform",
+            "tot_time_s": 16.951492098822502
+        },
+        {
+            "collisions": 26094976,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:BitMWHC:fb",
+            "tot_time_s": 10.54572112672727
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 86976116,
+            "dataset_name": "fb",
+            "label": "Collisions:RecSplit_leaf12_bucket9:fb",
+            "tot_time_s": 15.205839322174521
+        },
+        {
+            "collisions": 30006490,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:BitMWHC:osm",
+            "tot_time_s": 12.929988751723872
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 99998340,
+            "dataset_name": "osm",
+            "label": "Collisions:RecSplit_leaf12_bucket9:osm",
+            "tot_time_s": 18.66744075910962
+        },
+        {
+            "collisions": 27136856,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:BitMWHC:wiki",
+            "tot_time_s": 11.228969052393937
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 90437012,
+            "dataset_name": "wiki",
+            "label": "Collisions:RecSplit_leaf12_bucket9:wiki",
+            "tot_time_s": 16.104934539097258
+        },
+        {
+            "collisions": 29571562,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:BitMWHC:normal",
+            "tot_time_s": 12.71224194593794
+        },
+        {
+            "collisions": 0,
+            "data_elem_count": 98569191,
+            "dataset_name": "normal",
+            "label": "Collisions:RecSplit_leaf12_bucket9:normal",
+            "tot_time_s": 18.387424966540326
+        }
+    ],
+    "context": {
+        "date": "2023-09-21T10:43:24+00:00",
+        "executable": "cmake-build-release/src/benchmarks",
+        "host_name": "5abb54f62609",
+        "num_cpus": 24
+    }
+}
