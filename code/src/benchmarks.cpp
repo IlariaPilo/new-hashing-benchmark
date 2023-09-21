@@ -110,6 +110,13 @@ int main(int argc, char* argv[]) {
     dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
     std::cout << "done!" << std::endl << std::endl;
 
+    for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
+        if (ds.get_ds().size() != ds.get_size()) {
+            // Throw a runtime exception
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
+        }
+    }
+
     // Benchmark array definition
     std::vector<bm::BMtype<Data,Key>> bm_list = {
         // RMI

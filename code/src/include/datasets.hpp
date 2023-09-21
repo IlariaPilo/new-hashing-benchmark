@@ -307,7 +307,8 @@ template <class Data = std::uint64_t>
 class Dataset {
   public:
     Dataset(ID id, size_t dataset_size, std::string dataset_directory = "") : id(id) {
-      ds = load_cached<Data>(id, dataset_size, dataset_directory);
+      std::cout << "C"+std::to_string(static_cast<int>(id))+"\n";
+      this->ds = load_cached<Data>(id, dataset_size, dataset_directory);
       this->dataset_size = ds.size();
     }
     ID get_id() const {
@@ -321,17 +322,22 @@ class Dataset {
     }
     // Default constructor
     Dataset() :
-        id(ID::COUNT), dataset_size(0), ds(nullptr) {
+        id(ID::COUNT), dataset_size(0) {
+      std::cout << "CD"+std::to_string(static_cast<int>(id))+"\n";
+      ds.clear();
     }
     // Destructor
     ~Dataset() {
+      std::cout << "D"+std::to_string(static_cast<int>(id))+"\n";
     }
     // Copy constructor
     Dataset(const Dataset& other) : 
         id(other.id), dataset_size(other.dataset_size), ds(other.ds) {
+          std::cout << "CC"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
     }
     // Copy assignment operator
     Dataset& operator=(const Dataset& other) {
+      std::cout << "CA"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
       if (this != &other) { // Check for self-assignment
         id = other.id;
         dataset_size = other.dataset_size;
@@ -341,10 +347,12 @@ class Dataset {
     }
     // Move constructor
     Dataset(Dataset&& other) noexcept : 
-        id(std::move(other.id)), dataset_size(std::move(other.dataset_size)), ds(std::move(other.ds)) {
+        id(other.id), dataset_size(other.dataset_size), ds(std::move(other.ds)) {
+          std::cout << "MC"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
     }
     // Move assignment operator
     Dataset& operator=(Dataset&& other) noexcept {
+      std::cout << "MA"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
       if (this != &other) {  // Check for self-assignment
         id = other.id;
         dataset_size = other.dataset_size;
@@ -364,11 +372,10 @@ class Dataset {
 template <class Data = std::uint64_t>
 class CollectionDS {
 public:
-    CollectionDS(size_t dataset_size, std::string dataset_directory, size_t thread_num) {
+    CollectionDS(size_t dataset_size, std::string dataset_directory, size_t thread_num) : collection(ID_COUNT){
       // remove useless threads
       if (thread_num > ID_COUNT)
           thread_num = ID_COUNT;
-      collection.reserve(ID_COUNT);
       // start parallel computation
       #pragma omp parallel num_threads(thread_num)
       {
@@ -385,7 +392,7 @@ public:
           for (auto id : ids) {
             // put the object into the array
             int i = static_cast<int>(id);
-            collection.emplace(collection.begin() + i, id, dataset_size, dataset_directory);
+            collection[i] = Dataset<Data>(id, dataset_size, dataset_directory);
           }
       }
     }
