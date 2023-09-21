@@ -15,7 +15,7 @@
     std::string input_dir = "";
     std::string output_dir = "";
     size_t threads;
-    std::string filter = "";
+    std::string filter = "all";
 /* ========================= */
 
 // Function to print the usage information
@@ -25,7 +25,8 @@ void show_usage() {
     std::cout << "  -i, --input INPUT_DIR     Directory storing the datasets" << std::endl;
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
-    std::cout << "  -f, --filter FILTER       Type of benchmarks to execute (default: all)" << std::endl;
+    std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
+    std::cout << "                            Options = collisions,gaps,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -83,6 +84,27 @@ int pars_args(const int& argc, char* const* const& argv) {
     return 0;
 }
 
+int load_bm_list(std::vector<bm::BMtype<Data,Key>>& bm_list, const std::vector<bm::BMtype<Data,Key>>& collision_bm,
+        const bm::BMtype<Data,Key>& gap_bm /*TODO - add more*/) {
+    std::stringstream ss(filter);
+    std::string part;
+    
+    while (std::getline(ss, part, ',')) {
+        if (part == "collision" || part == "collisions" || part == "all") {
+            for (const bm::BMtype<Data,Key>& bm : collision_bm) {
+                bm_list.push_back(bm);
+            }
+            if (part != "all") break;
+        }
+        if (part == "gap" || part == "gaps" || part == "all") {
+            bm_list.push_back(gap_bm);
+            if (part != "all") break;
+        }
+        // if we are here, the filter is unknown
+        std::cout << "\033[1;93m [warning]\033[0m filter " << part << "is unknown." << std::endl;
+    }
+}
+
 int main(int argc, char* argv[]) {
     // get thread number
     threads = sysconf(_SC_NPROCESSORS_ONLN);
@@ -117,10 +139,10 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Benchmark array definition
-    std::vector<bm::BMtype<Data,Key>> bm_list = {
-        &bm::gap_stats<RMIHash_1M,Data,Key> /*,
-        // ------------- collisions ------------- //
+    // Benchmark arrays definition
+    std::vector<bm::BMtype<Data,Key>> bm_list;
+    // ------------- collisions ------------- //
+    std::vector<bm::BMtype<Data,Key>> collision_bm = {
         // RMI
         &bm::collision_stats<RMIHash_2,Data,Key>,
         &bm::collision_stats<RMIHash_10,Data,Key>,
@@ -152,8 +174,15 @@ int main(int argc, char* argv[]) {
         // Perfect
         &bm::collision_stats<MWHC,Data,Key>,
         &bm::collision_stats<BitMWHC,Data,Key>,
-        &bm::collision_stats<RecSplit,Data,Key> */
+        &bm::collision_stats<RecSplit,Data,Key>
     };
+    // ---------------- gaps ---------------- //
+    bm::BMtype<Data,Key> gap_bm = &bm::gap_stats<RMIHash_1M,Data,Key>;
+
+
+
+
+
 
     // Run!
     std::cout << "Begin benchmarking... " << std::endl;
