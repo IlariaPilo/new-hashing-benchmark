@@ -87,9 +87,11 @@ int pars_args(const int& argc, char* const* const& argv) {
 void load_bm_list(std::vector<bm::BMtype<Data,Key>>& bm_list, const std::vector<bm::BMtype<Data,Key>>& collision_bm,
         const bm::BMtype<Data,Key>& gap_bm /*TODO - add more*/) {
     std::string part;
-    size_t pos = 0;
-    while ((pos = filter.find(",")) != std::string::npos) {
-        part = filter.substr(0, pos);
+    size_t start;
+    size_t end = 0;
+    while ((start = filter.find_first_not_of(',', end)) != std::string::npos) {
+        end = filter.find(',', start);
+        part = filter.substr(start, end-start);
         if (part == "collision" || part == "collisions" || part == "all") {
             for (const bm::BMtype<Data,Key>& bm : collision_bm) {
                 bm_list.push_back(bm);
@@ -102,7 +104,6 @@ void load_bm_list(std::vector<bm::BMtype<Data,Key>>& bm_list, const std::vector<
         }
         // if we are here, the filter is unknown
         std::cout << "\033[1;93m [warning]\033[0m filter " << part << " is unknown." << std::endl;
-        filter.erase(0, pos + 1);
     }
 }
 
