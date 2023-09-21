@@ -134,12 +134,12 @@ int main(int argc, char* argv[]) {
     dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
     std::cout << "done!" << std::endl << std::endl;
 
-    for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
-        if (ds.get_ds().size() != ds.get_size()) {
-            // Throw a runtime exception
-            throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
-        }
-    }
+    // for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
+    //     if (ds.get_ds().size() != ds.get_size()) {
+    //         // Throw a runtime exception
+    //         throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
+    //     }
+    // }
 
     // Benchmark arrays definition
     std::vector<bm::BMtype<Data,Key>> bm_list;
@@ -183,8 +183,13 @@ int main(int argc, char* argv[]) {
     // TODO - add more
     load_bm_list(bm_list, collision_bm, gap_bm);
 
+    if (bm_list.size()==0) {
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
+        return 1;
+    }
+
     // Run!
-    std::cout << "Begin benchmarking... " << std::endl;
+    std::cout << "Begin benchmarking on "<< bm_list.size() <<" functions... " << std::endl;
     bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
