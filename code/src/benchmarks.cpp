@@ -178,11 +178,8 @@ int main(int argc, char* argv[]) {
     };
     // ---------------- gaps ---------------- //
     bm::BMtype<Data,Key> gap_bm = &bm::gap_stats<RMIHash_1M,Data,Key>;
-
-
-
-
-
+    // TODO - add more
+    load_bm_list(bm_list, collision_bm, gap_bm);
 
     // Run!
     std::cout << "Begin benchmarking... " << std::endl;
