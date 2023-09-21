@@ -34,7 +34,7 @@ namespace bm {
         int start = past_mod_threads*(div+1) + past_threads*div;
         int end = start+slice;
 
-        std::cout << "Thread " + std::to_string(threadID) + ": [" + std::to_string(start) + ", " + std::to_string(end) + ")\n";
+        // std::cout << "Thread " + std::to_string(threadID) + ": [" + std::to_string(start) + ", " + std::to_string(end) + ")\n";
 
         /* Create the vector */
         std::vector<BMtype<Data,Key>> output;
@@ -59,6 +59,8 @@ namespace bm {
             auto slice = get_bm_slice(threadID, thread_num, bm_list);
             // for each ds
             const std::vector<dataset::Dataset<Data>>& all_ds = collection.get_collection();
+            for (size_t i=0; i<all_ds.size(); i++)
+                std::cout << "[" + std::to_string(threadID) + "]--> " + dataset::name(all_ds[i].get_id()) + ", " + std::to_string(all_ds[i].get_size()) + "\n";
             for (const dataset::Dataset<Data>& ds : all_ds) {
                 // for each function
                 for (BMtype<Data,Key> bm : slice) {

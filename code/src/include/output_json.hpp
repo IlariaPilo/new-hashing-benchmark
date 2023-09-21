@@ -12,6 +12,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <omp.h>
 
 #include <nlohmann/json.hpp>
 
@@ -52,7 +53,11 @@ public:
 
     void add_data(const json& obj) {
         // Add a JSON object to the array
-        json_output["benchmarks"].push_back(obj);
+        #pragma omp critical
+        {
+            json_output["benchmarks"].push_back(obj);            
+        }
+
     }
 
 private:
