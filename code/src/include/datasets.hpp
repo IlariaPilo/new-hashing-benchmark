@@ -231,7 +231,6 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
           ds[i] = ds_osm[j]-pow(2,62);
           i++;
         }
-        // std::cout<<" j is: "<<j<<" i is: "<<i<<std::endl;
       break;
     }
     case ID::WIKI: {
@@ -247,8 +246,7 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
       for (; j < ds_wiki.size() && i < ds.size(); j++) {
         ds[i] = ds_wiki[j];
         i++;
-      }  
-      // std::cout<<" j is: "<<j<<" i is: "<<i<<std::endl;
+      }
       break;
     }
     default:
@@ -307,7 +305,6 @@ template <class Data = std::uint64_t>
 class Dataset {
   public:
     Dataset(ID id, size_t dataset_size, std::string dataset_directory = "") : id(id) {
-      std::cout << "C"+std::to_string(static_cast<int>(id))+"\n";
       this->ds = load_cached<Data>(id, dataset_size, dataset_directory);
       this->dataset_size = ds.size();
     }
@@ -323,21 +320,17 @@ class Dataset {
     // Default constructor
     Dataset() :
         id(ID::COUNT), dataset_size(0) {
-      std::cout << "CD"+std::to_string(static_cast<int>(id))+"\n";
       ds.clear();
     }
     // Destructor
     ~Dataset() {
-      std::cout << "D"+std::to_string(static_cast<int>(id))+"\n";
     }
     // Copy constructor
     Dataset(const Dataset& other) : 
         id(other.id), dataset_size(other.dataset_size), ds(other.ds) {
-          std::cout << "CC"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
     }
     // Copy assignment operator
     Dataset& operator=(const Dataset& other) {
-      std::cout << "CA"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
       if (this != &other) { // Check for self-assignment
         id = other.id;
         dataset_size = other.dataset_size;
@@ -348,11 +341,9 @@ class Dataset {
     // Move constructor
     Dataset(Dataset&& other) noexcept : 
         id(other.id), dataset_size(other.dataset_size), ds(std::move(other.ds)) {
-          std::cout << "MC"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
     }
     // Move assignment operator
     Dataset& operator=(Dataset&& other) noexcept {
-      std::cout << "MA"+std::to_string(static_cast<int>(id))+"->" +std::to_string(static_cast<int>(other.id))+"\n";
       if (this != &other) {  // Check for self-assignment
         id = other.id;
         dataset_size = other.dataset_size;
@@ -381,13 +372,6 @@ public:
       {
           int threadID = omp_get_thread_num();
           std::vector<ID> ids = get_id_slice(threadID, thread_num);
-
-          // std::string ss = "Thread " + std::to_string(threadID) + ": ";
-          // for (auto id : ids) {
-          //     ss += (std::to_string(static_cast<int>(id)) + " ");       
-          // }
-          // ss += "\n";
-          // std::cout << ss;
 
           for (auto id : ids) {
             // put the object into the array

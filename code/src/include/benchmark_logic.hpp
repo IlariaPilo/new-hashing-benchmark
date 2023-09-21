@@ -34,8 +34,6 @@ namespace bm {
         int start = past_mod_threads*(div+1) + past_threads*div;
         int end = start+slice;
 
-        // std::cout << "Thread " + std::to_string(threadID) + ": [" + std::to_string(start) + ", " + std::to_string(end) + ")\n";
-
         /* Create the vector */
         std::vector<BMtype<Data,Key>> output;
         output.resize(slice);
@@ -61,7 +59,6 @@ namespace bm {
             for (int i=0; i<dataset::ID_COUNT; i++) {
                 // get the ds
                 const dataset::Dataset<Data>& ds = collection.get_ds(i);
-                std::cout << "[" + std::to_string(threadID) + "]--> " + dataset::name(ds.get_id()) + ", " + std::to_string(ds.get_ds().size()) + "\n";
                 // for each function
                 for (BMtype<Data,Key> bm : slice) {
                     // run the function
@@ -83,12 +80,6 @@ namespace bm {
 
         HashFn fn;
         const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
-
-        if (ds.size() != dataset_size) {
-            int threadID = omp_get_thread_num();
-            // Throw a runtime exception
-            throw std::runtime_error("\033[1;91mAssertion failed [" + std::to_string(threadID) + "]\033[0m ds.size()==dataset_size\n           In --> " + label + "\n           [ds.size()] " + std::to_string(ds.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
-        }
    
         // ensure keys are sorted
         // std::sort(keys.begin(), keys.end(),
