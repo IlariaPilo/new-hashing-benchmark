@@ -150,8 +150,8 @@ def collisions_rmi(df):
     # ticks
     uni_tick_labels = [f"$10^{int(tick)}$" for tick in uni_ticks]
     normal_tick_labels = [f"$10^{int(tick)}$" for tick in normal_ticks]
-    axes[0].set_xticks(uni_ticks, uni_tick_labels)
-    axes[1].set_xticks(normal_ticks, normal_tick_labels)    
+    axes[0].set_xticks(uni_ticks[1::2], uni_tick_labels[1::2])
+    axes[1].set_xticks(normal_ticks[1::2], normal_tick_labels[1::2])    
     
     axes[0].set_title('uniform')
     axes[1].set_title('normal')
