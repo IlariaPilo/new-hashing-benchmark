@@ -85,8 +85,9 @@ namespace bm {
         const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
 
         if (ds.size() != dataset_size) {
+            int threadID = omp_get_thread_num();
             // Throw a runtime exception
-            throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + label + "\n           [ds.size()] " + std::to_string(ds.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+            throw std::runtime_error("\033[1;91mAssertion failed [" + std::to_string(threadID) + "]\033[0m ds.size()==dataset_size\n           In --> " + label + "\n           [ds.size()] " + std::to_string(ds.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
    
         // ensure keys are sorted
