@@ -393,6 +393,9 @@ public:
       int i = static_cast<int>(id);
       return collection[i];
     }
+    const Dataset<Data>& get_ds(int i) {
+      return collection[i];
+    }
     const std::vector<Dataset<Data>>& get_collection() {
       return collection;
     }

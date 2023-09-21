@@ -58,10 +58,10 @@ namespace bm {
             // get slice of benchmarks
             auto slice = get_bm_slice(threadID, thread_num, bm_list);
             // for each ds
-            const std::vector<dataset::Dataset<Data>>& all_ds = collection.get_collection();
-            for (size_t i=0; i<all_ds.size(); i++)
-                std::cout << "[" + std::to_string(threadID) + "]--> " + dataset::name(all_ds[i].get_id()) + ", " + std::to_string(all_ds[i].get_size()) + "\n";
-            for (const dataset::Dataset<Data>& ds : all_ds) {
+            for (int i=0; i<dataset::ID_COUNT; i++) {
+                // get the ds
+                const dataset::Dataset<Data>& ds = collection.get_ds(i);
+                std::cout << "[" + std::to_string(threadID) + "]--> " + dataset::name(ds.get_id()) + ", " + std::to_string(ds.get_size()) + "\n";
                 // for each function
                 for (BMtype<Data,Key> bm : slice) {
                     // run the function
