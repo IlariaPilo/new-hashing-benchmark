@@ -61,7 +61,7 @@ namespace bm {
             for (int i=0; i<dataset::ID_COUNT; i++) {
                 // get the ds
                 const dataset::Dataset<Data>& ds = collection.get_ds(i);
-                std::cout << "[" + std::to_string(threadID) + "]--> " + dataset::name(ds.get_id()) + ", " + std::to_string(ds.get_size()) + "\n";
+                std::cout << "[" + std::to_string(threadID) + "]--> " + dataset::name(ds.get_id()) + ", " + std::to_string(ds.get_ds().size()) + "\n";
                 // for each function
                 for (BMtype<Data,Key> bm : slice) {
                     // run the function
