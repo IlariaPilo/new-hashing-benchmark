@@ -240,7 +240,7 @@ namespace bm {
                 max_diff = diff;
         }
         // Count the discretized differences
-        std::vector<int> count(max_diff, 0);
+        std::vector<int> count(max_diff+1, 0);
         for (int diff : differences) {
             count[diff]++;
         }

@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl << "\033[1;96m===================== \033[0m" << std::endl;
     std::cout << "\033[1;96m= hashing-benchmark = \033[0m" << std::endl;
     std::cout << "\033[1;96m===================== \033[0m" << std::endl;
-    std::cout << "Running on " << threads << " threads." << std::endl << std::endl;
+    std::cout << "Running on " << threads << " thread" << (threads>1? "s.":".") << std::endl << std::endl;
 
     // Create a JsonWriter instance (for the output file)
     JsonOutput writer(output_dir, argv[0]);
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Run!
-    std::cout << "Begin benchmarking on "<< bm_list.size() <<" functions... " << std::endl;
+    std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
     bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
