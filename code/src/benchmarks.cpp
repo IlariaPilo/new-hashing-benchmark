@@ -10,6 +10,13 @@
 #include "include/function_aliases.hpp"
 
 #define MAX_SIZE 100000000      // 10^8, 100M
+#include <cstdint>
+
+#include "include/output_json.hpp"
+#include "include/benchmark_logic.hpp"
+#include "include/function_aliases.hpp"
+
+#define MAX_SIZE 100000000      // 10^8, 100M
 
 /* ======== options ======== */
     std::string input_dir = "";
