@@ -10,13 +10,6 @@
 #include "include/function_aliases.hpp"
 
 #define MAX_SIZE 100000000      // 10^8, 100M
-#include <cstdint>
-
-#include "include/output_json.hpp"
-#include "include/benchmark_logic.hpp"
-#include "include/function_aliases.hpp"
-
-#define MAX_SIZE 100000000      // 10^8, 100M
 
 /* ======== options ======== */
     std::string input_dir = "";
@@ -103,11 +96,11 @@ void load_bm_list(std::vector<bm::BMtype<Data,Key>>& bm_list, const std::vector<
             for (const bm::BMtype<Data,Key>& bm : collision_bm) {
                 bm_list.push_back(bm);
             }
-            if (part != "all") break;
+            if (part != "all") continue;
         }
         if (part == "gap" || part == "gaps" || part == "all") {
             bm_list.push_back(gap_bm);
-            if (part != "all") break;
+            if (part != "all") continue;
         }
         // if we are here, the filter is unknown
         std::cout << "\033[1;93m [warning]\033[0m filter " << part << " is unknown." << std::endl;
@@ -134,7 +127,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Running on " << threads << " thread" << (threads>1? "s.":".") << std::endl << std::endl;
 
     // Create a JsonWriter instance (for the output file)
-    JsonOutput writer(output_dir, argv[0]);
+    JsonOutput writer(output_dir, argv[0], filter);
     
     // Create the collection of datasets
     std::cout << "Starting dataset loading procedure... ";

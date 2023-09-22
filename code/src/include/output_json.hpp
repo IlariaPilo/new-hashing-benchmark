@@ -21,15 +21,17 @@ using json = nlohmann::json;
 
 class JsonOutput {
 public:
-    JsonOutput(const std::string& file_directory, const std::string& arg0, const std::string& filter = "") {
+    JsonOutput(const std::string& file_directory, const std::string& arg0, std::string filter = "") {
         // first, get current time
         std::time_t current_time = std::time(nullptr);
         std::tm* local_time = std::localtime(&current_time);
         // Format the date and time as "YYYY-MM-DD-HH-MM"
         std::stringstream ss;
         ss << std::put_time(local_time, "%Y-%m-%d-%H-%M");
+        // format the filter
+        std::replace(filter.begin(), filter.end(), ',', '-');
         // define filename
-        std::string filename = file_directory + "/" + ss.str() + filter + "_results.json";
+        std::string filename = file_directory + "/" + filter + ss.str() + ".json";
 
         // Open the JSON file for writing
         output_file.open(filename);
