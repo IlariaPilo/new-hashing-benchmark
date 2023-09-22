@@ -196,7 +196,7 @@ namespace bm {
 
         // stores the list of hash values (keys)
         std::vector<Key> keys;
-        keys.resize(dataset_size, 0);
+        keys.reserve(dataset_size);
 
         HashCategories type = get_fn_type<HashFn>();
         if (type == HashCategories::UNKNOWN) {
@@ -229,6 +229,9 @@ namespace bm {
 
         // now, sort keys
         std::sort(keys.begin(), keys.end());
+        // TODO -remove
+        std::cout << "Keys: [" << keys[0] << ", " << keys[keys.size()-1] << "]" << std::endl;
+
         // compute differences
         std::vector<int> differences;
         for (size_t i = 1; i < keys.size(); i++) {
@@ -239,7 +242,7 @@ namespace bm {
         auto max_diff = std::max_element(differences.begin(), differences.end());
 
         //TODO - remove
-        std::cout << *max_diff << std::endl;
+        std::cout << "Max diff:" << *max_diff << std::endl;
 
         // Count the discretized differences
         std::vector<int> count(*max_diff, 0);
