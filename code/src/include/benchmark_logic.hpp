@@ -229,32 +229,32 @@ namespace bm {
 
         // now, sort keys
         std::sort(keys.begin(), keys.end());
-        // TODO -remove
-        std::cout << "Keys: [" << keys[0] << ", " << keys[keys.size()-1] << "]" << std::endl;
 
         // compute differences
         std::vector<int> differences;
+        int max_diff = 0;
         for (size_t i = 1; i < keys.size(); i++) {
             int diff = keys[i] - keys[i - 1];
             differences.push_back(diff);
+            if (diff > max_diff)
+                max_diff = diff;
         }
-        // find the maximum
-        auto max_diff = std::max_element(differences.begin(), differences.end());
-
-        //TODO - remove
-        std::cout << "Max diff:" << *max_diff << std::endl;
-
         // Count the discretized differences
-        std::vector<int> count(*max_diff, 0);
+        std::vector<int> count(max_diff, 0);
         for (int diff : differences) {
             count[diff]++;
+        }
+        // Convert the std::vector to a JSON array
+        json count_json = json::array();
+        for (const int& c : count) {
+            count_json.push_back(c);
         }
 
         json benchmark;
 
         benchmark["data_elem_count"] = dataset_size;
         benchmark["dataset_name"] = dataset_name;
-        benchmark["count"] = count;
+        benchmark["count"] = count_json;
         benchmark["label"] = label; 
         std::cout << label + "\n";
         writer.add_data(benchmark);
