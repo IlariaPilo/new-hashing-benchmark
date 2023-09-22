@@ -227,11 +227,30 @@ namespace bm {
             keys.push_back(index);
         }
 
+        // now, sort keys
+        std::sort(keys.begin(), keys.end());
+        // compute and discretize differences (8 for each unit)
+        std::vector<int> diff_by_8;
+        for (size_t i = 1; i < keys.size(); i++) {
+            int diff = keys[i] - keys[i - 1];
+            int discretized_diff = diff * 8;
+            diff_by_8.push_back(discretized_diff);
+        }
+        // find the maximum
+        auto max_diff = std::max_element(diff_by_8.begin(), diff_by_8.end());
+
+        // Count the discretized differences
+        std::vector<int> count_by_8(*max_diff, 0);
+        for (int diff : diff_by_8) {
+            count_by_8[diff]++;
+        }
+
         json benchmark;
 
         benchmark["data_elem_count"] = dataset_size;
         benchmark["dataset_name"] = dataset_name;
-        benchmark["keys"] = keys;
+        benchmark["count_by_8"] = count_by_8;
+        benchmark["hint"] = "Divide the index of the count array by 8 to get the real gap value.";
         benchmark["label"] = label; 
         std::cout << label + "\n";
         writer.add_data(benchmark);
