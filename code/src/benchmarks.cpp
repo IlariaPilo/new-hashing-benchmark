@@ -7,9 +7,7 @@
 
 #include "include/output_json.hpp"
 #include "include/benchmark_logic.hpp"
-#include "include/function_aliases.hpp"
-
-#define MAX_SIZE 100000000      // 10^8, 100M
+#include "include/configs.hpp"
 
 /* ======== options ======== */
     std::string input_dir = "";
@@ -84,8 +82,8 @@ int pars_args(const int& argc, char* const* const& argv) {
     return 0;
 }
 
-void load_bm_list(std::vector<bm::BMtype<Data,Key>>& bm_list, const std::vector<bm::BMtype<Data,Key>>& collision_bm,
-        const bm::BMtype<Data,Key>& gap_bm /*TODO - add more*/) {
+void load_bm_list(std::vector<bm::BMtype>& bm_list, const std::vector<bm::BMtype>& collision_bm,
+        const bm::BMtype& gap_bm /*TODO - add more*/) {
     std::string part;
     size_t start;
     size_t end = 0;
@@ -93,7 +91,7 @@ void load_bm_list(std::vector<bm::BMtype<Data,Key>>& bm_list, const std::vector<
         end = filter.find(',', start);
         part = filter.substr(start, end-start);
         if (part == "collision" || part == "collisions" || part == "all") {
-            for (const bm::BMtype<Data,Key>& bm : collision_bm) {
+            for (const bm::BMtype& bm : collision_bm) {
                 bm_list.push_back(bm);
             }
             if (part != "all") continue;
@@ -142,44 +140,44 @@ int main(int argc, char* argv[]) {
     // }
 
     // Benchmark arrays definition
-    std::vector<bm::BMtype<Data,Key>> bm_list;
+    std::vector<bm::BMtype> bm_list;
     // ------------- collisions ------------- //
-    std::vector<bm::BMtype<Data,Key>> collision_bm = {
+    std::vector<bm::BMtype> collision_bm = {
         // RMI
-        &bm::collision_stats<RMIHash_2,Data,Key>,
-        &bm::collision_stats<RMIHash_10,Data,Key>,
-        &bm::collision_stats<RMIHash_100,Data,Key>,
-        &bm::collision_stats<RMIHash_1k,Data,Key>,
-        &bm::collision_stats<RMIHash_10k,Data,Key>,
-        &bm::collision_stats<RMIHash_100k,Data,Key>,
-        &bm::collision_stats<RMIHash_1M,Data,Key>,
-        &bm::collision_stats<RMIHash_10M,Data,Key>,
-        &bm::collision_stats<RMIHash_100M,Data,Key>,
+        &bm::collision_stats<RMIHash_2>,
+        &bm::collision_stats<RMIHash_10>,
+        &bm::collision_stats<RMIHash_100>,
+        &bm::collision_stats<RMIHash_1k>,
+        &bm::collision_stats<RMIHash_10k>,
+        &bm::collision_stats<RMIHash_100k>,
+        &bm::collision_stats<RMIHash_1M>,
+        &bm::collision_stats<RMIHash_10M>,
+        &bm::collision_stats<RMIHash_100M>,
         // RadixSpline
-        &bm::collision_stats<RadixSplineHash_4,Data,Key>,
-        &bm::collision_stats<RadixSplineHash_16,Data,Key>,
-        &bm::collision_stats<RadixSplineHash_128,Data,Key>,
-        &bm::collision_stats<RadixSplineHash_1k,Data,Key>,
-        &bm::collision_stats<RadixSplineHash_100k,Data,Key>,
+        &bm::collision_stats<RadixSplineHash_4>,
+        &bm::collision_stats<RadixSplineHash_16>,
+        &bm::collision_stats<RadixSplineHash_128>,
+        &bm::collision_stats<RadixSplineHash_1k>,
+        &bm::collision_stats<RadixSplineHash_100k>,
         // PGM
-        &bm::collision_stats<PGMHash_2,Data,Key>,
-        &bm::collision_stats<PGMHash_32,Data,Key>,
-        &bm::collision_stats<PGMHash_100,Data,Key>,
-        &bm::collision_stats<PGMHash_1k,Data,Key>,
-        &bm::collision_stats<PGMHash_100k,Data,Key>,
+        &bm::collision_stats<PGMHash_2>,
+        &bm::collision_stats<PGMHash_32>,
+        &bm::collision_stats<PGMHash_100>,
+        &bm::collision_stats<PGMHash_1k>,
+        &bm::collision_stats<PGMHash_100k>,
         // Classic
-        &bm::collision_stats<MURMUR,Data,Key>,
-        &bm::collision_stats<MultPrime64,Data,Key>,
-        &bm::collision_stats<FibonacciPrime64,Data,Key>,
-        &bm::collision_stats<AquaHash,Data,Key>,
-        &bm::collision_stats<XXHash3,Data,Key>,
+        &bm::collision_stats<MURMUR>,
+        &bm::collision_stats<MultPrime64>,
+        &bm::collision_stats<FibonacciPrime64>,
+        &bm::collision_stats<AquaHash>,
+        &bm::collision_stats<XXHash3>,
         // Perfect
-        &bm::collision_stats<MWHC,Data,Key>,
-        &bm::collision_stats<BitMWHC,Data,Key>,
-        &bm::collision_stats<RecSplit,Data,Key>
+        &bm::collision_stats<MWHC>,
+        &bm::collision_stats<BitMWHC>,
+        &bm::collision_stats<RecSplit>
     };
     // ---------------- gaps ---------------- //
-    bm::BMtype<Data,Key> gap_bm = &bm::gap_stats<RMIHash_1M,Data,Key>;
+    bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
     // TODO - add more
     load_bm_list(bm_list, collision_bm, gap_bm);
 
@@ -190,7 +188,7 @@ int main(int argc, char* argv[]) {
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms<Data,Key>(bm_list, threads, collection, writer, MAX_SIZE);
+    bm::run_bms(bm_list, threads, collection, writer, MAX_SIZE);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;

@@ -5,6 +5,16 @@
 #include <learned_hashing.hpp>
 #include <hashing.hpp>
 #include <exotic_hashing.hpp>
+// Tables
+#include <hashtable.hpp>
+
+// ********************* CONFIGS ********************* //
+
+#define MAX_SIZE 100000000      // 10^8, 100M
+// Bias chance that element is kicked from second bucket in percent (i.e., value of 10 -> 10%)
+#define KICK_BIAS_CHANCE 5
+
+// ********************* DATA TYPES ********************* //
 
 // Data - the size of every database entry
 using Data = std::uint64_t;
@@ -13,7 +23,7 @@ using Key = std::uint64_t;
 // Payload - the value associated to the Data
 using Payload = std::uint64_t;
 
-// Aliases definition
+// ********************* HASH FUNCTIONS ********************* //
 using RMIHash_2 = learned_hashing::RMIHash<std::uint64_t, 2>;
 using RMIHash_10 = learned_hashing::RMIHash<std::uint64_t, 10>;
 using RMIHash_100 = learned_hashing::RMIHash<std::uint64_t, 100>;
@@ -44,3 +54,18 @@ using XXHash3 = hashing::XXHash3<Key>;
 using MWHC = exotic_hashing::MWHC<Key>;
 using BitMWHC = exotic_hashing::BitMWHC<Key>;
 using RecSplit = exotic_hashing::RecSplit<std::uint64_t>;
+
+
+// ********************* HASH TABLES ********************* //
+using ReductionFn = hashing::reduction::DoNothing<Key>;
+using FastModulo = hashing::reduction::FastModulo<Key>;
+
+template <class HashFn>
+using ChainedTable = hashtable::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, ReductionFn>;
+
+template <class HashFn>
+using LinearTable = hashtable::Probing<Key, Payload, HashFn, ReductionFn, hashtable::LinearProbingFunc /*BucketSize = 1 by default*/>;
+
+template <class HashFn>
+using CuckooHashing = hashtable::Cuckoo<Key, Payload, 4 /*BucketSize*/, HashFn, XXHash3, ReductionFn, FastModulo, 
+    hashtable::BiasedKicking<KICK_BIAS_CHANCE>>;
