@@ -38,3 +38,30 @@ bash setup_datasets.sh <input_dir>
 ```
 where `<input_dir>` refers to the directory that will store the required datasets.
 
+## 2 | Run the experiments
+### Compile and run
+To compile the code, simply run:
+```sh
+cd code
+bash build.sh
+```
+The executable file is called `cmake-build-release/src/benchmarks`, and it can be used as follows:
+```
+./benchmarks [ARGS]
+Arguments:
+  -i, --input INPUT_DIR     Directory storing the datasets
+  -o, --output OUTPUT_DIR   Directory that will store the output
+  -t, --threads THREADS     Number of threads to use (default: all)
+  -f, --filter FILTER       Type of benchmark to execute, *comma-separated*
+                            Options = collisions,gaps,all (default: all) 
+  -h, --help                Display this help message
+```
+Results are saved in the specified output directory.
+### Benchmark types
+Notice that the numbers in the parenthesis refer to the experiment number in the article.
+- _collisions_ : compute the throughput/collisions tradeoff for different hash functions on different datasets [7.2]
+- _gaps_ : compute the gap distribution of various datasets [7.1-datasets]
+<!-- TODO add more -->
+
+## 3 | Process the results
+

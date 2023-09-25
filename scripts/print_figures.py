@@ -8,6 +8,9 @@ import re
 from math import log10
 
 plt.rcParams['figure.constrained_layout.use'] = True
+# ax.grid(which='major', color=, linewidth=0
+plt.rcParams['grid.color'] = '#DDDDDD'
+plt.rcParams['grid.linewidth'] = 0.8
 
 # =============================== SETUP =============================== #
 
@@ -107,7 +110,7 @@ def collisions(df):
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
-    fig, axes = plt.subplots(1, num_subplots, figsize=(23, 2.5))  # Adjust figsize as needed
+    fig, axes = plt.subplots(1, num_subplots, figsize=(10, 2))  # Adjust figsize as needed
     
     # Create a single legend for all subplots
     legend_labels = []
@@ -137,7 +140,7 @@ def collisions(df):
         ax.grid(True)
     
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.33))
+    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.28))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Hash Computation Throughput (Million operations/s)')
@@ -194,7 +197,7 @@ def gaps(df):
     df = df[df["label"].str.lower().str.contains("gaps")].copy(deep=True)
     if df.empty:
         return
-    fig = plt.figure(figsize=(5, 3.5))
+    fig = plt.figure(figsize=(4, 3))
     datasets = df['dataset_name'].unique()
     for _d_ in datasets:
         if _d_ == 'seq':
@@ -210,7 +213,7 @@ def gaps(df):
     plt.xlabel('Gap value')
     plt.ylabel('Count')
     plt.grid(True)
-    fig.legend(loc='center right') #, bbox_to_anchor=(0.5, 1.33))
+    fig.legend(loc='upper right', bbox_to_anchor=(0.995, 0.945))
     fig.savefig(f'{prefix}_gaps.png')
 
 
