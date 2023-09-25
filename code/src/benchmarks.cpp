@@ -190,7 +190,7 @@ int main(int argc, char* argv[]) {
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms<Data,Key>(bm_list, threads, collection, writer);
+    bm::run_bms<Data,Key>(bm_list, threads, collection, writer, MAX_SIZE);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;

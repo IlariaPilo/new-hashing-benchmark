@@ -3,6 +3,7 @@
 #include <vector>
 #include <omp.h>
 #include <cstdint>
+#include <random>
 
 #include "hash_categories.hpp"
 #include "output_json.hpp"
@@ -12,6 +13,28 @@ namespace bm {
     // bm function pointer type
     template <class Data = std::uint64_t, class Key = std::uint64_t>
     using BMtype = void(*)(const dataset::Dataset<Data>&, JsonOutput&);
+
+    // ----------------- utility things ----------------- //
+    std::vector<int> order_insert; // will store all values from 0 to N-1
+    std::vector<int> order_probe;  // will store uniformly sampled values from 0 to N-1
+
+    void generate_insert_order(size_t N = 100000000) {
+        order_insert.clear();
+        for (size_t i = 0; i < N; ++i) {
+            order_insert.push_back(i);
+        }
+        std::random_shuffle(order_insert.begin(), order_insert.end());
+    }
+    void generate_probe_order(size_t N = 100000000) {
+        order_probe.clear();
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> distribution(0, N-1);
+        for (size_t i = 0; i < N; ++i) {
+            int random_value = distribution(gen);
+            order_probe.push_back(random_value);
+        }
+    }
 
     template <class Data = std::uint64_t, class Key = std::uint64_t>
     std::vector<BMtype<Data,Key>> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype<Data,Key>>& bm_list) {
@@ -45,10 +68,13 @@ namespace bm {
     // thread utility
     template <class Data = std::uint64_t, class Key = std::uint64_t>
     void run_bms(std::vector<BMtype<Data,Key>>& bm_list, 
-            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
+            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer, size_t N = 100000000) {
         // first of all, check thread compatibility
         if (thread_num > bm_list.size())
             thread_num = bm_list.size();
+        // initialize arrays to keep things sorted
+        generate_insert_order(N);
+        generate_probe_order(N);
         // begin parallel computation
         #pragma omp parallel num_threads(thread_num)
         {
@@ -71,7 +97,7 @@ namespace bm {
 
     // ----------------- benchmarks list ----------------- //
     // collision
-    template <class HashFn = std::uint64_t, class Data = std::uint64_t, class Key = std::uint64_t>
+    template <class HashFn, class Data = std::uint64_t, class Key = std::uint64_t>
     void collision_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
@@ -110,7 +136,7 @@ namespace bm {
         }
 
         // ====================== collision counters ====================== //
-        size_t index;
+        Key index;
         std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
         std::chrono::duration<double> tot_time(0);
         size_t collisions_count = 0;
@@ -165,8 +191,8 @@ namespace bm {
         writer.add_data(benchmark);
     }
 
-    // collision
-    template <class HashFn = std::uint64_t, class Data = std::uint64_t, class Key = std::uint64_t>
+    // gaps
+    template <class HashFn, class Data = std::uint64_t, class Key = std::uint64_t>
     void gap_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
@@ -259,4 +285,77 @@ namespace bm {
         std::cout << label + "\n";
         writer.add_data(benchmark);
     }
+
+    // probe throughput HIDDEN
+    template <class HashTable, class HashFn, class Data = std::uint64_t, class Key = std::uint64_t, class Payload = std::uint64_t>
+    void _probe_throughput_(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, const size_t& load_perc) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
+
+        // Compute capacity given the laod% and the dataset_size
+        sitze_t capacity = load_perc*dataset_size/100;
+
+        // first, setup the hash function if necessary
+        HashFn fn;
+        // LEARNED FN
+        if constexpr (has_train_method<HashFn>::value) {
+            // train model on sorted data
+            fn.train(ds.begin(), ds.end(), capacity);
+        }
+        // PERFECT FN
+        if constexpr (has_construct_method<HashFn>::value) {
+            // construct perfect hash table
+            fn.construct(ds.begin(), ds.end());
+        }
+        // now, create the table
+        HashTable /*<Key,Payload,HashFn>*/ table(capacity, fn /*fn2 if cuckoo*/);
+
+        const std::string label = "Probe:" + table.name + ":" + fn.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
+
+        // Build the table
+        Payload count = 0;
+        for (int i : order_insert) {
+            // check if the index exists
+            if (i < dataset_size) {
+                // get the data
+                Data data = ds[i];
+                // get the key
+                Key k = fn(data) % capacity;
+                table.insert(k, count);
+                count++;
+            }
+        }
+        // ====================== throughput counters ====================== //
+        std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
+        std::chrono::duration<double> tot_time(0);
+        size_t probe_count = 0;
+        // ================================================================ //
+
+        for (int i : order_probe) {
+            // check if the index exists
+            if (i < dataset_size) {
+                // get the data
+                Data data = ds[i];
+                _start_ = std::chrono::steady_clock::now();
+                // get the key
+                Key k = fn(data) % capacity;
+                /*std::optional<Payload> payload = */ table.lookup(k);
+                _end_ = std::chrono::steady_clock::now();
+                probe_count++;
+            }
+        }
+        json benchmark;
+
+        benchmark["data_elem_count"] = dataset_size;
+        benchmark["probe_elem_count"] = probe_count;
+        benchmark["tot_time_s"] = tot_time.count();
+        benchmark["load_factor_%"] = load_perc;
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["label"] = label; 
+        std::cout << label + "\n";
+        writer.add_data(benchmark);
+    }
+
 }
