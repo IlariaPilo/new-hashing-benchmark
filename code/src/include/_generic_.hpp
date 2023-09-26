@@ -91,12 +91,9 @@ namespace _generic_ {
         public:
             GenericTable(size_t capacity, const std::vector<Data>& ds_fn = {}) {
                 // initialize function
-                std::cout << "Start function init... ";
                 fn.init(capacity, ds_fn);
-                std::cout << "done\nStart table init...";
                 // initialize table
                 table = new HashTable(capacity, fn);
-                std::cout << "done\n";
             }
             // Destructor to clean up dynamically allocated memory
             ~GenericTable() {

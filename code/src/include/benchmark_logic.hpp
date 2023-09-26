@@ -230,7 +230,7 @@ namespace bm {
         const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
         // Build the table
-        std::cout << "Start building table... ";
+        // std::cout << "Start building table... ";
         Payload count = 0;
         for (int i : order_insert) {
             // check if the index exists
@@ -239,18 +239,18 @@ namespace bm {
                 Data data = ds[i];
                 table.insert(data, count);
                 count++;
-                if (count % 10000000 == 1)
-                    std::cout << "Done " << count << " inserts.\n";
+                // if (count % 10000000 == 1)
+                //     std::cout << "Done " << count << " inserts.\n";
             }
         }
-        std::cout << "done\n";
+        // std::cout << "done\n";
         // ====================== throughput counters ====================== //
         std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
         std::chrono::duration<double> tot_time(0);
         size_t probe_count = 0;
         // ================================================================ //
 
-        std::cout << "Start benchmarking... ";
+        // std::cout << "Start benchmarking... ";
         for (int i : order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -259,12 +259,13 @@ namespace bm {
                 _start_ = std::chrono::steady_clock::now();
                 /*std::optional<Payload> payload = */ table.lookup(data);
                 _end_ = std::chrono::steady_clock::now();
+                tot_time += _end_ - _start_;
                 probe_count++;
-                if (probe_count % 10000000 == 1)
-                    std::cout << "Done " << probe_count << " lookups.\n";
+                // if (probe_count % 10000000 == 1)
+                //     std::cout << "Done " << probe_count << " lookups.\n";
             }
         }
-        std::cout << "done\n";
+        // std::cout << "done\n";
         json benchmark;
 
         benchmark["data_elem_count"] = dataset_size;
