@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <random>
 
-#include "generic_function.hpp"
+#include "_generic_.hpp"
 #include "output_json.hpp"
 #include "datasets.hpp"
 #include "configs.hpp"
@@ -224,57 +224,49 @@ namespace bm {
 
         // Compute capacity given the laod% and the dataset_size
         size_t capacity = dataset_size*100/load_perc;
-
-        // first, setup the hash function if necessary
-        _generic_::GenericFn<HashFn> fn(capacity, ds);
         
-        // // now, create the table
-        // HashTable /*<Key,Payload,HashFn>*/ table(capacity, fn /*fn2 if cuckoo*/);
+        // now, create the table
+        _generic_::GenericTable<HashTable,HashFn> table(capacity, ds);
+        const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
-        // const std::string label = "Probe:" + table.name + ":" + fn.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
+        // Build the table
+        Payload count = 0;
+        for (int i : order_insert) {
+            // check if the index exists
+            if (i < (int)dataset_size) {
+                // get the data
+                Data data = ds[i];
+                table.insert(data, count);
+                count++;
+            }
+        }
+        // ====================== throughput counters ====================== //
+        std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
+        std::chrono::duration<double> tot_time(0);
+        size_t probe_count = 0;
+        // ================================================================ //
 
-        // // Build the table
-        // Payload count = 0;
-        // for (int i : order_insert) {
-        //     // check if the index exists
-        //     if (i < dataset_size) {
-        //         // get the data
-        //         Data data = ds[i];
-        //         // get the key
-        //         Key k = fn(data);
-        //         table.insert(k, count);
-        //         count++;
-        //     }
-        // }
-        // // ====================== throughput counters ====================== //
-        // std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
-        // std::chrono::duration<double> tot_time(0);
-        // size_t probe_count = 0;
-        // // ================================================================ //
+        for (int i : order_probe) {
+            // check if the index exists
+            if (i < (int)dataset_size) {
+                // get the data
+                Data data = ds[i];
+                _start_ = std::chrono::steady_clock::now();
+                /*std::optional<Payload> payload = */ table.lookup(data);
+                _end_ = std::chrono::steady_clock::now();
+                probe_count++;
+            }
+        }
+        json benchmark;
 
-        // for (int i : order_probe) {
-        //     // check if the index exists
-        //     if (i < dataset_size) {
-        //         // get the data
-        //         Data data = ds[i];
-        //         _start_ = std::chrono::steady_clock::now();
-        //         // get the key
-        //         Key k = fn(data);
-        //         /*std::optional<Payload> payload = */ table.lookup(k);
-        //         _end_ = std::chrono::steady_clock::now();
-        //         probe_count++;
-        //     }
-        // }
-        // json benchmark;
-
-        // benchmark["data_elem_count"] = dataset_size;
-        // benchmark["probe_elem_count"] = probe_count;
-        // benchmark["tot_time_s"] = tot_time.count();
-        // benchmark["load_factor_%"] = load_perc;
-        // benchmark["dataset_name"] = dataset_name;
-        // benchmark["label"] = label; 
-        // std::cout << label + "\n";
-        // writer.add_data(benchmark);
+        benchmark["data_elem_count"] = dataset_size;
+        benchmark["probe_elem_count"] = probe_count;
+        benchmark["tot_time_s"] = tot_time.count();
+        benchmark["load_factor_%"] = load_perc;
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["label"] = label; 
+        std::cout << label + "\n";
+        writer.add_data(benchmark);
     }
 
 }

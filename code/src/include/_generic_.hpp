@@ -4,7 +4,7 @@
 
 #include "configs.hpp"
 
-// generic_function.hpp - a file storing a wrapper for a generic hash function
+// _generic_.hpp - a file storing a wrapper for a generic hash function and a generic hash table
 namespace _generic_ {
     // Define a helper type trait to check if 'train' member function exists with the desired signature
     // Thanks to https://blog.quasar.ai/2015/04/12/sfinae-hell-detecting-template-methods
@@ -44,8 +44,25 @@ namespace _generic_ {
     template <class HashFn>
     class GenericFn {
         public:
+            GenericFn() : max_value(0) {};
             GenericFn(size_t max_value, const std::vector<Data>& ds = {}) : max_value(max_value) {
                 // check if HashFn requires initialization
+                // LEARNED FN
+                if constexpr (has_train_method<HashFn>::value) {
+                    // train model on sorted data
+                    fn.train(ds.begin(), ds.end(), max_value);
+                }
+                // PERFECT FN
+                if constexpr (has_construct_method<HashFn>::value) {
+                    // construct perfect hash table
+                    fn.construct(ds.begin(), ds.end());
+                }
+            }
+            void init(size_t max_value, const std::vector<Data>& ds = {}) {
+                if (this->max_value != 0)
+                    // no init needed
+                    return;
+                this->max_value = max_value;
                 // LEARNED FN
                 if constexpr (has_train_method<HashFn>::value) {
                     // train model on sorted data
@@ -63,10 +80,41 @@ namespace _generic_ {
             std::string name() {
                 return fn.name();
             }
+            HashFn& get_fn() {
+                return fn;
+            }
 
         private:
             size_t max_value;
             HashFn fn;
+    };
+
+    template <class HashTable, class HashFn>
+    class GenericTable {
+        public:
+            GenericTable(size_t capacity, const std::vector<Data>& ds_fn = {}) {
+                // initialize function
+                fn.init(capacity, ds_fn);
+                // initialize table
+                table = new HashTable(capacity, fn.get_fn());
+            }
+            // Destructor to clean up dynamically allocated memory
+            ~GenericTable() {
+                delete table;
+            }
+            void insert(const Data& data, const Payload& value) {
+                table->insert(fn(data), value);
+            }
+            std::optional<Payload> lookup(const Data& data) const {
+                return table->lookup(fn(data));
+            }
+            std::string name() {
+                return table->name();
+            }
+
+        private:
+            HashTable* table;
+            GenericFn<HashFn> fn;
     };
 }
 
