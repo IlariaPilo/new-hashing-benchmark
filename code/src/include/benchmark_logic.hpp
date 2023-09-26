@@ -239,6 +239,8 @@ namespace bm {
                 Data data = ds[i];
                 table.insert(data, count);
                 count++;
+                if (count % 10000000 == 1)
+                    std::cout << "Done " << count << " inserts.\n";
             }
         }
         std::cout << "done\n";
@@ -258,6 +260,8 @@ namespace bm {
                 /*std::optional<Payload> payload = */ table.lookup(data);
                 _end_ = std::chrono::steady_clock::now();
                 probe_count++;
+                if (probe_count % 10000000 == 1)
+                    std::cout << "Done " << probe_count << " lookups.\n";
             }
         }
         std::cout << "done\n";

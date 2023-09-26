@@ -87,21 +87,21 @@ void dilate_bm_list(std::vector<bm::BMtype>& probe_bm_out) {
     // Chained
     for (size_t load_perc : chained_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_throughput<HashFn, ChainedTable<HashFn>>(ds_obj, writer, load_perc);
+            bm::probe_throughput<HashFn, ChainedTable<_generic_::GenericFn<HashFn>>>(ds_obj, writer, load_perc);
         };
         probe_bm_out.push_back(lambda);
     }
     // Linear
     for (size_t load_perc : linear_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_throughput<HashFn, LinearTable<HashFn>>(ds_obj, writer, load_perc);
+            bm::probe_throughput<HashFn, LinearTable<_generic_::GenericFn<HashFn>>>(ds_obj, writer, load_perc);
         };
         probe_bm_out.push_back(lambda);
     }
     // Cuckoo
     for (size_t load_perc : linear_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_throughput<HashFn, CuckooTable<HashFn>>(ds_obj, writer, load_perc);
+            bm::probe_throughput<HashFn, CuckooTable<_generic_::GenericFn<HashFn>>>(ds_obj, writer, load_perc);
         };
         probe_bm_out.push_back(lambda);
     }
@@ -211,8 +211,8 @@ int main(int argc, char* argv[]) {
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
     // ---------------- probe --------------- //
     std::vector<bm::BMtype> probe_bm = {};
-    dilate_bm_list<RMIHash_1M>(probe_bm);
-    dilate_bm_list<RadixSplineHash_16>(probe_bm);
+    dilate_bm_list<RMIHash_1k>(probe_bm);
+    dilate_bm_list<RadixSplineHash_1k>(probe_bm);
     dilate_bm_list<PGMHash_1k>(probe_bm);
     dilate_bm_list<MURMUR>(probe_bm);
     dilate_bm_list<MultPrime64>(probe_bm);

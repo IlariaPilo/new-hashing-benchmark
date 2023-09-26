@@ -77,11 +77,8 @@ namespace _generic_ {
             Key operator()(const Data &data) const {
                 return fn(data) % this->max_value;
             }
-            std::string name() {
-                return fn.name();
-            }
-            HashFn& get_fn() {
-                return fn;
+            static std::string name() {
+                return HashFn::name();
             }
 
         private:
@@ -98,7 +95,7 @@ namespace _generic_ {
                 fn.init(capacity, ds_fn);
                 std::cout << "done\nStart table init...";
                 // initialize table
-                table = new HashTable(capacity, fn.get_fn());
+                table = new HashTable(capacity, fn);
                 std::cout << "done\n";
             }
             // Destructor to clean up dynamically allocated memory
@@ -111,8 +108,8 @@ namespace _generic_ {
             std::optional<Payload> lookup(const Data& data) const {
                 return table->lookup(fn(data));
             }
-            std::string name() {
-                return table->name();
+            static std::string name() {
+                return HashTable::name();
             }
 
         private:
