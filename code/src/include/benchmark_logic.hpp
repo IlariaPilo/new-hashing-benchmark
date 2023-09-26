@@ -21,11 +21,13 @@ namespace bm {
     std::vector<int> order_probe;  // will store uniformly sampled values from 0 to N-1
 
     void generate_insert_order(size_t N = 100000000) {
+        static std::random_device rd;
+        static std::default_random_engine rng(rd());
         order_insert.clear();
         for (size_t i = 0; i < N; ++i) {
             order_insert.push_back(i);
         }
-        std::random_shuffle(order_insert.begin(), order_insert.end());
+        std::shuffle(order_insert.begin(), order_insert.end(), rng);
     }
     void generate_probe_order(size_t N = 100000000) {
         order_probe.clear();
