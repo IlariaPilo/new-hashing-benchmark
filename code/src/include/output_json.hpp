@@ -27,7 +27,7 @@ public:
         std::tm* local_time = std::localtime(&current_time);
         // Format the date and time as "YYYY-MM-DD-HH-MM"
         std::stringstream ss;
-        ss << std::put_time(local_time, "%Y-%m-%d-%H-%M");
+        ss << std::put_time(local_time, "_%Y-%m-%d-%H-%M");
         // format the filter
         std::replace(filter.begin(), filter.end(), ',', '-');
         // define filename
