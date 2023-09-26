@@ -5,14 +5,16 @@
 #include <cstdint>
 #include <random>
 
-#include "hash_categories.hpp"
+#include "generic_function.hpp"
 #include "output_json.hpp"
 #include "datasets.hpp"
 #include "configs.hpp"
 
+// For a detailed description of the benchmarks, please consult the README of the project
+
 namespace bm {
     // bm function pointer type
-    using BMtype = void(*)(const dataset::Dataset<Data>&, JsonOutput&);
+    using BMtype = std::function<void(const dataset::Dataset<Data>&, JsonOutput&)>;
 
     // ----------------- utility things ----------------- //
     std::vector<int> order_insert; // will store all values from 0 to N-1
@@ -35,7 +37,6 @@ namespace bm {
             order_probe.push_back(random_value);
         }
     }
-
     std::vector<BMtype> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype>& bm_list) {
         int BM_COUNT = bm_list.size();
         int mod = BM_COUNT % thread_num;
@@ -64,15 +65,20 @@ namespace bm {
         return output;
     }
 
-    // thread utility
+    /**
+    The function that will run all selected benchmarks in parallel.
+    @param  bm_list the list of benchmarks that will be run
+    @param collection the list of datasets benchmarks will be run on
+    @param writer the object that handles the output json file 
+    */
     void run_bms(std::vector<BMtype>& bm_list, 
-            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer, size_t N = 100000000) {
+            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         // first of all, check thread compatibility
         if (thread_num > bm_list.size())
             thread_num = bm_list.size();
         // initialize arrays to keep things sorted
-        generate_insert_order(N);
-        generate_probe_order(N);
+        generate_insert_order(MAX_DS_SIZE);
+        generate_probe_order(MAX_DS_SIZE);
         // begin parallel computation
         #pragma omp parallel num_threads(thread_num)
         {
@@ -102,31 +108,14 @@ namespace bm {
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
 
-        HashFn fn;
+        _generic_::GenericFn<HashFn> fn(dataset_size, ds);
         const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
-
-        // LEARNED FN
-        if constexpr (has_train_method<HashFn>::value) {
-            // train model on sorted data
-            fn.train(ds.begin(), ds.end(), dataset_size);
-        }
-        // PERFECT FN
-        if constexpr (has_construct_method<HashFn>::value) {
-            // construct perfect hash table
-            fn.construct(ds.begin(), ds.end());
-        }
 
         // now, start counting collisions
 
         // stores the hash value (that is, the key) for each entry in the dataset
         std::vector<Key> keys_count;
         keys_count.resize(dataset_size, 0);
-
-        HashCategories type = get_fn_type<HashFn>();
-        if (type == HashCategories::UNKNOWN) {
-            std::cerr << "Error: Hash function type is unknown. Failed :c" << std::endl;
-            return;
-        }
 
         // ====================== collision counters ====================== //
         Key index;
@@ -137,27 +126,9 @@ namespace bm {
         // ================================================================ //
 
         for (auto data : ds) {
-            /* TODO - remove this useless logic as soon as the index is out of boundaries thing is fixed */
-            switch (type) {
-            case HashCategories::PERFECT:
-            case HashCategories::CLASSIC:
-                _start_ = std::chrono::steady_clock::now();
-                index = fn(data) % dataset_size;
-                _end_ = std::chrono::steady_clock::now();
-                break;
-            case HashCategories::LEARNED:
-                _start_ = std::chrono::steady_clock::now();
-                index = fn(data); // /dataset_size;
-                _end_ = std::chrono::steady_clock::now();
-                if (index >= dataset_size) {
-                    // Throw a runtime exception
-                    throw std::runtime_error("Hash is out of boundaries ("+std::to_string(index)+")");
-                }
-                break;
-            // to remove the warning
-            case HashCategories::UNKNOWN:
-                break;
-            }
+            _start_ = std::chrono::steady_clock::now();
+            index = fn(data);
+            _end_ = std::chrono::steady_clock::now();
             keys_count[index]++;
             tot_time += _end_ - _start_;
         }
@@ -192,19 +163,8 @@ namespace bm {
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
 
-        HashFn fn;
+        _generic_::GenericFn<HashFn> fn(dataset_size, ds);
         const std::string label = "Gaps:" + fn.name() + ":" + dataset_name;
-
-        // LEARNED FN
-        if constexpr (has_train_method<HashFn>::value) {
-            // train model on sorted data
-            fn.train(ds.begin(), ds.end(), dataset_size);
-        }
-        // PERFECT FN
-        if constexpr (has_construct_method<HashFn>::value) {
-            // construct perfect hash table
-            fn.construct(ds.begin(), ds.end());
-        }
 
         // now, start counting collisions
 
@@ -212,32 +172,10 @@ namespace bm {
         std::vector<Key> keys;
         keys.reserve(dataset_size);
 
-        HashCategories type = get_fn_type<HashFn>();
-        if (type == HashCategories::UNKNOWN) {
-            std::cerr << "Error: Hash function type is unknown. Failed :c" << std::endl;
-            return;
-        }
-
         size_t index;
 
         for (auto data : ds) {
-            /* TODO - remove this useless logic as soon as the index is out of boundaries thing is fixed */
-            switch (type) {
-            case HashCategories::PERFECT:
-            case HashCategories::CLASSIC:
-                index = fn(data) % dataset_size;
-                break;
-            case HashCategories::LEARNED:
-                index = fn(data); // /dataset_size;
-                if (index >= dataset_size) {
-                    // Throw a runtime exception
-                    throw std::runtime_error("Hash is out of boundaries ("+std::to_string(index)+")");
-                }
-                break;
-            // to remove the warning
-            case HashCategories::UNKNOWN:
-                break;
-            }
+            index = fn(data);
             keys.push_back(index);
         }
 
@@ -274,76 +212,67 @@ namespace bm {
         writer.add_data(benchmark);
     }
 
-    // // probe throughput HIDDEN
-    // template <class HashTable, class HashFn>
-    // void _probe_throughput_(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, const size_t& load_perc) {
-    //     // Extract variables
-    //     const size_t dataset_size = ds_obj.get_size();
-    //     const std::string dataset_name = dataset::name(ds_obj.get_id());
-    //     const std::vector<Data>& ds = ds_obj.get_ds();
+    // probe throughput
+    template <class HashFn, class HashTable>
+    void probe_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
 
-    //     // Compute capacity given the laod% and the dataset_size
-    //     sitze_t capacity = load_perc*dataset_size/100;
+        // Compute capacity given the laod% and the dataset_size
+        size_t capacity = dataset_size*100/load_perc;
 
-    //     // first, setup the hash function if necessary
-    //     HashFn fn;
-    //     // LEARNED FN
-    //     if constexpr (has_train_method<HashFn>::value) {
-    //         // train model on sorted data
-    //         fn.train(ds.begin(), ds.end(), capacity);
-    //     }
-    //     // PERFECT FN
-    //     if constexpr (has_construct_method<HashFn>::value) {
-    //         // construct perfect hash table
-    //         fn.construct(ds.begin(), ds.end());
-    //     }
-    //     // now, create the table
-    //     HashTable /*<Key,Payload,HashFn>*/ table(capacity, fn /*fn2 if cuckoo*/);
+        // first, setup the hash function if necessary
+        _generic_::GenericFn<HashFn> fn(capacity, ds);
+        
+        // // now, create the table
+        // HashTable /*<Key,Payload,HashFn>*/ table(capacity, fn /*fn2 if cuckoo*/);
 
-    //     const std::string label = "Probe:" + table.name + ":" + fn.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
+        // const std::string label = "Probe:" + table.name + ":" + fn.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
-    //     // Build the table
-    //     Payload count = 0;
-    //     for (int i : order_insert) {
-    //         // check if the index exists
-    //         if (i < dataset_size) {
-    //             // get the data
-    //             Data data = ds[i];
-    //             // get the key
-    //             Key k = fn(data) % capacity;
-    //             table.insert(k, count);
-    //             count++;
-    //         }
-    //     }
-    //     // ====================== throughput counters ====================== //
-    //     std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
-    //     std::chrono::duration<double> tot_time(0);
-    //     size_t probe_count = 0;
-    //     // ================================================================ //
+        // // Build the table
+        // Payload count = 0;
+        // for (int i : order_insert) {
+        //     // check if the index exists
+        //     if (i < dataset_size) {
+        //         // get the data
+        //         Data data = ds[i];
+        //         // get the key
+        //         Key k = fn(data);
+        //         table.insert(k, count);
+        //         count++;
+        //     }
+        // }
+        // // ====================== throughput counters ====================== //
+        // std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
+        // std::chrono::duration<double> tot_time(0);
+        // size_t probe_count = 0;
+        // // ================================================================ //
 
-    //     for (int i : order_probe) {
-    //         // check if the index exists
-    //         if (i < dataset_size) {
-    //             // get the data
-    //             Data data = ds[i];
-    //             _start_ = std::chrono::steady_clock::now();
-    //             // get the key
-    //             Key k = fn(data) % capacity;
-    //             /*std::optional<Payload> payload = */ table.lookup(k);
-    //             _end_ = std::chrono::steady_clock::now();
-    //             probe_count++;
-    //         }
-    //     }
-    //     json benchmark;
+        // for (int i : order_probe) {
+        //     // check if the index exists
+        //     if (i < dataset_size) {
+        //         // get the data
+        //         Data data = ds[i];
+        //         _start_ = std::chrono::steady_clock::now();
+        //         // get the key
+        //         Key k = fn(data);
+        //         /*std::optional<Payload> payload = */ table.lookup(k);
+        //         _end_ = std::chrono::steady_clock::now();
+        //         probe_count++;
+        //     }
+        // }
+        // json benchmark;
 
-    //     benchmark["data_elem_count"] = dataset_size;
-    //     benchmark["probe_elem_count"] = probe_count;
-    //     benchmark["tot_time_s"] = tot_time.count();
-    //     benchmark["load_factor_%"] = load_perc;
-    //     benchmark["dataset_name"] = dataset_name;
-    //     benchmark["label"] = label; 
-    //     std::cout << label + "\n";
-    //     writer.add_data(benchmark);
-    // }
+        // benchmark["data_elem_count"] = dataset_size;
+        // benchmark["probe_elem_count"] = probe_count;
+        // benchmark["tot_time_s"] = tot_time.count();
+        // benchmark["load_factor_%"] = load_perc;
+        // benchmark["dataset_name"] = dataset_name;
+        // benchmark["label"] = label; 
+        // std::cout << label + "\n";
+        // writer.add_data(benchmark);
+    }
 
 }

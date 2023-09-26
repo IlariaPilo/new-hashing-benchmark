@@ -24,7 +24,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -82,8 +82,33 @@ int pars_args(const int& argc, char* const* const& argv) {
     return 0;
 }
 
+template <class HashFn>
+void dilate_bm_list(std::vector<bm::BMtype>& probe_bm_out) {
+    // Chained
+    for (size_t load_perc : chained_lf) {
+        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, ChainedTable<HashFn>>(ds_obj, writer, load_perc);
+        };
+        probe_bm_out.push_back(lambda);
+    }
+    // Linear
+    for (size_t load_perc : linear_lf) {
+        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, LinearTable<HashFn>>(ds_obj, writer, load_perc);
+        };
+        probe_bm_out.push_back(lambda);
+    }
+    // Cuckoo
+    for (size_t load_perc : linear_lf) {
+        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, CuckooTable<HashFn>>(ds_obj, writer, load_perc);
+        };
+        probe_bm_out.push_back(lambda);
+    }
+}
+
 void load_bm_list(std::vector<bm::BMtype>& bm_list, const std::vector<bm::BMtype>& collision_bm,
-        const bm::BMtype& gap_bm /*TODO - add more*/) {
+        const bm::BMtype& gap_bm, const std::vector<bm::BMtype>& probe_bm /*TODO - add more*/) {
     std::string part;
     size_t start;
     size_t end = 0;
@@ -98,6 +123,12 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, const std::vector<bm::BMtype
         }
         if (part == "gap" || part == "gaps" || part == "all") {
             bm_list.push_back(gap_bm);
+            if (part != "all") continue;
+        }
+        if (part == "probe" || part == "all") {
+            for (const bm::BMtype& bm : probe_bm) {
+                bm_list.push_back(bm);
+            }
             if (part != "all") continue;
         }
         // if we are here, the filter is unknown
@@ -129,7 +160,7 @@ int main(int argc, char* argv[]) {
     
     // Create the collection of datasets
     std::cout << "Starting dataset loading procedure... ";
-    dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_SIZE), input_dir, threads);
+    dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_DS_SIZE), input_dir, threads);
     std::cout << "done!" << std::endl << std::endl;
 
     // for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
@@ -178,8 +209,17 @@ int main(int argc, char* argv[]) {
     };
     // ---------------- gaps ---------------- //
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
+    // ---------------- probe --------------- //
+    std::vector<bm::BMtype> probe_bm = {};
+    dilate_bm_list<RMIHash_1M>(probe_bm);
+    dilate_bm_list<RadixSplineHash_16>(probe_bm);
+    dilate_bm_list<PGMHash_1k>(probe_bm);
+    dilate_bm_list<MURMUR>(probe_bm);
+    dilate_bm_list<MultPrime64>(probe_bm);
+    dilate_bm_list<MWHC>(probe_bm);
     // TODO - add more
-    load_bm_list(bm_list, collision_bm, gap_bm);
+
+    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
@@ -188,7 +228,7 @@ int main(int argc, char* argv[]) {
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms(bm_list, threads, collection, writer, MAX_SIZE);
+    bm::run_bms(bm_list, threads, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;
