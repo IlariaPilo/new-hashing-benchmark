@@ -230,6 +230,7 @@ namespace bm {
         const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
         // Build the table
+        std::cout << "Start building table... ";
         Payload count = 0;
         for (int i : order_insert) {
             // check if the index exists
@@ -240,12 +241,14 @@ namespace bm {
                 count++;
             }
         }
+        std::cout << "done\n";
         // ====================== throughput counters ====================== //
         std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
         std::chrono::duration<double> tot_time(0);
         size_t probe_count = 0;
         // ================================================================ //
 
+        std::cout << "Start benchmarking... ";
         for (int i : order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -257,6 +260,7 @@ namespace bm {
                 probe_count++;
             }
         }
+        std::cout << "done\n";
         json benchmark;
 
         benchmark["data_elem_count"] = dataset_size;

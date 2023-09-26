@@ -73,7 +73,7 @@ template <class HashFn>
 using ChainedTable = hashtable::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, ReductionFn>;
 
 template <class HashFn>
-using LinearTable = hashtable::Probing<Key, Payload, HashFn, ReductionFn, hashtable::LinearProbingFunc /*BucketSize = 1 by default*/>;
+using LinearTable = hashtable::Probing<Key, Payload, HashFn, ReductionFn, hashtable::LinearProbingFunc, 10000 /*BucketSize = 1 by default*/>;
 
 template <class HashFn>
 using CuckooTable = hashtable::Cuckoo<Key, Payload, 4 /*BucketSize*/, HashFn, XXHash3, ReductionFn, FastModulo, 
