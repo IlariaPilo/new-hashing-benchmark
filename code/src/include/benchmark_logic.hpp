@@ -237,7 +237,10 @@ namespace bm {
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
-                table.insert(data, count);
+                bool done = table.insert(data, count);
+                if (!done) {
+                    throw std::runtime_error("\033[1;91mError\033[0m Table insertion failed\n           [data] " + std::to_string(data) + "\n           [count] " + std::to_string(count) + "\n           [label] " + label + "\n");
+                }
                 count++;
                 // if (count % 10000000 == 1)
                 //     std::cout << "Done " << count << " inserts.\n";

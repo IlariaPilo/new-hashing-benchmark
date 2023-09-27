@@ -41,66 +41,55 @@ namespace _generic_ {
         static const bool value = std::is_same<std::true_type, decltype(test<T, dummy>(nullptr))>::value;
     };
 
-    template <class HashFn>
+    template <class HashFn, class ReductionFn = FastModulo>
     class GenericFn {
         public:
-            GenericFn() : max_value(0) {};
-            GenericFn(size_t max_value, const std::vector<Data>& ds = {}) : max_value(max_value) {
-                // check if HashFn requires initialization
-                // LEARNED FN
-                if constexpr (has_train_method<HashFn>::value) {
-                    // train model on sorted data
-                    fn.train(ds.begin(), ds.end(), max_value);
-                }
-                // PERFECT FN
-                if constexpr (has_construct_method<HashFn>::value) {
-                    // construct perfect hash table
-                    fn.construct(ds.begin(), ds.end());
-                }
-            }
-            void init(size_t max_value, const std::vector<Data>& ds = {}) {
-                if (this->max_value != 0)
-                    // no init needed
-                    return;
-                this->max_value = max_value;
-                // LEARNED FN
-                if constexpr (has_train_method<HashFn>::value) {
-                    // train model on sorted data
-                    fn.train(ds.begin(), ds.end(), max_value);
-                }
-                // PERFECT FN
-                if constexpr (has_construct_method<HashFn>::value) {
-                    // construct perfect hash table
-                    fn.construct(ds.begin(), ds.end());
-                }
+            GenericFn(size_t max_value, const std::vector<Data>& ds = {}) : 
+                    max_value(max_value), reduction(ReductionFn(max_value)) {
+                init_fn(this->fn, max_value, ds);
             }
             Key operator()(const Data &data) const {
-                return fn(data) % this->max_value;
+                if constexpr (!has_train_method<HashFn>::value && !has_construct_method<HashFn>::value)
+                    return reduction(fn(data));
+                return fn(data);
             }
             static std::string name() {
                 return HashFn::name();
+            }
+            static void init_fn(HashFn& fn, size_t max_value, const std::vector<Data>& ds = {}) {
+                // LEARNED FN
+                if constexpr (has_train_method<HashFn>::value) {
+                    // train model on sorted data
+                    fn.train(ds.begin(), ds.end(), max_value);
+                }
+                // PERFECT FN
+                else if constexpr (has_construct_method<HashFn>::value) {
+                    // construct perfect hash table
+                    fn.construct(ds.begin(), ds.end());
+                }
             }
 
         private:
             size_t max_value;
             HashFn fn;
+            ReductionFn reduction;
     };
 
     template <class HashTable, class HashFn>
     class GenericTable {
         public:
-            GenericTable(size_t capacity, const std::vector<Data>& ds_fn = {}) {
+            GenericTable(size_t capacity, const std::vector<Data>& ds = {}) {
                 // initialize function
-                fn.init(capacity, ds_fn);
+                GenericFn<HashFn>::init_fn(this->fn, capacity, ds);
                 // initialize table
-                table = new HashTable(capacity, fn);
+                table = new HashTable(capacity, this->fn);
             }
             // Destructor to clean up dynamically allocated memory
             ~GenericTable() {
                 delete table;
             }
-            void insert(const Data& data, const Payload& value) {
-                table->insert(fn(data), value);
+            bool insert(const Data& data, const Payload& value) {
+                return table->insert(fn(data), value);
             }
             std::optional<Payload> lookup(const Data& data) const {
                 return table->lookup(fn(data));
@@ -111,7 +100,7 @@ namespace _generic_ {
 
         private:
             HashTable* table;
-            GenericFn<HashFn> fn;
+            HashFn fn;
     };
 }
 
