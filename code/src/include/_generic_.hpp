@@ -88,8 +88,8 @@ namespace _generic_ {
             ~GenericTable() {
                 delete table;
             }
-            bool insert(const Data& data, const Payload& value) {
-                return table->insert(fn(data), value);
+            void insert(const Data& data, const Payload& value) {
+                table->insert(fn(data), value);
             }
             std::optional<Payload> lookup(const Data& data) const {
                 return table->lookup(fn(data));

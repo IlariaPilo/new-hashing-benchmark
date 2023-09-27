@@ -147,7 +147,7 @@ namespace bm {
 
         json benchmark;
 
-        benchmark["data_elem_count"] = dataset_size;
+        benchmark["dataset_size"] = dataset_size;
         benchmark["tot_time_s"] = tot_time.count();
         benchmark["collisions"] = collisions_count;
         benchmark["dataset_name"] = dataset_name;
@@ -206,7 +206,7 @@ namespace bm {
 
         json benchmark;
 
-        benchmark["data_elem_count"] = dataset_size;
+        benchmark["dataset_size"] = dataset_size;
         benchmark["dataset_name"] = dataset_name;
         benchmark["count"] = count_json;
         benchmark["label"] = label; 
@@ -229,6 +229,13 @@ namespace bm {
         _generic_::GenericTable<HashTable,HashFn> table(capacity, ds);
         const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
+        // ====================== throughput counters ====================== //
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
+        /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_time_probe(0);
+        size_t insert_count = 0;
+        size_t probe_count = 0;
+        // ================================================================ //
+
         // Build the table
         // std::cout << "Start building table... ";
         Payload count = 0;
@@ -237,21 +244,17 @@ namespace bm {
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
-                bool done = table.insert(data, count);
-                if (!done) {
-                    throw std::runtime_error("\033[1;91mError\033[0m Table insertion failed\n           [data] " + std::to_string(data) + "\n           [count] " + std::to_string(count) + "\n           [label] " + label + "\n");
-                }
+                _start_ = std::chrono::high_resolution_clock::now();
+                table.insert(data, count);
+                _end_ = std::chrono::high_resolution_clock::now();
+                tot_time_insert += _end_ - _start_;
                 count++;
+                insert_count++;
                 // if (count % 10000000 == 1)
                 //     std::cout << "Done " << count << " inserts.\n";
             }
         }
         // std::cout << "done\n";
-        // ====================== throughput counters ====================== //
-        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
-        /*volatile*/ std::chrono::duration<double> tot_time(0);
-        size_t probe_count = 0;
-        // ================================================================ //
 
         // std::cout << "Start benchmarking... ";
         for (int i : order_probe) {
@@ -260,9 +263,12 @@ namespace bm {
                 // get the data
                 Data data = ds[i];
                 _start_ = std::chrono::high_resolution_clock::now();
-                /*std::optional<Payload> payload = */ table.lookup(data);
+                std::optional<Payload> payload = table.lookup(data);
                 _end_ = std::chrono::high_resolution_clock::now();
-                tot_time += _end_ - _start_;
+                if (!payload.has_value()) {
+                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
+                }
+                tot_time_probe += _end_ - _start_;
                 probe_count++;
                 // if (probe_count % 10000000 == 1)
                 //     std::cout << "Done " << probe_count << " lookups.\n";
@@ -271,9 +277,11 @@ namespace bm {
         // std::cout << "done\n";
         json benchmark;
 
-        benchmark["data_elem_count"] = dataset_size;
+        benchmark["dataset_size"] = dataset_size;
         benchmark["probe_elem_count"] = probe_count;
-        benchmark["tot_time_s"] = tot_time.count();
+        benchmark["insert_elem_count"] = insert_count;
+        benchmark["tot_time_probe_s"] = tot_time_probe.count();
+        benchmark["tot_time_insert_s"] = tot_time_insert.count();
         benchmark["load_factor_%"] = load_perc;
         benchmark["dataset_name"] = dataset_name;
         benchmark["label"] = label; 

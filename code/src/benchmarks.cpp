@@ -99,14 +99,12 @@ void dilate_bm_list(std::vector<bm::BMtype>& probe_bm_out) {
         probe_bm_out.push_back(lambda);
     }
     // Cuckoo
-    /*
     for (size_t load_perc : linear_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, CuckooTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
         };
         probe_bm_out.push_back(lambda);
     }
-    */
 }
 
 void load_bm_list(std::vector<bm::BMtype>& bm_list, const std::vector<bm::BMtype>& collision_bm,

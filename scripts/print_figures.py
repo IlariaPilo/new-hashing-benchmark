@@ -116,7 +116,7 @@ def collisions(df):
     df = df[df["label"].str.lower().str.contains("collision")].copy(deep=True)
     if df.empty:
         return
-    df['throughput_M'] = df.apply(lambda x : x['data_elem_count']/(x['tot_time_s']*10**6), axis=1)
+    df['throughput_M'] = df.apply(lambda x : x['dataset_size']/(x['tot_time_s']*10**6), axis=1)
     df = df.sort_values(by='throughput_M')
     # Group the DataFrame by the 'dataset_name' column
     g_ds = df.groupby('dataset_name')
@@ -140,7 +140,7 @@ def collisions(df):
         # Plot the data for the current group
         for name_fs, group_fn in g_fn:
             # Plot the data and collect labels for the legend
-            ax.plot(group_fn['throughput_M'], group_fn['collisions']/group_fn['data_elem_count'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            ax.plot(group_fn['throughput_M'], group_fn['collisions']/group_fn['dataset_size'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
             if name_fs not in legend_labels:
                 legend_labels.append(name_fs)
         
@@ -181,8 +181,8 @@ def collisions_rmi(df):
 
     # axes[0].set_xscale('log')
     # axes[1].set_xscale('log')
-    axes[0].plot(uni_ticks, uniform['collisions']/uniform['data_elem_count'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])
-    axes[1].plot(normal_ticks, normal['collisions']/normal['data_elem_count'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])        
+    axes[0].plot(uni_ticks, uniform['collisions']/uniform['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])
+    axes[1].plot(normal_ticks, normal['collisions']/normal['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])        
 
     # ticks
     uni_tick_labels = [f"$10^{int(tick)}$" for tick in uni_ticks]

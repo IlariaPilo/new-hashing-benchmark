@@ -5,7 +5,7 @@
                 1,
                 99999998
             ],
-            "data_elem_count": 100000000,
+            "dataset_size": 100000000,
             "dataset_name": "seq",
             "label": "Gaps:rmi_hash_1000000:seq"
         },
@@ -22,7 +22,7 @@
                 30,
                 7
             ],
-            "data_elem_count": 100000000,
+            "dataset_size": 100000000,
             "dataset_name": "gap_10",
             "label": "Gaps:rmi_hash_1000000:gap_10"
         },
@@ -47,7 +47,7 @@
                 2,
                 1
             ],
-            "data_elem_count": 92986744,
+            "dataset_size": 92986744,
             "dataset_name": "uniform",
             "label": "Gaps:rmi_hash_1000000:uniform"
         },
@@ -778,7 +778,7 @@
                 0,
                 1
             ],
-            "data_elem_count": 86976116,
+            "dataset_size": 86976116,
             "dataset_name": "fb",
             "label": "Gaps:rmi_hash_1000000:fb"
         },
@@ -23803,7 +23803,7 @@
                 0,
                 1
             ],
-            "data_elem_count": 99998363,
+            "dataset_size": 99998363,
             "dataset_name": "osm",
             "label": "Gaps:rmi_hash_1000000:osm"
         },
@@ -24514,7 +24514,7 @@
                 0,
                 1
             ],
-            "data_elem_count": 90437012,
+            "dataset_size": 90437012,
             "dataset_name": "wiki",
             "label": "Gaps:rmi_hash_1000000:wiki"
         },
@@ -24540,7 +24540,7 @@
                 3,
                 1
             ],
-            "data_elem_count": 98397511,
+            "dataset_size": 98397511,
             "dataset_name": "normal",
             "label": "Gaps:rmi_hash_1000000:normal"
         }
