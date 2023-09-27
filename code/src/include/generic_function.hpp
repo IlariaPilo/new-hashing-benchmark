@@ -4,7 +4,7 @@
 
 #include "configs.hpp"
 
-// _generic_.hpp - a file storing a wrapper for a generic hash function and a generic hash table
+// generic_function.hpp - a file storing a wrapper for a generic hash function
 namespace _generic_ {
     // Define a helper type trait to check if 'train' member function exists with the desired signature
     // Thanks to https://blog.quasar.ai/2015/04/12/sfinae-hell-detecting-template-methods
@@ -48,15 +48,15 @@ namespace _generic_ {
                     max_value(max_value), reduction(ReductionFn(max_value)) {
                 init_fn(this->fn, max_value, ds);
             }
-            Key operator()(const Data &data) const {
+            inline Key operator()(const Data &data) const {
                 if constexpr (!has_train_method<HashFn>::value && !has_construct_method<HashFn>::value)
                     return reduction(fn(data));
                 return fn(data);
             }
-            static std::string name() {
+            inline static std::string name() {
                 return HashFn::name();
             }
-            static void init_fn(HashFn& fn, size_t max_value, const std::vector<Data>& ds = {}) {
+            inline static void init_fn(HashFn& fn, size_t max_value, const std::vector<Data>& ds = {}) {
                 // LEARNED FN
                 if constexpr (has_train_method<HashFn>::value) {
                     // train model on sorted data
@@ -75,33 +75,6 @@ namespace _generic_ {
             ReductionFn reduction;
     };
 
-    template <class HashTable, class HashFn>
-    class GenericTable {
-        public:
-            GenericTable(size_t capacity, const std::vector<Data>& ds = {}) {
-                // initialize function
-                GenericFn<HashFn>::init_fn(this->fn, capacity, ds);
-                // initialize table
-                table = new HashTable(capacity, this->fn);
-            }
-            // Destructor to clean up dynamically allocated memory
-            ~GenericTable() {
-                delete table;
-            }
-            void insert(const Data& data, const Payload& value) {
-                table->insert(fn(data), value);
-            }
-            std::optional<Payload> lookup(const Data& data) const {
-                return table->lookup(fn(data));
-            }
-            static std::string name() {
-                return HashTable::name();
-            }
-
-        private:
-            HashTable* table;
-            HashFn fn;
-    };
 }
 
 

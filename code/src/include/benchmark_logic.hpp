@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <random>
 
-#include "_generic_.hpp"
+#include "generic_function.hpp"
 #include "output_json.hpp"
 #include "datasets.hpp"
 #include "configs.hpp"
@@ -226,7 +226,9 @@ namespace bm {
         size_t capacity = dataset_size*100/load_perc;
         
         // now, create the table
-        _generic_::GenericTable<HashTable,HashFn> table(capacity, ds);
+        HashFn fn;
+        _generic_::GenericFn<HashFn>::init_fn(fn,capacity,ds);
+        HashTable table(capacity, fn);
         const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
         // ====================== throughput counters ====================== //
@@ -234,6 +236,8 @@ namespace bm {
         /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_time_probe(0);
         size_t insert_count = 0;
         size_t probe_count = 0;
+        std::string fail_what = "";
+        bool insert_fail = false;
         // ================================================================ //
 
         // Build the table
@@ -244,9 +248,17 @@ namespace bm {
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
-                _start_ = std::chrono::high_resolution_clock::now();
-                table.insert(data, count);
-                _end_ = std::chrono::high_resolution_clock::now();
+                try {
+                    _start_ = std::chrono::high_resolution_clock::now();
+                    table.insert(data, count);
+                    _end_ = std::chrono::high_resolution_clock::now();
+                } catch(std::runtime_error& e) {
+                    // if we are here, we failed the insertion
+                    insert_fail = true;
+                    fail_what = e.what();
+                    goto done;
+                }
+                
                 tot_time_insert += _end_ - _start_;
                 count++;
                 insert_count++;
@@ -275,8 +287,8 @@ namespace bm {
             }
         }
         // std::cout << "done\n";
+    done:
         json benchmark;
-
         benchmark["dataset_size"] = dataset_size;
         benchmark["probe_elem_count"] = probe_count;
         benchmark["insert_elem_count"] = insert_count;
@@ -284,8 +296,12 @@ namespace bm {
         benchmark["tot_time_insert_s"] = tot_time_insert.count();
         benchmark["load_factor_%"] = load_perc;
         benchmark["dataset_name"] = dataset_name;
-        benchmark["label"] = label; 
-        std::cout << label + "\n";
+        benchmark["insert_fail_message"] = fail_what;
+        benchmark["label"] = label;
+
+        if (insert_fail)
+            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
+        else std::cout << label + "\n";
         writer.add_data(benchmark);
     }
 
