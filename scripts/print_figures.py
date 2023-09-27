@@ -92,6 +92,18 @@ def get_fn_name(label):
         return 'MultiplyPrime'
     if 'fibonacci' in label:
         return 'FibonacciPrime'
+
+CHAINED = 0
+LINEAR = 1
+CUCKOO = 2    
+def get_table_type(label):
+    label = label.lower()
+    if 'linear' in label:
+        return 'linear'
+    if 'chained' in label:
+        return 'chained'
+    if 'cuckoo' in label:
+        return 'cuckoo'
     
 def get_rmi_models(label):
     pattern = r'rmi_hash_(\d+):'
@@ -104,6 +116,7 @@ def collisions(df):
     df = df[df["label"].str.lower().str.contains("collision")].copy(deep=True)
     if df.empty:
         return
+    df['throughput_M'] = df.apply(lambda x : x['data_elem_count']/(x['tot_time_s']*10**6), axis=1)
     df = df.sort_values(by='throughput_M')
     # Group the DataFrame by the 'dataset_name' column
     g_ds = df.groupby('dataset_name')
@@ -216,6 +229,89 @@ def gaps(df):
     fig.legend(loc='upper right', bbox_to_anchor=(0.995, 0.945))
     fig.savefig(f'{prefix}_gaps.png')
 
+# ------- probe ------- #
+def probe(df):
+    datasets = ['gap_10','osm','normal','wiki','fb']
+    df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
+    if df.empty:
+        return
+    df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_s']*10**6), axis=1)
+    df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
+    df = df.sort_values(by='load_factor_%')
+    # Group the DataFrame by the 'dataset_name' column
+    g_ds = df.groupby('dataset_name')
+    
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+    fig, axes = plt.subplots(3, num_subplots, figsize=(10, 5))  # Adjust figsize as needed
+    
+    # Create a single legend for all subplots
+    legend_labels = []
+    
+    i = 0
+    # for each dataset
+    for name_ds, group_ds in g_ds:
+        if name_ds not in datasets:
+            continue
+        g_fn = group_ds.groupby('function')
+        ax = axes[:,i]
+        i += 1
+        
+        # for each function
+        for name_fs, group_fn in g_fn:
+            # Chained
+            chain = group_fn[group_fn['table_type'] == 'chained']
+            ax[CHAINED].plot(chain['load_factor_%'], chain['throughput_M'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            # Linear
+            lin = group_fn[group_fn['table_type'] == 'linear']
+            ax[LINEAR].plot(lin['load_factor_%'], lin['throughput_M'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            # Cuckoo
+            cuck = group_fn[group_fn['table_type'] == 'cuckoo']
+            ax[CUCKOO].plot(cuck['load_factor_%'], cuck['throughput_M'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            if name_fs not in legend_labels:
+                legend_labels.append(name_fs)
+        
+        # Customize the plot
+        ax[CHAINED].set_title(f'{name_ds}')
+        # Format the y-axis to display only two digits after the decimal point
+        # ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
+        # ax.set_ylim([0, 1])
+        #ax.set_xlim([0, 150])
+        ax[CHAINED].set_xlim([0,200])
+        ax[LINEAR].set_xlim([20,80])
+        ax[CUCKOO].set_xlim([70,100])
+        ax[CHAINED].set_xticks([0,50,100,150,200], ['0','50','100','150','200'])
+        ax[LINEAR].set_xticks([20,35,50,65,80], ['20','35','50','65','80'])
+        ax[CUCKOO].set_xticks([70,85,100], ['70', '85','100'])
+
+        ax[CHAINED].set_ylim([0,40])
+        ax[LINEAR].set_ylim([0,40])
+        ax[CUCKOO].set_ylim([0,40])
+        ax[CHAINED].set_yticks([0,10,20,30,40], ['','','','',''])
+        ax[LINEAR].set_yticks([0,10,20,30,40], ['','','','',''])
+        ax[CUCKOO].set_yticks([0,10,20,30,40], ['','','','',''])
+
+
+        ax[CHAINED].grid(True)
+        ax[LINEAR].grid(True)
+        ax[CUCKOO].grid(True)
+    
+    axes[CHAINED,0].set_ylabel('(A)', rotation=0, ha='right', va="center")
+    axes[LINEAR,0].set_ylabel('(B)', rotation=0, ha='right', va="center")
+    axes[CUCKOO,0].set_ylabel('(C)', rotation=0, ha='right', va="center")
+    axes[CHAINED,0].set_yticks([0,10,20,30,40], ['0','10','20','30','40'])
+    axes[LINEAR,0].set_yticks([0,10,20,30,40], ['0','10','20','30','40'])
+    axes[CUCKOO,0].set_yticks([0,10,20,30,40], ['0','10','20','30','40'])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.08))
+
+    # Set a common label for x and y axes
+    labx = fig.supxlabel('Load Factor (%)')
+    laby = fig.supylabel('Probe Throughput (Million operations/s)')
+
+    #plt.show()
+    fig.savefig(f'{prefix}_probe.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
+
 
 # =============================== MAIN =============================== #
 
@@ -226,9 +322,7 @@ with open(file_path, 'r') as json_file:
     df = pd.json_normalize(data, 'benchmarks')
     # compute function names
     df["function"] = df["label"].apply(lambda x : get_fn_name(x))
-    # compute throughput
-    if 'tot_time_s' in df.columns:
-        df['throughput_M'] = df.apply(lambda x : x['data_elem_count']/(x['tot_time_s']*10**6), axis=1)
     collisions(df)
     collisions_rmi(df)
     gaps(df)
+    probe(df)
