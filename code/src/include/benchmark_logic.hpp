@@ -121,16 +121,16 @@ namespace bm {
 
         // ====================== collision counters ====================== //
         Key index;
-        std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
-        std::chrono::duration<double> tot_time(0);
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
+        /*volatile*/ std::chrono::duration<double> tot_time(0);
         size_t collisions_count = 0;
         size_t NOT_collisions_count = 0;
         // ================================================================ //
 
         for (auto data : ds) {
-            _start_ = std::chrono::steady_clock::now();
+            _start_ = std::chrono::high_resolution_clock::now();
             index = fn(data);
-            _end_ = std::chrono::steady_clock::now();
+            _end_ = std::chrono::high_resolution_clock::now();
             keys_count[index]++;
             tot_time += _end_ - _start_;
         }
@@ -245,8 +245,8 @@ namespace bm {
         }
         // std::cout << "done\n";
         // ====================== throughput counters ====================== //
-        std::chrono::time_point<std::chrono::steady_clock> _start_, _end_;
-        std::chrono::duration<double> tot_time(0);
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
+        /*volatile*/ std::chrono::duration<double> tot_time(0);
         size_t probe_count = 0;
         // ================================================================ //
 
@@ -256,9 +256,9 @@ namespace bm {
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
-                _start_ = std::chrono::steady_clock::now();
+                _start_ = std::chrono::high_resolution_clock::now();
                 /*std::optional<Payload> payload = */ table.lookup(data);
-                _end_ = std::chrono::steady_clock::now();
+                _end_ = std::chrono::high_resolution_clock::now();
                 tot_time += _end_ - _start_;
                 probe_count++;
                 // if (probe_count % 10000000 == 1)
