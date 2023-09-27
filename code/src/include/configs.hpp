@@ -19,7 +19,7 @@ constexpr size_t chained_lf[] = {25,50,75,100,125,150,200};
 constexpr size_t linear_lf[] = {25,35,45,55,65,75};
 constexpr size_t cuckoo_lf[] = {75,80,85,90,95};
 // define the maximum amount of probing steps
-#define MAX_PROBING_STEPS = 100000
+#define MAX_PROBING_STEPS 100000
 
 
 // ********************* DATA TYPES ********************* //
