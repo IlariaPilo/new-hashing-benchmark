@@ -18,6 +18,9 @@
 constexpr size_t chained_lf[] = {25,50,75,100,125,150,200};
 constexpr size_t linear_lf[] = {25,35,45,55,65,75};
 constexpr size_t cuckoo_lf[] = {75,80,85,90,95};
+// define the maximum amount of probing steps
+#define MAX_PROBING_STEPS = 100000
+
 
 // ********************* DATA TYPES ********************* //
 
@@ -73,7 +76,7 @@ template <class HashFn, class ReductionFn>
 using ChainedTable = hashtable::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, ReductionFn>;
 
 template <class HashFn, class ReductionFn>
-using LinearTable = hashtable::Probing<Key, Payload, HashFn, ReductionFn, hashtable::LinearProbingFunc, 10000 /*BucketSize = 1 by default*/>;
+using LinearTable = hashtable::Probing<Key, Payload, HashFn, ReductionFn, hashtable::LinearProbingFunc, MAX_PROBING_STEPS /*BucketSize = 1 by default*/>;
 
 template <class HashFn, class ReductionFn>
 using CuckooTable = hashtable::Cuckoo<Key, Payload, 4 /*BucketSize*/, HashFn, XXHash3, ReductionFn, FastModulo, 
