@@ -52,9 +52,9 @@ namespace _generic_ {
             inline Key operator()(const Data &data) const {
                 if constexpr (has_train_method<HashFn>::value) {
                     // is learned
-                    return reduction(fn(data));
+                    return fn(data);
                 }
-                return fn(data);
+                return reduction(fn(data));
             }
             inline static std::string name() {
                 return HashFn::name();
