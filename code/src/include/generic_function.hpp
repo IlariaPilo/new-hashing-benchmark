@@ -44,9 +44,10 @@ namespace _generic_ {
     template <class HashFn, class ReductionFn = FastModulo>
     class GenericFn {
         public:
-            GenericFn(size_t max_value, const std::vector<Data>& ds = {}) : 
+            template <class RandomIt>
+            GenericFn(const RandomIt &sample_begin, const RandomIt &sample_end, const size_t max_value) : 
                     max_value(max_value), reduction(ReductionFn(max_value)) {
-                init_fn(this->fn, max_value, ds);
+                init_fn(this->fn, sample_begin, sample_end, max_value);
             }
             inline Key operator()(const Data &data) const {
                 if constexpr (!has_train_method<HashFn>::value && !has_construct_method<HashFn>::value)
@@ -56,16 +57,17 @@ namespace _generic_ {
             inline static std::string name() {
                 return HashFn::name();
             }
-            inline static void init_fn(HashFn& fn, size_t max_value, const std::vector<Data>& ds = {}) {
+            template <class RandomIt>
+            inline static void init_fn(HashFn& fn, const RandomIt &sample_begin, const RandomIt &sample_end, const size_t max_value) {
                 // LEARNED FN
                 if constexpr (has_train_method<HashFn>::value) {
                     // train model on sorted data
-                    fn.train(ds.begin(), ds.end(), max_value);
+                    fn.train(sample_begin, sample_end, max_value);
                 }
                 // PERFECT FN
                 else if constexpr (has_construct_method<HashFn>::value) {
                     // construct perfect hash table
-                    fn.construct(ds.begin(), ds.end());
+                    fn.construct(sample_begin, sample_end);
                 }
             }
 

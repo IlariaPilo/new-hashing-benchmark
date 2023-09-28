@@ -110,7 +110,7 @@ namespace bm {
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
 
-        _generic_::GenericFn<HashFn> fn(dataset_size, ds);
+        _generic_::GenericFn<HashFn> fn(ds.begin(), ds.end(), dataset_size);
         const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
 
         // now, start counting collisions
@@ -165,7 +165,7 @@ namespace bm {
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
 
-        _generic_::GenericFn<HashFn> fn(dataset_size, ds);
+        _generic_::GenericFn<HashFn> fn(ds.begin(), ds.end(), dataset_size);
         const std::string label = "Gaps:" + fn.name() + ":" + dataset_name;
 
         // now, start counting collisions
@@ -227,7 +227,7 @@ namespace bm {
         
         // now, create the table
         HashFn fn;
-        _generic_::GenericFn<HashFn>::init_fn(fn,capacity,ds);
+        _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
         HashTable table(capacity, fn);
         const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
