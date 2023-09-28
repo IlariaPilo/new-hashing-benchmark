@@ -101,6 +101,15 @@ namespace bm {
         // done!
     }
 
+    template <typename T>
+    void checkSorted(const std::vector<T>& vec) {
+        for (size_t i = 1; i < vec.size(); ++i) {
+            if (vec[i] < vec[i - 1]) {
+                throw std::runtime_error("Vector is not sorted.");
+            }
+        }
+    }
+
     // ----------------- benchmarks list ----------------- //
     // collision
     template <class HashFn>
@@ -109,6 +118,8 @@ namespace bm {
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
+
+        checkSorted(ds);
 
         _generic_::GenericFn<HashFn> fn(ds.begin(), ds.end(), dataset_size);
         const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
