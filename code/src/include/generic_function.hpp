@@ -50,8 +50,10 @@ namespace _generic_ {
                 init_fn(this->fn, sample_begin, sample_end, max_value);
             }
             inline Key operator()(const Data &data) const {
-                if constexpr (!has_train_method<HashFn>::value && !has_construct_method<HashFn>::value)
+                if constexpr (!has_train_method<HashFn>::value && !has_construct_method<HashFn>::value) {
+                    std::cout << "Using reduction\n";
                     return reduction(fn(data));
+                }
                 return fn(data);
             }
             inline static std::string name() {
@@ -66,6 +68,7 @@ namespace _generic_ {
                 }
                 // PERFECT FN
                 else if constexpr (has_construct_method<HashFn>::value) {
+                    std::cout << "Constructing\n";  
                     // construct perfect hash table
                     fn.construct(sample_begin, sample_end);
                 }

@@ -175,6 +175,7 @@ int main(int argc, char* argv[]) {
     // ------------- collisions ------------- //
     std::vector<bm::BMtype> collision_bm = {
         // RMI
+        /*
         &bm::collision_stats<RMIHash_2>,
         &bm::collision_stats<RMIHash_10>,
         &bm::collision_stats<RMIHash_100>,
@@ -203,9 +204,9 @@ int main(int argc, char* argv[]) {
         &bm::collision_stats<AquaHash>,
         &bm::collision_stats<XXHash3>,
         // Perfect
-        &bm::collision_stats<MWHC>,
-        &bm::collision_stats<BitMWHC>,
-        &bm::collision_stats<RecSplit>
+        &bm::collision_stats<MWHC>,*/
+        &bm::collision_stats<BitMWHC>/*,
+        &bm::collision_stats<RecSplit>*/
     };
     // ---------------- gaps ---------------- //
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
