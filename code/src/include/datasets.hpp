@@ -22,7 +22,7 @@ namespace dataset {
 // Defines all IDs of the datasets.
 enum class ID {
   SEQUENTIAL = 0,
-  GAPPED_10 = 1,
+  GAP_10 = 1,
   UNIFORM = 2,
   FB = 3,
   OSM = 4,
@@ -35,7 +35,7 @@ constexpr int ID_COUNT = static_cast<int>(ID::COUNT);
 // Define the reverse ID
 const std::unordered_map<int, ID> REVERSE_ID = {
     {0, ID::SEQUENTIAL},
-    {1, ID::GAPPED_10},
+    {1, ID::GAP_10},
     {2, ID::UNIFORM},
     {3, ID::FB},
     {4, ID::OSM},
@@ -157,7 +157,7 @@ std::vector<Data> load_ds(const ID& id, const size_t& dataset_size, std::string 
       for (size_t i = 0; i < ds.size(); i++) ds[i] = i*10 + 20000;
       break;
     }
-    case ID::GAPPED_10: {
+    case ID::GAP_10: {
       std::uniform_int_distribution<size_t> dist(0, 99999);
       for (size_t i = 0, num = 0; i < ds.size(); i++) {
         do num+=10;
@@ -278,7 +278,7 @@ inline std::string name(ID id) {
   switch (id) {
     case ID::SEQUENTIAL:
       return "seq";
-    case ID::GAPPED_10:
+    case ID::GAP_10:
       return "gap_10";
     case ID::UNIFORM:
       return "uniform";

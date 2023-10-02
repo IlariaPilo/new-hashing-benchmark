@@ -107,7 +107,8 @@ void dilate_bm_list(std::vector<bm::BMtype>& probe_bm_out) {
     }
 }
 
-void load_bm_list(std::vector<bm::BMtype>& bm_list, const std::vector<bm::BMtype>& collision_bm,
+void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
+        const std::vector<bm::BMtype>& collision_bm,
         const bm::BMtype& gap_bm, const std::vector<bm::BMtype>& probe_bm /*TODO - add more*/) {
     std::string part;
     size_t start;
@@ -118,16 +119,19 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, const std::vector<bm::BMtype
         if (part == "collision" || part == "collisions" || part == "all") {
             for (const bm::BMtype& bm : collision_bm) {
                 bm_list.push_back(bm);
+                ds_list.push_back(collisions_ds);
             }
             if (part != "all") continue;
         }
         if (part == "gap" || part == "gaps" || part == "all") {
             bm_list.push_back(gap_bm);
+            ds_list.push_back(gaps_ds);
             if (part != "all") continue;
         }
         if (part == "probe" || part == "all") {
             for (const bm::BMtype& bm : probe_bm) {
                 bm_list.push_back(bm);
+                ds_list.push_back(probe_insert_ds);
             }
             if (part != "all") continue;
         }
@@ -172,6 +176,7 @@ int main(int argc, char* argv[]) {
 
     // Benchmark arrays definition
     std::vector<bm::BMtype> bm_list;
+    std::vector<const dataset::ID*> ds_list;
     // ------------- collisions ------------- //
     std::vector<bm::BMtype> collision_bm = {
         // RMI
@@ -219,7 +224,7 @@ int main(int argc, char* argv[]) {
     dilate_bm_list<MWHC>(probe_bm);
     // TODO - add more
 
-    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm);
+    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
@@ -228,7 +233,7 @@ int main(int argc, char* argv[]) {
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms(bm_list, threads, collection, writer);
+    bm::run_bms(bm_list, ds_list, threads, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;

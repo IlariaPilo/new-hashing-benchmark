@@ -7,6 +7,8 @@
 #include <exotic_hashing.hpp>
 // Tables
 #include <hashtable.hpp>
+// Datasets
+#include "datasets.hpp"
 
 // ********************* CONFIGS ********************* //
 
@@ -20,7 +22,10 @@ constexpr size_t linear_lf[] = {25,35,45,55,65,75};
 constexpr size_t cuckoo_lf[] = {75,80,85,90,95};
 // define the maximum amount of probing steps
 #define MAX_PROBING_STEPS 100000
-
+// datasets for each experiment
+constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::COUNT};
+constexpr dataset::ID gaps_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::COUNT};
+constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::COUNT};
 
 // ********************* DATA TYPES ********************* //
 

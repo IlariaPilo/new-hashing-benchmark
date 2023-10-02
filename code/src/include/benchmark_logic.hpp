@@ -39,7 +39,7 @@ namespace bm {
             order_probe.push_back(random_value);
         }
     }
-    std::vector<BMtype> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype>& bm_list) {
+    std::pair<int, int> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype>& bm_list) {
         int BM_COUNT = bm_list.size();
         int mod = BM_COUNT % thread_num;
         int div = BM_COUNT / thread_num;
@@ -60,11 +60,20 @@ namespace bm {
         int end = start+slice;
 
         /* Create the vector */
-        std::vector<BMtype> output;
-        output.resize(slice);
-        for(int i=start, j=0; i<end && i<BM_COUNT; i++, j++)
-            output[j] = bm_list[i];
+        // std::vector<BMtype> output;
+        // output.resize(slice);
+        // for(int i=start, j=0; i<end && i<BM_COUNT; i++, j++)
+        //     output[j] = bm_list[i];
+        std::pair<int,int> output(start,end);
         return output;
+    }
+    bool find_ds(const dataset::ID* ds_list, int ds_number) {
+        dataset::ID id = dataset::REVERSE_ID.at(ds_number);
+        for(int i = 0; ds_list[i]!=dataset::ID::COUNT; i++) {
+            if (ds_list[i]==id)
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -73,7 +82,7 @@ namespace bm {
     @param collection the list of datasets benchmarks will be run on
     @param writer the object that handles the output json file 
     */
-    void run_bms(std::vector<BMtype>& bm_list, 
+    void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
             size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         // first of all, check thread compatibility
         if (thread_num > bm_list.size())
@@ -85,14 +94,20 @@ namespace bm {
         #pragma omp parallel num_threads(thread_num)
         {
             int threadID = omp_get_thread_num();
+            int BM_COUNT = bm_list.size();
             // get slice of benchmarks
             auto slice = get_bm_slice(threadID, thread_num, bm_list);
+            int start = slice.first;
+            int end = slice.second;
             // for each ds
-            for (int i=0; i<dataset::ID_COUNT; i++) {
+            for (int id=0; id<dataset::ID_COUNT; id++) {
                 // get the ds
-                const dataset::Dataset<Data>& ds = collection.get_ds(i);
+                const dataset::Dataset<Data>& ds = collection.get_ds(id);
                 // for each function
-                for (BMtype bm : slice) {
+                for(int i=start; i<end && i<BM_COUNT; i++) {
+                    if (!find_ds(ds_list[i],id))
+                        continue;
+                    BMtype bm = bm_list[i];
                     // run the function
                     bm(ds, writer);
                 }
