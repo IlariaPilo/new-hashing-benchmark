@@ -11,6 +11,9 @@ RUN apt-get update && \
 RUN apt-get install -y llvm libomp-dev
 # to check for memory leaks
 # RUN apt-get install -y valgrind
+# Perf!
+RUN apt-get -y install linux-tools-generic; \
+    alias perf=$(find /usr/lib/linux-tools/*/perf | head -1)
 
 # # Create a new user called "aligner" (the default user)
 # # Add it to the sudo group
