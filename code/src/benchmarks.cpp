@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
     dilate_bm_list<PGMHash_1k>(probe_bm);
     dilate_bm_list<MURMUR,FastModulo>(probe_bm);
     dilate_bm_list<MultPrime64,FastModulo>(probe_bm);
-    dilate_bm_list<MWHC>(probe_bm);
+    dilate_bm_list<MWHC,FastModulo>(probe_bm);
     // TODO - add more
 
     load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm);
