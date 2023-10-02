@@ -131,12 +131,12 @@ std::vector<ID> get_id_slice(int threadID, size_t thread_num);
  * @return a sorted and deduplicated list of all members of the dataset
  */
 template <class Data>
-std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::string dataset_directory) {
-  static std::random_device rd;
-  static std::default_random_engine rng(rd());
+std::vector<Data> load_ds(const ID& id, const size_t& dataset_size, std::string dataset_directory) {
+  /*static*/ std::random_device rd;
+  /*static*/ std::default_random_engine rng(rd());
 
   // cache generated & sampled datasets to speed up repeated benchmarks
-  static std::unordered_map<ID, std::unordered_map<size_t, std::vector<Data>>>
+  /*static std::unordered_map<ID, std::unordered_map<size_t, std::vector<Data>>>
       datasets;
 
   // cache sosd dataset files to avoid expensive load operations
@@ -147,10 +147,11 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
   if (id_it != datasets.end()) {
     const auto ds_it = id_it->second.find(dataset_size);
     if (ds_it != id_it->second.end()) return ds_it->second;
-  }
+  }*/
 
   // generate (or random sample) in appropriate size
   std::vector<Data> ds(dataset_size, 0);
+  std::vector<Data> ds_sosd;
   switch (id) {
     case ID::SEQUENTIAL: {
       for (size_t i = 0; i < ds.size(); i++) ds[i] = i*10 + 20000;
@@ -195,56 +196,50 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
       break;
     }
     case ID::FB: {
-      if (ds_fb.empty()) {
-        ds_fb = load<Data>(dataset_directory+"/fb_200M_uint64");
-        std::shuffle(ds_fb.begin(), ds_fb.end(),rng);
-      }
+      ds_sosd = load<Data>(dataset_directory+"/fb_200M_uint64");
+      std::shuffle(ds_sosd.begin(), ds_sosd.end(),rng);
       // ds file does not exist
-      if (ds_fb.empty()) return {};
+      if (ds_sosd.empty()) return {};
       size_t j=0;
       size_t i = 0;
 
       // sampling this way is only valid since ds_fb is shuffled!
-      for (; j < ds_fb.size() && i < ds.size(); j++) {
-        if(log2(ds_fb[j])<35.01 || log2(ds_fb[j])>35.99){
+      for (; j < ds_sosd.size() && i < ds.size(); j++) {
+        if(log2(ds_sosd[j])<35.01 || log2(ds_sosd[j])>35.99){
           continue;
         }
-        ds[i] = ds_fb[j]-pow(2,35);
+        ds[i] = ds_sosd[j]-pow(2,35);
         i++;
       }
       break;
     }
     case ID::OSM: {
-      if (ds_osm.empty()) {
-        ds_osm = load<Data>(dataset_directory+"/osm_cellids_200M_uint64");
-        std::shuffle(ds_osm.begin(), ds_osm.end(),rng);
-      }
+      ds_sosd = load<Data>(dataset_directory+"/osm_cellids_200M_uint64");
+      std::shuffle(ds_sosd.begin(), ds_sosd.end(),rng);
       // ds file does not exist
-      if (ds_osm.empty()) return {};
+      if (ds_sosd.empty()) return {};
       size_t j=0;
       size_t i = 0;
       // sampling this way is only valid since ds_osm is shuffled!
-      for (; j < ds_osm.size() && i < ds.size(); j++) {
-          if(log2(ds_osm[j])<62.01 || log2(ds_osm[j])>62.99){
+      for (; j < ds_sosd.size() && i < ds.size(); j++) {
+          if(log2(ds_sosd[j])<62.01 || log2(ds_sosd[j])>62.99){
             continue;
           }
-          ds[i] = ds_osm[j]-pow(2,62);
+          ds[i] = ds_sosd[j]-pow(2,62);
           i++;
         }
       break;
     }
     case ID::WIKI: {
-      if (ds_wiki.empty()) {
-        ds_wiki = load<Data>(dataset_directory+"/wiki_ts_200M_uint64");
-        std::shuffle(ds_wiki.begin(), ds_wiki.end(),rng);
-      }
+      ds_sosd = load<Data>(dataset_directory+"/wiki_ts_200M_uint64");
+      std::shuffle(ds_sosd.begin(), ds_sosd.end(),rng);
       // ds file does not exist
-      if (ds_wiki.empty()) return {};
+      if (ds_sosd.empty()) return {};
        size_t j=0;
        size_t i = 0;
       // sampling this way is only valid since ds_wiki is shuffled!
-      for (; j < ds_wiki.size() && i < ds.size(); j++) {
-        ds[i] = ds_wiki[j];
+      for (; j < ds_sosd.size() && i < ds.size(); j++) {
+        ds[i] = ds_sosd[j];
         i++;
       }
       break;
@@ -265,6 +260,7 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
   deduplicate_and_sort(ds);
 
   // cache dataset for future use
+  /*
   const auto it = datasets.find(id);
   if (it == datasets.end()) {
     std::unordered_map<size_t, std::vector<Data>> map;
@@ -273,6 +269,7 @@ std::vector<Data> load_cached(const ID& id, const size_t& dataset_size, std::str
   } else {
     it->second.insert({dataset_size, ds});
   }
+  */
   return ds;
 }
 
@@ -305,7 +302,7 @@ template <class Data = std::uint64_t>
 class Dataset {
   public:
     Dataset(ID id, size_t dataset_size, std::string dataset_directory = "") : id(id) {
-      this->ds = load_cached<Data>(id, dataset_size, dataset_directory);
+      this->ds = load_ds<Data>(id, dataset_size, dataset_directory);
       this->dataset_size = ds.size();
     }
     ID get_id() const {
