@@ -12,8 +12,7 @@ RUN apt-get install -y llvm libomp-dev
 # to check for memory leaks
 # RUN apt-get install -y valgrind
 # Perf!
-RUN apt-get -y install linux-tools-generic; \
-    alias perf=$(find /usr/lib/linux-tools/*/perf | head -1)
+RUN apt-get -y install linux-tools-generic
 
 # # Create a new user called "aligner" (the default user)
 # # Add it to the sudo group
@@ -25,11 +24,13 @@ RUN apt-get -y install linux-tools-generic; \
 # USER benchmarker
 
 RUN echo 'echo "\
-===================================\n\
-=           benchmarker           =\n\
-===================================\n\
+=====================\n\
+= hashing-benchmark =\n\
+=====================\n\
 "'\
 > /root/.bashrc
+# Perf!
+RUN echo 'sudo ln -s "$(find /usr/lib/linux-tools/*/perf | head -1)" /usr/local/bin/perf' >> /root/.bashrc
 
 WORKDIR /home/benchmarker/new-hashing-benchmark
 

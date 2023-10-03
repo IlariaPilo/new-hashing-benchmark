@@ -10,7 +10,7 @@ source .env
 set -e
 
 # Parse arguments
-TARGET=${1:-"benchmarks"}
+TARGET=${1:-"benchmarks perf_bm"}
 BUILD_TYPE=${2:-"RELEASE"}
 BUILD_DIR="cmake-build-$(echo "${BUILD_TYPE}" | awk '{print tolower($0)}')/"
 
