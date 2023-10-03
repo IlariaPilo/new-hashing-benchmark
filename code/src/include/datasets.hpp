@@ -350,14 +350,14 @@ class Dataset {
       return *this;
     }
     // two print utility functions
-    void print_ds(size_t entries = 10) {
+    void print_ds(size_t entries = 10) const {
       std::cout << "\nDataset " << name(id) << " | size " << dataset_size << std::endl;
       for (size_t i=0; i<entries && i<dataset_size; i++)
         std::cout << ds[i] << std::endl;
       std::cout << "------------------------\n";
     }
     template <class HashFn>
-    void print_hash(const HashFn& fn, size_t entries = 10) {
+    void print_hash(const HashFn& fn, size_t entries = 10) const {
       std::cout << "\nDataset " << name(id) << " | size " << dataset_size << std::endl;
       std::cout << "Hash function " << HashFn::name() << std::endl;
       for (size_t i=0; i<entries && i<dataset_size; i++)
