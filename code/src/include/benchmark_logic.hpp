@@ -311,6 +311,7 @@ namespace bm {
         benchmark["tot_time_insert_s"] = tot_time_insert.count();
         benchmark["load_factor_%"] = load_perc;
         benchmark["dataset_name"] = dataset_name;
+        benchmark["function_name"] = HashFn::name();
         benchmark["insert_fail_message"] = fail_what;
         benchmark["label"] = label;
 
