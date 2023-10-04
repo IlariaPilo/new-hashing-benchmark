@@ -15,6 +15,8 @@
 namespace bm {
     // bm function pointer type
     using BMtype = std::function<void(const dataset::Dataset<Data>&, JsonOutput&)>;
+    // utility version
+    using BMtemplate = std::function<void(const dataset::Dataset<Data>&, JsonOutput&, size_t)>;
 
     // ----------------- utility things ----------------- //
     std::vector<int> order_insert; // will store all values from 0 to N-1
@@ -69,7 +71,7 @@ namespace bm {
     }
     bool find_ds(const dataset::ID* ds_list, int ds_number) {
         dataset::ID id = dataset::REVERSE_ID.at(ds_number);
-        for(int i = 0; ds_list[i]!=dataset::ID::COUNT; i++) {
+        for(int i = 0; ds_list[i]!=dataset::ID::_NONE_; i++) {
             if (ds_list[i]==id)
                 return true;
         }
@@ -83,7 +85,8 @@ namespace bm {
     @param writer the object that handles the output json file 
     */
     void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
-            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
+            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer,
+            size_t how_many = dataset::ID_COUNT) {
         // first of all, check thread compatibility
         if (thread_num > bm_list.size())
             thread_num = bm_list.size();
@@ -100,7 +103,7 @@ namespace bm {
             int start = slice.first;
             int end = slice.second;
             // for each ds
-            for (int id=0; id<dataset::ID_COUNT; id++) {
+            for (size_t id=0; id<how_many; id++) {
                 // get the ds
                 const dataset::Dataset<Data>& ds = collection.get_ds(id);
                 // for each function
@@ -117,14 +120,15 @@ namespace bm {
     }
     // non-parallel version
     void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
-            dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
+            dataset::CollectionDS<Data>& collection, JsonOutput& writer,
+            size_t how_many = dataset::ID_COUNT) {
         int BM_COUNT = bm_list.size();
         // initialize arrays to keep things sorted
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order(MAX_DS_SIZE);
         // begin computation
         // for each ds
-        for (int id=0; id<dataset::ID_COUNT; id++) {
+        for (size_t id=0; id<how_many; id++) {
             // get the ds
             const dataset::Dataset<Data>& ds = collection.get_ds(id);
             // for each function
@@ -142,20 +146,23 @@ namespace bm {
     // ----------------- benchmarks list ----------------- //
     // collision
     template <class HashFn>
-    void collision_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+    void collision_gap_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
 
-        _generic_::GenericFn<HashFn> fn(ds.begin(), ds.end(), dataset_size);
-        const std::string label = "Collisions:" + fn.name() + ":" + dataset_name;
+        // Compute capacity given the laod% and the dataset_size
+        size_t capacity = dataset_size*100/load_perc;
+
+        _generic_::GenericFn<HashFn> fn(ds.begin(), ds.end(), capacity);
+        const std::string label = "Collisions:" + fn.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
 
         // now, start counting collisions
 
         // stores the hash value (that is, the key) for each entry in the dataset
         std::vector<Key> keys_count;
-        keys_count.resize(dataset_size, 0);
+        keys_count.resize(capacity, 0);
 
         // ====================== collision counters ====================== //
         Key index;
@@ -189,10 +196,16 @@ namespace bm {
         benchmark["tot_time_s"] = tot_time.count();
         benchmark["collisions"] = collisions_count;
         benchmark["dataset_name"] = dataset_name;
-        // benchmark["extra"] = extra;
+        benchmark["load_factor_%"] = load_perc;
         benchmark["label"] = label; 
         std::cout << label + "\n";
         writer.add_data(benchmark);
+    }
+    
+    // collision wrapper
+    template <class HashFn>
+    inline void collision_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+        collision_gap_stats<HashFn>(ds_obj, writer, 100);
     }
 
     // gaps

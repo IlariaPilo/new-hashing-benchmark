@@ -10,6 +10,12 @@
 // Datasets
 #include "datasets.hpp"
 
+enum class TYPES {
+  CHAINED = 0,
+  LINEAR = 1,
+  CUCKOO = 2
+};
+
 // ********************* CONFIGS ********************* //
 
 // The maximum dataset size
@@ -21,15 +27,15 @@ constexpr size_t chained_lf[] = {25,50,75,100,125,150,200};
 constexpr size_t linear_lf[] = {25,35,45,55,65,75};
 constexpr size_t cuckoo_lf[] = {75,80,85,90,95};
 // maximum amount of probing steps
-#define MAX_PROBING_STEPS 100000
+#define MAX_PROBING_STEPS 1000000
 // number of entries in build time experiment
 constexpr size_t build_entries[] = {MAX_DS_SIZE/100, MAX_DS_SIZE/20, MAX_DS_SIZE/10, MAX_DS_SIZE/2, MAX_DS_SIZE};
 
 // datasets for each experiment
-constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::COUNT};
-constexpr dataset::ID gaps_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::COUNT};
-constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::COUNT};
-constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM,dataset::ID::COUNT};
+constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::_NONE_};
+constexpr dataset::ID gaps_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::_NONE_};
+constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::_NONE_};
+constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM,dataset::ID::_NONE_};
 
 // ********************* DATA TYPES ********************* //
 

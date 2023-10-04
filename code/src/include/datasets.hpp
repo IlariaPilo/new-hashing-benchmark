@@ -28,10 +28,15 @@ enum class ID {
   OSM = 4,
   WIKI = 5,
   NORMAL = 6,
-  // to count the number of elements
-  COUNT
+  // now we begin with the variance datasets
+  VAR_x2 = 7,
+  VAR_x4 = 8,
+  VAR_HALF = 9,
+  VAR_QUART = 10,
+  _NONE_ = 11
 };
-constexpr int ID_COUNT = static_cast<int>(ID::COUNT);
+constexpr int ID_COUNT = 7;
+constexpr int ID_ALL_COUNT = 11;
 // Define the reverse ID
 const std::unordered_map<int, ID> REVERSE_ID = {
     {0, ID::SEQUENTIAL},
@@ -40,7 +45,12 @@ const std::unordered_map<int, ID> REVERSE_ID = {
     {3, ID::FB},
     {4, ID::OSM},
     {5, ID::WIKI},
-    {6, ID::NORMAL}
+    {6, ID::NORMAL},
+    {7, ID::VAR_x2},
+    {8, ID::VAR_x4},
+    {9, ID::VAR_HALF},
+    {10, ID::VAR_QUART},
+    {11, ID::_NONE_}
 };
 
 // ------------------ utility things ------------------ //
@@ -122,7 +132,7 @@ std::vector<Key> load(const std::string& filepath) {
   return dataset;
 }
 
-std::vector<ID> get_id_slice(int threadID, size_t thread_num);
+std::vector<ID> get_id_slice(int threadID, size_t thread_num, size_t how_many = ID_COUNT);
 
 
 // ------------------ functions to be called from outside ------------------ //
@@ -244,6 +254,83 @@ std::vector<Data> load_ds(const ID& id, const size_t& dataset_size, std::string 
       }
       break;
     }
+    case ID::VAR_x2: {
+      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
+      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
+      std::sort(ds.begin(),ds.end());
+      double constant=1.414;
+      for(size_t i=0;i<ds.size();i++) {
+        uint64_t temp=i*std::pow(2, 40)/ds.size();
+        uint64_t diff=0;
+        if(temp>ds[i]) {
+          diff=temp-ds[i];
+          ds[i]=temp-(diff*constant);
+        }
+        else {
+          diff=ds[i]-temp;
+          ds[i]=temp+(diff*constant);
+        }
+      }
+      break;
+    }
+    case ID::VAR_x4: {
+      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
+      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
+      std::sort(ds.begin(),ds.end());
+      double constant=2;
+      for(size_t i=0;i<ds.size();i++) {
+        uint64_t temp=i*std::pow(2, 40)/ds.size();
+        uint64_t diff=0;
+        if(temp>ds[i]) {
+          diff=temp-ds[i];
+          ds[i]=temp-(diff*constant);
+        }
+        else {
+          diff=ds[i]-temp;
+          ds[i]=temp+(diff*constant);
+        }
+      }
+      break;
+    }
+    case ID::VAR_HALF: {
+      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
+      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
+      std::sort(ds.begin(),ds.end());
+      double constant=1.414;
+      for(size_t i=0;i<ds.size();i++) {
+        uint64_t temp=i*std::pow(2, 40)/ds.size();
+        uint64_t diff=0;
+        if(temp>ds[i]) {
+          diff=temp-ds[i];
+          ds[i]=temp-(diff/constant);
+        }
+        else {
+          diff=ds[i]-temp;
+          ds[i]=temp+(diff/constant);
+        }
+      }
+      break;
+    }
+    case ID::VAR_QUART: {
+      std::uniform_int_distribution<Data> dist(0, std::pow(2, 40));
+      for (size_t i = 0; i < ds.size(); i++) ds[i] = dist(rng);
+      std::sort(ds.begin(),ds.end());
+      double constant=2;
+      for(size_t i=0;i<ds.size();i++) {
+        uint64_t temp=i*std::pow(2, 40)/ds.size();
+        uint64_t diff=0;
+        if(temp>ds[i]) {
+          diff=temp-ds[i];
+          ds[i]=temp-(diff/constant);
+        }
+        else {
+          diff=ds[i]-temp;
+          ds[i]=temp+(diff/constant);
+        }
+      }
+      break;
+    }
+
     default:
       throw std::runtime_error(
           "invalid datastet id " +
@@ -290,8 +377,16 @@ inline std::string name(ID id) {
       return "osm";
     case ID::WIKI:
       return "wiki";
-    case ID::COUNT:
-      return "# of available datasets"; 
+    case ID::VAR_x2:
+      return "variance_x2";
+    case ID::VAR_x4:
+      return "variance_x4";
+    case ID::VAR_HALF:
+      return "variance_half";
+    case ID::VAR_QUART:
+      return "variance_quarter";
+    case ID::_NONE_:
+      return "no dataset"; 
   }
   return "unnamed";
 };
@@ -316,7 +411,7 @@ class Dataset {
     }
     // Default constructor
     Dataset() :
-        id(ID::COUNT), dataset_size(0) {
+        id(ID::_NONE_), dataset_size(0) {
       ds.clear();
     }
     // Destructor
@@ -375,15 +470,15 @@ class Dataset {
 template <class Data = std::uint64_t>
 class CollectionDS {
 public:
-    CollectionDS(size_t dataset_size, std::string dataset_directory, size_t thread_num) : collection(ID_COUNT){
+    CollectionDS(size_t dataset_size, std::string dataset_directory, size_t thread_num, size_t how_many = ID_COUNT) : collection(how_many){
       // remove useless threads
-      if (thread_num > ID_COUNT)
-          thread_num = ID_COUNT;
+      if (thread_num > how_many)
+          thread_num = how_many;
       // start parallel computation
       #pragma omp parallel num_threads(thread_num)
       {
           int threadID = omp_get_thread_num();
-          std::vector<ID> ids = get_id_slice(threadID, thread_num);
+          std::vector<ID> ids = get_id_slice(threadID, thread_num, how_many);
 
           for (auto id : ids) {
             // put the object into the array

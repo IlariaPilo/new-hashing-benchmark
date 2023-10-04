@@ -3,12 +3,12 @@
 namespace dataset {
 
 // This function has to stay here, as it is the only one without template
-std::vector<ID> get_id_slice(int threadID, size_t thread_num) {
+std::vector<ID> get_id_slice(int threadID, size_t thread_num, size_t how_many) {
     /* The first thread_num % ID_COUNT elements get thread_num/ID_COUNT + 1 IDs
        All the others threads get thread_num/ID_COUNT
      */
-    int mod = ID_COUNT % thread_num;
-    int div = ID_COUNT / thread_num;
+    int mod = how_many % thread_num;
+    int div = how_many / thread_num;
     size_t slice = (size_t)div;
     /* We also take a look in the past to set the starting point! */
     int past_mod_threads = -1;      // the ones with +1 in the slice
@@ -28,7 +28,7 @@ std::vector<ID> get_id_slice(int threadID, size_t thread_num) {
     /* Create the vector */
     std::vector<ID> output;
     output.resize(slice);
-    for(int i=start, j=0; i<end && i<ID_COUNT; i++, j++)
+    for(int i=start, j=0; i<end && i<how_many; i++, j++)
         output[j] = REVERSE_ID.at(i);
     return output;
 }
