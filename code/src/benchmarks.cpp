@@ -24,7 +24,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,probe,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe,build,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -83,7 +83,7 @@ int pars_args(const int& argc, char* const* const& argv) {
 }
 
 template <class HashFn, class ReductionFn = DoNothingFn>
-void dilate_bm_list(std::vector<bm::BMtype>& probe_bm_out) {
+void dilate_probe_list(std::vector<bm::BMtype>& probe_bm_out) {
     // Chained
     for (size_t load_perc : chained_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
@@ -106,10 +106,21 @@ void dilate_bm_list(std::vector<bm::BMtype>& probe_bm_out) {
         probe_bm_out.push_back(lambda);
     }
 }
+template <class HashFn>
+void dilate_build_list(std::vector<bm::BMtype>& build_bm_out) {
+    for (size_t entry_n : build_entries) {
+        bm::BMtype lambda = [entry_n](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::build_time<HashFn>(ds_obj, writer, entry_n);
+        };
+        build_bm_out.push_back(lambda);
+    }
+}
 
 void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
         const std::vector<bm::BMtype>& collision_bm,
-        const bm::BMtype& gap_bm, const std::vector<bm::BMtype>& probe_bm /*TODO - add more*/) {
+        const bm::BMtype& gap_bm, 
+        const std::vector<bm::BMtype>& probe_bm,
+        const std::vector<bm::BMtype>& build_bm /*TODO - add more*/) {
     std::string part;
     size_t start;
     size_t end = 0;
@@ -134,6 +145,14 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::I
                 ds_list.push_back(probe_insert_ds);
             }
             if (part != "all") continue;
+        }
+        if (part == "build" || part == "all") {
+            for (const bm::BMtype& bm : build_bm) {
+                bm_list.push_back(bm);
+                ds_list.push_back(build_time_ds);
+            }
+            //if (part != "all") continue;
+            continue;
         }
         // if we are here, the filter is unknown
         std::cout << "\033[1;93m [warning]\033[0m filter " << part << " is unknown." << std::endl;
@@ -216,15 +235,21 @@ int main(int argc, char* argv[]) {
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
     // ---------------- probe --------------- //
     std::vector<bm::BMtype> probe_bm = {};
-    dilate_bm_list<RMIHash_1k>(probe_bm);
-    dilate_bm_list<RadixSplineHash_1k>(probe_bm);
-    dilate_bm_list<PGMHash_1k>(probe_bm);
-    dilate_bm_list<MURMUR,FastModulo>(probe_bm);
-    dilate_bm_list<MultPrime64,FastModulo>(probe_bm);
-    dilate_bm_list<MWHC,FastModulo>(probe_bm);
+    dilate_probe_list<RMIHash_1k>(probe_bm);
+    dilate_probe_list<RadixSplineHash_1k>(probe_bm);
+    dilate_probe_list<PGMHash_1k>(probe_bm);
+    dilate_probe_list<MURMUR,FastModulo>(probe_bm);
+    dilate_probe_list<MultPrime64,FastModulo>(probe_bm);
+    dilate_probe_list<MWHC,FastModulo>(probe_bm);
+    // ---------------- build time --------------- //
+    std::vector<bm::BMtype> build_bm = {};
+    dilate_build_list<RMIHash_100>(build_bm);
+    dilate_build_list<RadixSplineHash_1k>(build_bm);
+    dilate_build_list<PGMHash_1k>(build_bm);
+    dilate_build_list<MURMUR>(build_bm);
     // TODO - add more
 
-    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm);
+    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm, build_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more

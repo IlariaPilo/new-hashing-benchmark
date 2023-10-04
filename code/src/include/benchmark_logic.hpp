@@ -344,4 +344,39 @@ namespace bm {
         writer.add_data(benchmark);
     }
 
+    // build time
+    template <class HashFn>
+    void build_time(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t entry_number) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
+
+        size_t actual_size;
+        if (entry_number>=dataset_size)
+            actual_size = dataset_size;
+        else actual_size = entry_number;
+        auto it_end = ds.begin() + actual_size;
+        
+        // ====================== time counters ====================== //
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
+        /*volatile*/ std::chrono::duration<double> build_time(0);
+        // ================================================================ //
+
+        _start_ = std::chrono::high_resolution_clock::now();
+        _generic_::GenericFn<HashFn> fn(ds.begin(), it_end, actual_size);
+        _end_ = std::chrono::high_resolution_clock::now();
+        build_time += _end_ - _start_;
+        const std::string label = "Build_time:" + fn.name() + ":" + dataset_name;
+
+        json benchmark;
+
+        benchmark["actual_size"] = actual_size;
+        benchmark["build_time_s"] = build_time.count();
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["label"] = label; 
+        std::cout << label + "\n";
+        writer.add_data(benchmark);
+    }
+
 }
