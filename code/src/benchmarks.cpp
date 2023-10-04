@@ -99,7 +99,7 @@ void dilate_probe_list(std::vector<bm::BMtype>& probe_bm_out) {
         probe_bm_out.push_back(lambda);
     }
     // Cuckoo
-    for (size_t load_perc : linear_lf) {
+    for (size_t load_perc : cuckoo_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, CuckooTable<HashFn,FastModulo>>(ds_obj, writer, load_perc);
         };
