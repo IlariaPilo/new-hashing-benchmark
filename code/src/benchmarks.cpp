@@ -233,7 +233,7 @@ int main(int argc, char* argv[]) {
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms(bm_list, ds_list, 1, collection, writer);
+    bm::run_bms(bm_list, ds_list, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;

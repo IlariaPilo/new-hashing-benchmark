@@ -115,6 +115,29 @@ namespace bm {
         }
         // done!
     }
+    // non-parallel version
+    void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
+            dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
+        int BM_COUNT = bm_list.size();
+        // initialize arrays to keep things sorted
+        generate_insert_order(MAX_DS_SIZE);
+        generate_probe_order(MAX_DS_SIZE);
+        // begin computation
+        // for each ds
+        for (int id=0; id<dataset::ID_COUNT; id++) {
+            // get the ds
+            const dataset::Dataset<Data>& ds = collection.get_ds(id);
+            // for each function
+            for(int i=0; i<BM_COUNT; i++) {
+                if (!find_ds(ds_list[i],id))
+                    continue;
+                BMtype bm = bm_list[i];
+                // run the function
+                bm(ds, writer);
+            }
+        }
+        // done!
+    }
 
     // ----------------- benchmarks list ----------------- //
     // collision
