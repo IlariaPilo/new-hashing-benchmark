@@ -315,6 +315,25 @@ def probe(df):
     #plt.show()
     fig.savefig(f'{prefix}_probe.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
+# ------- build plot ------- #
+def build(df):
+    df = df[df["label"].str.lower().str.contains("build")].copy(deep=True)
+    if df.empty:
+        return
+    fig = plt.figure(figsize=(3, 2))
+    functions = df['function'].unique()
+    for _f_ in functions:
+        _df_ = df[df['function'] == _f_]
+        plt.plot(_df_['actual_size'], _df_['build_time_s'], color=COLORS[_f_], marker=SHAPES_FN[_f_], markersize=4, label=_f_)
+
+    plt.xscale('log')
+    plt.yscale('log')
+    labx = plt.xlabel('Dataset Size (number of entries)')
+    laby = plt.ylabel('Build Time (s)')
+    lgd = fig.legend(loc='upper center', labels=functions, ncol=len(functions)//2+len(functions)%2, bbox_to_anchor=(0.5, 1.3))
+    plt.grid(True)
+    fig.savefig(f'{prefix}_build.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
+
 # -------- perf -------- # 
 def perf(df):
     # Some definitions
@@ -393,6 +412,7 @@ def main_json():
         collisions_rmi(df)
         gaps(df)
         probe(df)
+        build(df)
 
 def main_csv():
     df = pd.read_csv(file_path)

@@ -246,7 +246,7 @@ int main(int argc, char* argv[]) {
     dilate_build_list<RMIHash_100>(build_bm);
     dilate_build_list<RadixSplineHash_1k>(build_bm);
     dilate_build_list<PGMHash_1k>(build_bm);
-    dilate_build_list<MURMUR>(build_bm);
+    dilate_build_list<MWHC>(build_bm);
     // TODO - add more
 
     load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm, build_bm);

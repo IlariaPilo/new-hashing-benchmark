@@ -367,7 +367,7 @@ namespace bm {
         _generic_::GenericFn<HashFn> fn(ds.begin(), it_end, actual_size);
         _end_ = std::chrono::high_resolution_clock::now();
         build_time += _end_ - _start_;
-        const std::string label = "Build_time:" + fn.name() + ":" + dataset_name;
+        const std::string label = "Build_time:" + fn.name() + ":" + dataset_name + ":" + std::to_string(actual_size);
 
         // avoid optimization
         Key _ = fn(ds[0]);
@@ -378,7 +378,7 @@ namespace bm {
         benchmark["build_time_s"] = build_time.count();
         benchmark["dataset_name"] = dataset_name;
         benchmark["label"] = label; 
-        benchmark["_"] = _;
+        benchmark["_"] = _; // useless, just to avoid optimizing out the build
         std::cout << label + "\n";
         writer.add_data(benchmark);
     }
