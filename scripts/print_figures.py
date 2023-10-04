@@ -16,8 +16,8 @@ plt.rcParams['grid.linewidth'] = 0.8
 
 # Check if the filename argument is provided
 if len(sys.argv) < 2:
-    print("\n\033[1;96m\tpython print_figures.py <result.json> \033[0m")
-    print("Produces different types of figures, given a <result.json> file.\n")
+    print("\n\033[1;96m\tpython print_figures.py <result.json OR result.csv> \033[0m")
+    print("Produces different types of figures, given a <result.json OR result.csv> file.\n")
     sys.exit(1)
 
 script_path = os.path.abspath(__file__)
@@ -26,7 +26,7 @@ BASE_DIR = os.path.abspath(f'{script_directory}/..')+'/'
 
 # Get the filename from the command-line argument
 file_path = sys.argv[1]
-prefix, _ = os.path.splitext(os.path.basename(file_path))
+prefix, ext = os.path.splitext(os.path.basename(file_path))
 
 prefix = BASE_DIR + 'figs/' + prefix
 
@@ -92,6 +92,7 @@ def get_fn_name(label):
         return 'MultiplyPrime'
     if 'fibonacci' in label:
         return 'FibonacciPrime'
+    return None
 
 CHAINED = 0
 LINEAR = 1
@@ -235,6 +236,8 @@ def probe(df):
     df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
     if df.empty:
         return
+    # remove failed experiments
+    df = df[df["insert_fail_message"]!='']
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
@@ -312,17 +315,97 @@ def probe(df):
     #plt.show()
     fig.savefig(f'{prefix}_probe.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
+# -------- perf -------- # 
+def perf(df):
+    # Some definitions
+    GAP10 = 0
+    FB = 1
+    counters = ['cycles', 'L1-dcache-load-misses', 'LLC-load-misses', 'branch-misses']
+    counters_label = ['Cycles', 'L1 misses', 'LLC misses', 'Branch misses']
+    counters_ratio = [f'{c}_ratio' for c in counters]
 
-# =============================== MAIN =============================== #
+    # Clean the dataset
+    df = df.copy(deep=True)
+    df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
+    df[counters_ratio] = df.apply(lambda x : x[counters]/(x['size']), axis=1)
+    df = df.sort_values(by='label')
 
-# Load benchmarks from the file
-with open(file_path, 'r') as json_file:
-    data = json.load(json_file)
-    # convert json results to dataframe
-    df = pd.json_normalize(data, 'benchmarks')
-    # compute function names
-    df["function"] = df["label"].apply(lambda x : get_fn_name(x))
-    collisions(df)
-    collisions_rmi(df)
-    gaps(df)
-    probe(df)
+    # Prepare the colors
+    labels = df['label'].unique()
+    cmap = plt.get_cmap('coolwarm')
+    # Create a dictionary of unique colors based on the number of labels
+    colors = {labels[lab_i]: cmap(col_i) for lab_i, col_i in enumerate(np.linspace(0, 1, len(labels)))}
+
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(counters)
+    fig, axes = plt.subplots(2, num_subplots, figsize=(9, 5))  # Adjust figsize as needed
+    
+    # Create a single legend for all subplots
+    legend_labels = []
+    handles = []
+
+    g_lab = df.groupby('label')
+    # For each label
+    for name_lab, group_lab in g_lab:
+        legend_labels.append(name_lab)
+        gap10 = group_lab[group_lab['dataset']=='gap10']
+        fb = group_lab[group_lab['dataset']=='fb']
+        # For each counter
+        for i, count_ratio in enumerate(counters_ratio):
+            ax = axes[:,i]
+            # gap10
+            h = ax[GAP10].bar(gap10['label'], gap10[count_ratio], color=colors[name_lab], label=name_lab)
+            if i == 0:
+                handles.append(h)
+            # fb
+            ax[FB].bar(fb['label'], fb[count_ratio], color=colors[name_lab], label=name_lab)
+
+            ax[GAP10].set_title(f'{counters_label[i]}')
+            ax[GAP10].set_xticks([], [])
+            ax[FB].set_xticks([], [])
+            ax[GAP10].grid(True)
+            ax[FB].grid(True)
+        
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='lower center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1))
+
+    axes[GAP10,0].set_ylabel('gap_10', rotation=0, ha='right', va="center")
+    axes[FB,0].set_ylabel('fb', rotation=0, ha='right', va="center")
+
+    # Set a common label for y ax
+    laby = fig.supylabel('Performance Counter Ratio')
+
+    #plt.show()
+    fig.savefig(f'{prefix}.png', bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
+
+
+# =============================== MAINS =============================== #
+
+def main_json():
+    # Load benchmarks from the file
+    with open(file_path, 'r') as json_file:
+        data = json.load(json_file)
+        # convert json results to dataframe
+        df = pd.json_normalize(data, 'benchmarks')
+        # compute function names
+        df["function"] = df.apply(lambda x: get_fn_name(x['label']) if get_fn_name(x['label']) else get_fn_name(x['function_name']), axis=1)
+        collisions(df)
+        collisions_rmi(df)
+        gaps(df)
+        probe(df)
+
+def main_csv():
+    df = pd.read_csv(file_path)
+    df['size'] = df['dataset'].apply(lambda x : 10**8 if x=='gap10' else 86976116)
+    perf(df)
+
+
+
+
+if ext == '.json':
+    main_json()
+elif ext == '.csv':
+    main_csv()
+else:
+    print(f'Sorry, extension {ext} is not supported :c')
+    sys.exit(1)

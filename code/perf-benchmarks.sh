@@ -65,7 +65,7 @@ for ds in "${datasets[@]}"; do
     for tab in "${tables[@]}"; do
         for fun in "${functions[@]}"; do
             echo -n "$fun,$tab,$ds," >> $output_file
-            sudo perf stat -e cycles,L1-dcache-load-misses,LLC-load-misses,branch-misses \
+            sudo perf stat -e cycles,L1-dcache-load-misses,LLC-load-misses,branch-misses -c 100 \
                 cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds \
                 2>&1 | tee tmp.out
             # get interesting values
