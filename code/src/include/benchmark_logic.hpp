@@ -369,12 +369,16 @@ namespace bm {
         build_time += _end_ - _start_;
         const std::string label = "Build_time:" + fn.name() + ":" + dataset_name;
 
+        // avoid optimization
+        Key _ = fn(ds[0]);
+
         json benchmark;
 
         benchmark["actual_size"] = actual_size;
         benchmark["build_time_s"] = build_time.count();
         benchmark["dataset_name"] = dataset_name;
         benchmark["label"] = label; 
+        benchmark["_"] = _;
         std::cout << label + "\n";
         writer.add_data(benchmark);
     }
