@@ -10,12 +10,6 @@
 // Datasets
 #include "datasets.hpp"
 
-enum class TYPES {
-  CHAINED = 0,
-  LINEAR = 1,
-  CUCKOO = 2
-};
-
 // ********************* CONFIGS ********************* //
 
 // The maximum dataset size

@@ -22,13 +22,13 @@ std::vector<ID> get_id_slice(int threadID, size_t thread_num, size_t how_many) {
         past_threads = threadID - mod;
     }
     /* Define start and end */
-    int start = past_mod_threads*(div+1) + past_threads*div;
-    int end = start+slice;
+    size_t start = past_mod_threads*(div+1) + past_threads*div;
+    size_t end = start+slice;
 
     /* Create the vector */
     std::vector<ID> output;
     output.resize(slice);
-    for(int i=start, j=0; i<end && i<how_many; i++, j++)
+    for(size_t i=start, j=0; i<end && i<how_many; i++, j++)
         output[j] = REVERSE_ID.at(i);
     return output;
 }

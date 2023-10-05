@@ -24,7 +24,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,probe-chain,probe-linear,probe-cuckoo,build,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe,build,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -83,34 +83,27 @@ int pars_args(const int& argc, char* const* const& argv) {
 }
 
 template <class HashFn, class ReductionFn = DoNothingFn>
-void dilate_table_list(std::vector<bm::BMtype>& probe_bm_out, TYPES t) {
-    switch(t) {
-        case TYPES::CHAINED:
-            // Chained
-            for (size_t load_perc : chained_lf) {
-                bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-                    bm::probe_throughput<HashFn, ChainedTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
-                };
-                probe_bm_out.push_back(lambda);
-            }
-            break;
-        case TYPES::LINEAR:
-            // Linear
-            for (size_t load_perc : linear_lf) {
-                bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-                    bm::probe_throughput<HashFn, LinearTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
-                };
-                probe_bm_out.push_back(lambda);
-            }
-            break;
-        case TYPES::CUCKOO:
-            // Cuckoo
-            for (size_t load_perc : cuckoo_lf) {
-                bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-                    bm::probe_throughput<HashFn, CuckooTable<HashFn,FastModulo>>(ds_obj, writer, load_perc);
-                };
-                probe_bm_out.push_back(lambda);
-            }
+void dilate_probe_list(std::vector<bm::BMtype>& probe_bm_out) {
+    // Chained
+    for (size_t load_perc : chained_lf) {
+        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, ChainedTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
+        };
+        probe_bm_out.push_back(lambda);
+    }
+    // Linear
+    for (size_t load_perc : linear_lf) {
+        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, LinearTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
+        };
+        probe_bm_out.push_back(lambda);
+    }
+    // Cuckoo
+    for (size_t load_perc : cuckoo_lf) {
+        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, CuckooTable<HashFn,FastModulo>>(ds_obj, writer, load_perc);
+        };
+        probe_bm_out.push_back(lambda);
     }
 }
 
@@ -127,7 +120,7 @@ void dilate_function_list(std::vector<bm::BMtype>& bm_out, const bm::BMtemplate 
 void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
         const std::vector<bm::BMtype>& collision_bm,
         const bm::BMtype& gap_bm, 
-        const std::vector<bm::BMtype>& probe_bm_chained, const std::vector<bm::BMtype>& probe_bm_linear, const std::vector<bm::BMtype>& probe_bm_cuckoo,
+        const std::vector<bm::BMtype>& probe_bm,
         const std::vector<bm::BMtype>& build_bm /*TODO - add more*/) {
     std::string part;
     size_t start;
@@ -147,22 +140,8 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::I
             ds_list.push_back(gaps_ds);
             if (part != "all") continue;
         }
-        if (part == "probe-chain" || part == "all") {
-            for (const bm::BMtype& bm : probe_bm_chained) {
-                bm_list.push_back(bm);
-                ds_list.push_back(probe_insert_ds);
-            }
-            if (part != "all") continue;
-        }
-        if (part == "probe-linear" || part == "all") {
-            for (const bm::BMtype& bm : probe_bm_linear) {
-                bm_list.push_back(bm);
-                ds_list.push_back(probe_insert_ds);
-            }
-            if (part != "all") continue;
-        }
-        if (part == "probe-cuckoo" || part == "all") {
-            for (const bm::BMtype& bm : probe_bm_cuckoo) {
+        if (part == "probe" || part == "all") {
+            for (const bm::BMtype& bm : probe_bm) {
                 bm_list.push_back(bm);
                 ds_list.push_back(probe_insert_ds);
             }
@@ -256,31 +235,13 @@ int main(int argc, char* argv[]) {
     // ---------------- gaps ---------------- //
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
     // ---------------- probe --------------- //
-    // Chained
-    std::vector<bm::BMtype> probe_bm_chain = {};
-    dilate_table_list<RMIHash_1k>(probe_bm_chain, TYPES::CHAINED);
-    dilate_table_list<RadixSplineHash_1k>(probe_bm_chain, TYPES::CHAINED);
-    dilate_table_list<PGMHash_1k>(probe_bm_chain, TYPES::CHAINED);
-    dilate_table_list<MURMUR,FastModulo>(probe_bm_chain, TYPES::CHAINED);
-    dilate_table_list<MultPrime64,FastModulo>(probe_bm_chain, TYPES::CHAINED);
-    dilate_table_list<MWHC,FastModulo>(probe_bm_chain, TYPES::CHAINED);
-    // Linear
-    std::vector<bm::BMtype> probe_bm_linear = {};
-    dilate_table_list<RMIHash_1k>(probe_bm_linear, TYPES::LINEAR);
-    dilate_table_list<RadixSplineHash_1k>(probe_bm_linear, TYPES::LINEAR);
-    dilate_table_list<PGMHash_1k>(probe_bm_linear, TYPES::LINEAR);
-    dilate_table_list<MURMUR,FastModulo>(probe_bm_linear, TYPES::LINEAR);
-    dilate_table_list<MultPrime64,FastModulo>(probe_bm_linear, TYPES::LINEAR);
-    dilate_table_list<MWHC,FastModulo>(probe_bm_linear, TYPES::LINEAR);
-    // Cuckoo
-    std::vector<bm::BMtype> probe_bm_cuckoo = {};
-    dilate_table_list<RMIHash_1k>(probe_bm_cuckoo, TYPES::CUCKOO);
-    dilate_table_list<RadixSplineHash_1k>(probe_bm_cuckoo, TYPES::CUCKOO);
-    dilate_table_list<PGMHash_1k>(probe_bm_cuckoo, TYPES::CUCKOO);
-    dilate_table_list<MURMUR,FastModulo>(probe_bm_cuckoo, TYPES::CUCKOO);
-    dilate_table_list<MultPrime64,FastModulo>(probe_bm_cuckoo, TYPES::CUCKOO);
-    dilate_table_list<MWHC,FastModulo>(probe_bm_cuckoo, TYPES::CUCKOO);
-
+    std::vector<bm::BMtype> probe_bm = {};
+    dilate_probe_list<RMIHash_1k>(probe_bm);
+    dilate_probe_list<RadixSplineHash_1k>(probe_bm);
+    dilate_probe_list<PGMHash_1k>(probe_bm);
+    dilate_probe_list<MURMUR,FastModulo>(probe_bm);
+    dilate_probe_list<MultPrime64,FastModulo>(probe_bm);
+    dilate_probe_list<MWHC,FastModulo>(probe_bm);
     // ---------------- build time --------------- //
     std::vector<bm::BMtype> build_bm = {};
     size_t build_size = sizeof(build_entries)/sizeof(build_entries[0]);
@@ -290,7 +251,7 @@ int main(int argc, char* argv[]) {
     dilate_function_list(build_bm, &bm::build_time<MWHC>, build_entries, build_size);
     // TODO - add more
 
-    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm_chain, probe_bm_linear, probe_bm_cuckoo, build_bm);
+    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm, build_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
