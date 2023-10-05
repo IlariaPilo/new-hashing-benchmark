@@ -57,7 +57,7 @@ Arguments:
   -o, --output OUTPUT_DIR   Directory that will store the output
   -t, --threads THREADS     Number of threads to use (default: all)
   -f, --filter FILTER       Type of benchmark to execute, *comma-separated*
-                            Options = collisions,gaps,probe,build,all (default: all) 
+                            Options = collisions,gaps,probe,build,distribution,all (default: all) 
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `<filter>_<timestamp>.json`.
@@ -71,6 +71,7 @@ Notice that the numbers in the parenthesis refer to the experiment number in the
 - _gaps_ : compute the gap distribution of various datasets [7.1-datasets]
 - _probe_ : compute the insert and probe throughput in three types of tables for different hash functions on different datasets [7.3-probe throughput;insert throughput]
 - _build_ : compare the build time for different hash functions [7.4-build time]
+- _distribution_ : compare the number of collisions when changing the variance of the gap distribution, as well as the load factor [7.4-gap distribution]
 <!-- TODO add more -->
 
 ### 📟 perf
