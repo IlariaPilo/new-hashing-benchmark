@@ -43,6 +43,10 @@ if [ -z "$input_dir" ] || [ -z "$output_dir" ]; then
     usage
 fi
 
+echo -e "\n\033[1;96m================== \033[0m"
+echo -e "\033[1;96m= perf-benchmark = \033[0m"
+echo -e "\033[1;96m================== \033[0m\n"
+
 input_dir=$(realpath $input_dir)
 output_dir=$(realpath $output_dir)
 
