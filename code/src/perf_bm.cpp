@@ -136,42 +136,42 @@ int main(int argc, char* argv[]) {
 
     // Call the right function
     if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "chain") {
-        bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10,DoNothingFn>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "chain") {
-        bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M,DoNothingFn>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (h_fun_name == "mult" && table_name == "chain") {
-        bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (h_fun_name == "mwhc" && table_name == "chain") {
-        bm::probe_throughput<MWHC, ChainedTable<MWHC,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "linear") {
-        bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10,DoNothingFn>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "linear") {
-        bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M,DoNothingFn>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (h_fun_name == "mult" && table_name == "linear") {
-        bm::probe_throughput<MultPrime64, LinearTable<MultPrime64,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (h_fun_name == "mwhc" && table_name == "linear") {
-        bm::probe_throughput<MWHC, LinearTable<MWHC,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "cuckoo") {
-        bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "cuckoo") {
-        bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (h_fun_name == "mult" && table_name == "cuckoo") {
-        bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     else if (h_fun_name == "mwhc" && table_name == "cuckoo") {
-        bm::probe_throughput<MWHC, CuckooTable<MWHC,FastModulo>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
     }
     
     return 0;

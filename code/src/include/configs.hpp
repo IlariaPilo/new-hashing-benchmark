@@ -80,15 +80,14 @@ using RecSplit = exotic_hashing::RecSplit<Data>;
 
 
 // ********************* HASH TABLES ********************* //
-using DoNothingFn = hashing::reduction::DoNothing<Key>;
 using FastModulo = hashing::reduction::FastModulo<Key>;
 
-template <class HashFn, class ReductionFn>
+template <class HashFn, class ReductionFn = FastModulo>
 using ChainedTable = hashtable::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, ReductionFn>;
 
-template <class HashFn, class ReductionFn>
+template <class HashFn, class ReductionFn = FastModulo>
 using LinearTable = hashtable::Probing<Key, Payload, HashFn, ReductionFn, hashtable::LinearProbingFunc, MAX_PROBING_STEPS /*BucketSize = 1 by default*/>;
 
-template <class HashFn, class ReductionFn>
+template <class HashFn, class ReductionFn = FastModulo>
 using CuckooTable = hashtable::Cuckoo<Key, Payload, 4 /*BucketSize*/, HashFn, XXHash3, ReductionFn, FastModulo, 
     hashtable::BiasedKicking<KICK_BIAS_CHANCE>>;
