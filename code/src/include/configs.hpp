@@ -20,6 +20,7 @@
 constexpr size_t chained_lf[] = {25,50,75,100,125,150,200};
 constexpr size_t linear_lf[] = {25,35,45,55,65,75};
 constexpr size_t cuckoo_lf[] = {75,80,85,90,95};
+constexpr size_t collisions_vs_gaps_lf[] = {10,25,50,70,100};
 // maximum amount of probing steps
 #define MAX_PROBING_STEPS 1000000
 // number of entries in build time experiment
@@ -30,6 +31,7 @@ constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFOR
 constexpr dataset::ID gaps_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::_NONE_};
 constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::_NONE_};
 constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM,dataset::ID::_NONE_};
+constexpr dataset::ID collisions_vs_gaps_ds[] = {dataset::ID::UNIFORM,dataset::ID::VAR_x2,dataset::ID::VAR_x4,dataset::ID::VAR_HALF,dataset::ID::VAR_QUART,dataset::ID::_NONE_};
 
 // ********************* DATA TYPES ********************* //
 

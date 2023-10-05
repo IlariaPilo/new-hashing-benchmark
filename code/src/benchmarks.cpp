@@ -14,6 +14,7 @@
     std::string output_dir = "";
     size_t threads;
     std::string filter = "all";
+    size_t how_many = dataset::ID_COUNT;
 /* ========================= */
 
 // Function to print the usage information
@@ -24,7 +25,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,probe,build,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe,build,distribution,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -82,7 +83,7 @@ int pars_args(const int& argc, char* const* const& argv) {
     return 0;
 }
 
-template <class HashFn, class ReductionFn = DoNothingFn>
+template <class HashFn, class ReductionFn = FastModulo>
 void dilate_probe_list(std::vector<bm::BMtype>& probe_bm_out) {
     // Chained
     for (size_t load_perc : chained_lf) {
@@ -121,7 +122,8 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::I
         const std::vector<bm::BMtype>& collision_bm,
         const bm::BMtype& gap_bm, 
         const std::vector<bm::BMtype>& probe_bm,
-        const std::vector<bm::BMtype>& build_bm /*TODO - add more*/) {
+        const std::vector<bm::BMtype>& build_bm,
+        const std::vector<bm::BMtype>& collisions_vs_gaps /*TODO - add more*/) {
     std::string part;
     size_t start;
     size_t end = 0;
@@ -151,6 +153,15 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::I
             for (const bm::BMtype& bm : build_bm) {
                 bm_list.push_back(bm);
                 ds_list.push_back(build_time_ds);
+            }
+            if (part != "all") continue;
+            continue;
+        }
+        if (part == "distribution" || part == "all") {
+            how_many = dataset::ID_ALL_COUNT;
+            for (const bm::BMtype& bm : collisions_vs_gaps) {
+                bm_list.push_back(bm);
+                ds_list.push_back(collisions_vs_gaps_ds);
             }
             //if (part != "all") continue;
             continue;
@@ -184,7 +195,7 @@ int main(int argc, char* argv[]) {
     
     // Create the collection of datasets
     std::cout << "Starting dataset loading procedure... ";
-    dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_DS_SIZE), input_dir, threads /* TODO ---, how_many*/);
+    dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_DS_SIZE), input_dir, threads, how_many);
     std::cout << "done!" << std::endl << std::endl;
 
     // for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
@@ -239,9 +250,9 @@ int main(int argc, char* argv[]) {
     dilate_probe_list<RMIHash_1k>(probe_bm);
     dilate_probe_list<RadixSplineHash_1k>(probe_bm);
     dilate_probe_list<PGMHash_1k>(probe_bm);
-    dilate_probe_list<MURMUR,FastModulo>(probe_bm);
-    dilate_probe_list<MultPrime64,FastModulo>(probe_bm);
-    dilate_probe_list<MWHC,FastModulo>(probe_bm);
+    dilate_probe_list<MURMUR>(probe_bm);
+    dilate_probe_list<MultPrime64>(probe_bm);
+    dilate_probe_list<MWHC>(probe_bm);
     // ---------------- build time --------------- //
     std::vector<bm::BMtype> build_bm = {};
     size_t build_size = sizeof(build_entries)/sizeof(build_entries[0]);
@@ -249,9 +260,13 @@ int main(int argc, char* argv[]) {
     dilate_function_list(build_bm, &bm::build_time<RadixSplineHash_1k>, build_entries, build_size);
     dilate_function_list(build_bm, &bm::build_time<PGMHash_1k>, build_entries, build_size);
     dilate_function_list(build_bm, &bm::build_time<MWHC>, build_entries, build_size);
+    // ---------------- collisions-vs-gaps --------------- //
+    std::vector<bm::BMtype> collisions_vs_gaps_bm = {};
+    size_t lf_size = sizeof(collisions_vs_gaps_lf)/sizeof(collisions_vs_gaps_lf[0]);
+    dilate_function_list(collisions_vs_gaps_bm, &bm::collisions_vs_gaps<RMIHash_1k>, collisions_vs_gaps_lf, lf_size);
     // TODO - add more
 
-    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm, build_bm);
+    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more

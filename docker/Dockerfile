@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get install -y vim clang cmake sudo git
 RUN apt-get install -y llvm libomp-dev
 # to check for memory leaks
-# RUN apt-get install -y valgrind
+# RUN apt-get update && apt-get install -y valgrind
 # Perf!
 RUN apt-get -y install linux-tools-generic
 

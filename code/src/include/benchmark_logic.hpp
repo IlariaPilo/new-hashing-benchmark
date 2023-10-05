@@ -146,14 +146,17 @@ namespace bm {
     // ----------------- benchmarks list ----------------- //
     // collision
     template <class HashFn>
-    void collision_gap_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc) {
+    void collisions_vs_gaps(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
 
         // Compute capacity given the laod% and the dataset_size
-        size_t capacity = dataset_size*100/load_perc;
+        size_t capacity;
+        if (load_perc!=0)
+            capacity=dataset_size;
+        else capacity = dataset_size*100/load_perc;
 
         _generic_::GenericFn<HashFn> fn(ds.begin(), ds.end(), capacity);
         const std::string label = "Collisions:" + fn.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
@@ -205,7 +208,7 @@ namespace bm {
     // collision wrapper
     template <class HashFn>
     inline void collision_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-        collision_gap_stats<HashFn>(ds_obj, writer, 100);
+        collisions_vs_gaps<HashFn>(ds_obj, writer, 0);
     }
 
     // gaps
