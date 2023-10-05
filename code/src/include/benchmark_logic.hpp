@@ -154,7 +154,7 @@ namespace bm {
 
         // Compute capacity given the laod% and the dataset_size
         size_t capacity;
-        if (load_perc!=0)
+        if (load_perc==0)
             capacity=dataset_size;
         else capacity = dataset_size*100/load_perc;
 
