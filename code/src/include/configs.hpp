@@ -7,6 +7,7 @@
 #include <exotic_hashing.hpp>
 // Tables
 #include <hashtable.hpp>
+#include "rmi_sort.hpp"
 // Datasets
 #include "datasets.hpp"
 
@@ -14,23 +15,47 @@
 
 // The maximum dataset size
 #define MAX_DS_SIZE 100000000      // 10^8, 100M
-// Bias chance that element is kicked from second bucket in percent (i.e., value of 10 -> 10%)
+
+// ---- Probe Experiments ---- //
+// [Cuckoo Table] Bias chance that element is kicked from second bucket in percent (i.e., value of 10 -> 10%)
 #define KICK_BIAS_CHANCE 5
-// load factors
+// [Linear Probing Table] maximum amount of probing steps
+#define MAX_PROBING_STEPS 1000000
+// load factors for each table
 constexpr size_t chained_lf[] = {25,50,75,100,125,150,200};
 constexpr size_t linear_lf[] = {25,35,45,55,65,75};
 constexpr size_t cuckoo_lf[] = {75,80,85,90,95};
+// datasets (when changing them, take a look at the benchmarks.cpp file too!)
+constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM};
+
+// ---- Range Experiments ---- //
+// load factor
+#define RANGE_LOAD_PERC 50
+// number of buckets
+#define RANGE_BUCKETS 8
+// percentage of point queries
+constexpr size_t point_queries_perc[] = {0,10,20,30,40,50,60,70,80,90,100};
+// size of the query range
+constexpr size_t range_len[] = {1,2,4,8,16,32,64,128,256,512,1024};
+// datasets
+constexpr dataset::ID range_ds[] = {dataset::ID::WIKI,dataset::ID::FB};
+
+// ---- Distribution Experiments ---- //
+// load factors
 constexpr size_t collisions_vs_gaps_lf[] = {10,25,50,70,100};
-// maximum amount of probing steps
-#define MAX_PROBING_STEPS 1000000
-// number of entries in build time experiment
+// datasets
+constexpr dataset::ID collisions_vs_gaps_ds[] = {dataset::ID::UNIFORM,dataset::ID::VAR_x2,dataset::ID::VAR_x4,dataset::ID::VAR_HALF,dataset::ID::VAR_QUART};
+
+// ---- Build Experiments ---- //
+// number of entries
 constexpr size_t build_entries[] = {MAX_DS_SIZE/100, MAX_DS_SIZE/20, MAX_DS_SIZE/10, MAX_DS_SIZE/2, MAX_DS_SIZE};
-// datasets for each experiment
+// datasets
+constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM};
+
+// ---- Everything Else ---- //
+// datasets for remaining experiments
 constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB};
 constexpr dataset::ID gaps_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM};
-constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM};
-constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM};
-constexpr dataset::ID collisions_vs_gaps_ds[] = {dataset::ID::UNIFORM,dataset::ID::VAR_x2,dataset::ID::VAR_x4,dataset::ID::VAR_HALF,dataset::ID::VAR_QUART};
 
 // ********************* DATA TYPES ********************* //
 
@@ -52,6 +77,8 @@ using RMIHash_100k = learned_hashing::RMIHash<Data, 100000>;
 using RMIHash_1M = learned_hashing::RMIHash<Data, 1000000>;
 using RMIHash_10M = learned_hashing::RMIHash<Data, 10000000>;
 using RMIHash_100M = learned_hashing::RMIHash<Data, 100000000>;
+//
+using RMIMonotone = learned_hashing::MonotoneRMIHash<Data, 10000000>;
 
 // learned_hashing::RadixSplineHash<Data, size_t NumRadixBits, size_t MaxError>
 // notice that MaxError is the parameter controlling the number of models
@@ -90,3 +117,9 @@ using LinearTable = hashtable::Probing<Key, Payload, HashFn, ReductionFn, hashta
 template <class HashFn, class ReductionFn = FastModulo>
 using CuckooTable = hashtable::Cuckoo<Key, Payload, 4 /*BucketSize*/, HashFn, XXHash3, ReductionFn, FastModulo, 
     hashtable::BiasedKicking<KICK_BIAS_CHANCE>>;
+
+// Chained table for range experiments
+template <class HashFn>
+using ChainedRange = hashtable::Chained<Key, Payload, RANGE_BUCKETS /*BucketSize*/, HashFn, FastModulo>;
+template <class HashFn>
+using RMISortRange = hashtable::RMISort<Key, Payload, HashFn>;

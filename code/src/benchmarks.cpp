@@ -25,7 +25,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,probe,build,distribution,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe,build,distribution,point,range,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -123,7 +123,9 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
         const bm::BMtype& gap_bm, 
         const std::vector<bm::BM>& probe_bm,
         const std::vector<bm::BMtype>& build_bm,
-        const std::vector<bm::BMtype>& collisions_vs_gaps /*TODO - add more*/) {
+        const std::vector<bm::BMtype>& collisions_vs_gaps_bm,
+        const std::vector<bm::BMtype>& point_vs_range_bm,
+        const std::vector<bm::BMtype>& range_size_bm /*TODO - add more*/) {
     std::string part;
     size_t start;
     size_t end = 0;
@@ -158,8 +160,24 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
         }
         if (part == "distribution" || part == "all") {
             how_many = dataset::ID_ALL_COUNT;
-            for (const bm::BMtype& bm_fn : collisions_vs_gaps) {
+            for (const bm::BMtype& bm_fn : collisions_vs_gaps_bm) {
                 for (dataset::ID id : collisions_vs_gaps_ds)
+                    bm_list.push_back({bm_fn, id});
+            }
+            if (part != "all") continue;
+            continue;
+        }
+        if (part == "point" || part == "all") {
+            for (const bm::BMtype& bm_fn : point_vs_range_bm) {
+                for (dataset::ID id : range_ds)
+                    bm_list.push_back({bm_fn, id});
+            }
+            if (part != "all") continue;
+            continue;
+        }
+        if (part == "range" || part == "all") {
+            for (const bm::BMtype& bm_fn : range_size_bm) {
+                for (dataset::ID id : range_ds)
                     bm_list.push_back({bm_fn, id});
             }
             //if (part != "all") continue;
@@ -258,9 +276,21 @@ int main(int argc, char* argv[]) {
     std::vector<bm::BMtype> collisions_vs_gaps_bm = {};
     size_t lf_size = sizeof(collisions_vs_gaps_lf)/sizeof(collisions_vs_gaps_lf[0]);
     dilate_function_list(collisions_vs_gaps_bm, &bm::collisions_vs_gaps<RMIHash_1k>, collisions_vs_gaps_lf, lf_size);
-    // TODO - add more
+    // ---------------- point-vs-range --------------- //
+    std::vector<bm::BMtype> point_vs_range_bm = {};
+    size_t point_size = sizeof(point_queries_perc)/sizeof(point_queries_perc[0]);
+    dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RMIMonotone,ChainedRange<RMIMonotone>>, point_queries_perc, point_size);
+    dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, point_queries_perc, point_size);
+    dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RMIMonotone,RMISortRange<RMIMonotone>>, point_queries_perc, point_size);
+    // ---------------- range-size --------------- //
+    std::vector<bm::BMtype> range_len_bm = {};
+    size_t range_size = sizeof(range_len)/sizeof(range_len[0]);
+    dilate_function_list(range_len_bm, &bm::range_throughput<RMIMonotone,ChainedRange<RMIMonotone>>, range_len, range_size);
+    dilate_function_list(range_len_bm, &bm::range_throughput<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, range_len, range_size);
+    dilate_function_list(range_len_bm, &bm::range_throughput<RMIMonotone,RMISortRange<RMIMonotone>>, range_len, range_size);
+    
 
-    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm);
+    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm, point_vs_range_bm, range_len_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
