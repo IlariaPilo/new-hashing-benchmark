@@ -84,27 +84,27 @@ int pars_args(const int& argc, char* const* const& argv) {
 }
 
 template <class HashFn, class ReductionFn = FastModulo>
-void dilate_probe_list(std::vector<bm::BMtype>& probe_bm_out) {
+void dilate_probe_list(std::vector<bm::BM>& probe_bm_out,dataset::ID id) {
     // Chained
     for (size_t load_perc : chained_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, ChainedTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
         };
-        probe_bm_out.push_back(lambda);
+        probe_bm_out.push_back({lambda, id});
     }
     // Linear
     for (size_t load_perc : linear_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, LinearTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
         };
-        probe_bm_out.push_back(lambda);
+        probe_bm_out.push_back({lambda, id});
     }
     // Cuckoo
     for (size_t load_perc : cuckoo_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, CuckooTable<HashFn,FastModulo>>(ds_obj, writer, load_perc);
         };
-        probe_bm_out.push_back(lambda);
+        probe_bm_out.push_back({lambda, id});
     }
 }
 
@@ -121,7 +121,7 @@ void dilate_function_list(std::vector<bm::BMtype>& bm_out, const bm::BMtemplate 
 void load_bm_list(std::vector<bm::BM>& bm_list,
         const std::vector<bm::BMtype>& collision_bm,
         const bm::BMtype& gap_bm, 
-        const std::vector<bm::BMtype>& probe_bm,
+        const std::vector<bm::BM>& probe_bm,
         const std::vector<bm::BMtype>& build_bm,
         const std::vector<bm::BMtype>& collisions_vs_gaps /*TODO - add more*/) {
     std::string part;
@@ -143,10 +143,8 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
             if (part != "all") continue;
         }
         if (part == "probe" || part == "all") {
-            for (const bm::BMtype& bm_fn : probe_bm) {
-                // TODO --- fix this
-                for (dataset::ID id : probe_insert_ds)
-                    bm_list.push_back({bm_fn, id});
+            for (const bm::BM& bm_struct : probe_bm) {
+                bm_list.push_back(bm_struct);
             }
             if (part != "all") continue;
         }
@@ -234,13 +232,21 @@ int main(int argc, char* argv[]) {
     // ---------------- gaps ---------------- //
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
     // ---------------- probe --------------- //
-    std::vector<bm::BMtype> probe_bm = {};
-    dilate_probe_list<RMIHash_1k>(probe_bm);
-    dilate_probe_list<RadixSplineHash_1k>(probe_bm);
-    dilate_probe_list<PGMHash_1k>(probe_bm);
-    dilate_probe_list<MURMUR>(probe_bm);
-    dilate_probe_list<MultPrime64>(probe_bm);
-    dilate_probe_list<MWHC>(probe_bm);
+    std::vector<bm::BM> probe_bm = {};
+    dilate_probe_list<RMIHash_10>(probe_bm,dataset::ID::GAP_10);
+    dilate_probe_list<RMIHash_100>(probe_bm,dataset::ID::NORMAL);
+    dilate_probe_list<RMIHash_1k>(probe_bm,dataset::ID::WIKI);
+    dilate_probe_list<RMIHash_10M>(probe_bm,dataset::ID::FB);
+    dilate_probe_list<RMIHash_10M>(probe_bm,dataset::ID::OSM);
+    // for each dataset
+    for (dataset::ID id : probe_insert_ds) {
+        dilate_probe_list<RadixSplineHash_128>(probe_bm,id);
+        dilate_probe_list<PGMHash_100>(probe_bm,id);
+        dilate_probe_list<MURMUR>(probe_bm,id);
+        dilate_probe_list<MultPrime64>(probe_bm,id);
+        dilate_probe_list<MWHC>(probe_bm,id);
+
+    }
     // ---------------- build time --------------- //
     std::vector<bm::BMtype> build_bm = {};
     size_t build_size = sizeof(build_entries)/sizeof(build_entries[0]);

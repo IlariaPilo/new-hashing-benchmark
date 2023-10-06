@@ -25,13 +25,12 @@ constexpr size_t collisions_vs_gaps_lf[] = {10,25,50,70,100};
 #define MAX_PROBING_STEPS 1000000
 // number of entries in build time experiment
 constexpr size_t build_entries[] = {MAX_DS_SIZE/100, MAX_DS_SIZE/20, MAX_DS_SIZE/10, MAX_DS_SIZE/2, MAX_DS_SIZE};
-
 // datasets for each experiment
-constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::_NONE_};
-constexpr dataset::ID gaps_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::_NONE_};
-constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM,dataset::ID::_NONE_};
-constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM,dataset::ID::_NONE_};
-constexpr dataset::ID collisions_vs_gaps_ds[] = {dataset::ID::UNIFORM,dataset::ID::VAR_x2,dataset::ID::VAR_x4,dataset::ID::VAR_HALF,dataset::ID::VAR_QUART,dataset::ID::_NONE_};
+constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB};
+constexpr dataset::ID gaps_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM};
+constexpr dataset::ID probe_insert_ds[] = {dataset::ID::GAP_10,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB,dataset::ID::OSM};
+constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM};
+constexpr dataset::ID collisions_vs_gaps_ds[] = {dataset::ID::UNIFORM,dataset::ID::VAR_x2,dataset::ID::VAR_x4,dataset::ID::VAR_HALF,dataset::ID::VAR_QUART};
 
 // ********************* DATA TYPES ********************* //
 

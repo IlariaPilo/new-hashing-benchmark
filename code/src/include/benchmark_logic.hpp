@@ -120,18 +120,12 @@ namespace bm {
             return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
         });
         // begin computation
-        // for each ds
-        for (size_t id=0; id<how_many; id++) {
-            // get the ds
-            const dataset::Dataset<Data>& ds = collection.get_ds(id);
-            // for each function
-            for(int i=0; i<BM_COUNT; i++) {
-                BM bm = bm_list[i];
-                // get the dataset
-                const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
-                // run the function
-                bm.function(ds, writer);
-            }
+        for(int i=0; i<BM_COUNT; i++) {
+            BM bm = bm_list[i];
+            // get the dataset
+            const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
+            // run the function
+            bm.function(ds, writer);
         }
         // done!
     }
