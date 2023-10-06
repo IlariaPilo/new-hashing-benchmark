@@ -118,7 +118,7 @@ void dilate_function_list(std::vector<bm::BMtype>& bm_out, const bm::BMtemplate 
     }
 }
 
-void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
+void load_bm_list(std::vector<bm::BM>& bm_list,
         const std::vector<bm::BMtype>& collision_bm,
         const bm::BMtype& gap_bm, 
         const std::vector<bm::BMtype>& probe_bm,
@@ -131,37 +131,38 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::I
         end = filter.find(',', start);
         part = filter.substr(start, end-start);
         if (part == "collision" || part == "collisions" || part == "all") {
-            for (const bm::BMtype& bm : collision_bm) {
-                bm_list.push_back(bm);
-                ds_list.push_back(collisions_ds);
+            for (const bm::BMtype& bm_fn : collision_bm) {
+                for (dataset::ID id : collisions_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
         }
         if (part == "gap" || part == "gaps" || part == "all") {
-            bm_list.push_back(gap_bm);
-            ds_list.push_back(gaps_ds);
+            for (dataset::ID id : gaps_ds)
+                bm_list.push_back({gap_bm, id});
             if (part != "all") continue;
         }
         if (part == "probe" || part == "all") {
-            for (const bm::BMtype& bm : probe_bm) {
-                bm_list.push_back(bm);
-                ds_list.push_back(probe_insert_ds);
+            for (const bm::BMtype& bm_fn : probe_bm) {
+                // TODO --- fix this
+                for (dataset::ID id : probe_insert_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
         }
         if (part == "build" || part == "all") {
-            for (const bm::BMtype& bm : build_bm) {
-                bm_list.push_back(bm);
-                ds_list.push_back(build_time_ds);
+            for (const bm::BMtype& bm_fn : build_bm) {
+                for (dataset::ID id : build_time_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
             continue;
         }
         if (part == "distribution" || part == "all") {
             how_many = dataset::ID_ALL_COUNT;
-            for (const bm::BMtype& bm : collisions_vs_gaps) {
-                bm_list.push_back(bm);
-                ds_list.push_back(collisions_vs_gaps_ds);
+            for (const bm::BMtype& bm_fn : collisions_vs_gaps) {
+                for (dataset::ID id : collisions_vs_gaps_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             //if (part != "all") continue;
             continue;
@@ -194,8 +195,7 @@ int main(int argc, char* argv[]) {
     JsonOutput writer(output_dir, argv[0], filter);
 
     // Benchmark arrays definition
-    std::vector<bm::BMtype> bm_list;
-    std::vector<const dataset::ID*> ds_list;
+    std::vector<bm::BM> bm_list;
     // ------------- collisions ------------- //
     std::vector<bm::BMtype> collision_bm = {
         // RMI
@@ -254,7 +254,7 @@ int main(int argc, char* argv[]) {
     dilate_function_list(collisions_vs_gaps_bm, &bm::collisions_vs_gaps<RMIHash_1k>, collisions_vs_gaps_lf, lf_size);
     // TODO - add more
 
-    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm);
+    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
@@ -266,16 +266,19 @@ int main(int argc, char* argv[]) {
     dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_DS_SIZE), input_dir, threads, how_many);
     std::cout << "done!" << std::endl << std::endl;
 
-    // for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
-    //     if (ds.get_ds().size() != ds.get_size()) {
-    //         // Throw a runtime exception
-    //         throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
-    //     }
-    // }
+    /*
+    // Uncomment to get extra safety checks
+    for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
+        if (ds.get_ds().size() != ds.get_size()) {
+            // Throw a runtime exception
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
+        }
+    }
+    */
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms(bm_list, ds_list, collection, writer, how_many);
+    bm::run_bms(bm_list, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;

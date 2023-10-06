@@ -17,6 +17,11 @@ namespace bm {
     using BMtype = std::function<void(const dataset::Dataset<Data>&, JsonOutput&)>;
     // utility version
     using BMtemplate = std::function<void(const dataset::Dataset<Data>&, JsonOutput&, size_t)>;
+    // struct function+dataset
+    typedef struct BM {
+        BMtype function;
+        dataset::ID dataset;
+    } BM;
 
     // ----------------- utility things ----------------- //
     std::vector<int> order_insert; // will store all values from 0 to N-1
@@ -41,7 +46,7 @@ namespace bm {
             order_probe.push_back(random_value);
         }
     }
-    std::pair<int, int> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype>& bm_list) {
+    std::pair<int, int> get_bm_slice(int threadID, size_t thread_num, std::vector<BM>& bm_list) {
         int BM_COUNT = bm_list.size();
         int mod = BM_COUNT % thread_num;
         int div = BM_COUNT / thread_num;
@@ -61,21 +66,8 @@ namespace bm {
         int start = past_mod_threads*(div+1) + past_threads*div;
         int end = start+slice;
 
-        /* Create the vector */
-        // std::vector<BMtype> output;
-        // output.resize(slice);
-        // for(int i=start, j=0; i<end && i<BM_COUNT; i++, j++)
-        //     output[j] = bm_list[i];
         std::pair<int,int> output(start,end);
         return output;
-    }
-    bool find_ds(const dataset::ID* ds_list, int ds_number) {
-        dataset::ID id = dataset::REVERSE_ID.at(ds_number);
-        for(int i = 0; ds_list[i]!=dataset::ID::_NONE_; i++) {
-            if (ds_list[i]==id)
-                return true;
-        }
-        return false;
     }
 
     /**
@@ -84,15 +76,18 @@ namespace bm {
     @param collection the list of datasets benchmarks will be run on
     @param writer the object that handles the output json file 
     */
-    void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
-            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer,
-            size_t how_many = dataset::ID_COUNT) {
+    void run_bms(std::vector<BM>& bm_list,
+            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         // first of all, check thread compatibility
         if (thread_num > bm_list.size())
             thread_num = bm_list.size();
         // initialize arrays to keep things sorted
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order(MAX_DS_SIZE);
+        // sort the BM array by dataset ID
+        std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
+            return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
+        });
         // begin parallel computation
         #pragma omp parallel num_threads(thread_num)
         {
@@ -102,30 +97,28 @@ namespace bm {
             auto slice = get_bm_slice(threadID, thread_num, bm_list);
             int start = slice.first;
             int end = slice.second;
-            // for each ds
-            for (size_t id=0; id<how_many; id++) {
-                // get the ds
-                const dataset::Dataset<Data>& ds = collection.get_ds(id);
-                // for each function
-                for(int i=start; i<end && i<BM_COUNT; i++) {
-                    if (!find_ds(ds_list[i],id))
-                        continue;
-                    BMtype bm = bm_list[i];
-                    // run the function
-                    bm(ds, writer);
-                }
+            // for each function
+            for(int i=start; i<end && i<BM_COUNT; i++) {
+                BM bm = bm_list[i];
+                // get the dataset
+                const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
+                // run the function
+                bm.function(ds, writer);
             }
         }
         // done!
     }
     // non-parallel version
-    void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
-            dataset::CollectionDS<Data>& collection, JsonOutput& writer,
-            size_t how_many = dataset::ID_COUNT) {
+    void run_bms(std::vector<BM>& bm_list,
+            dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         int BM_COUNT = bm_list.size();
         // initialize arrays to keep things sorted
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order(MAX_DS_SIZE);
+        // sort the BM array by dataset ID
+        std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
+            return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
+        });
         // begin computation
         // for each ds
         for (size_t id=0; id<how_many; id++) {
@@ -133,11 +126,11 @@ namespace bm {
             const dataset::Dataset<Data>& ds = collection.get_ds(id);
             // for each function
             for(int i=0; i<BM_COUNT; i++) {
-                if (!find_ds(ds_list[i],id))
-                    continue;
-                BMtype bm = bm_list[i];
+                BM bm = bm_list[i];
+                // get the dataset
+                const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
                 // run the function
-                bm(ds, writer);
+                bm.function(ds, writer);
             }
         }
         // done!
