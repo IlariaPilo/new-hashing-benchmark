@@ -440,8 +440,9 @@ namespace bm {
                 Data min = ds[idx_min];
                 // get the idx_max
                 size_t increment = range_size?range_size:ranges[i];
-                size_t idx_max = idx_min + increment;
+                size_t idx_max = idx_min + increment-1;
                 idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
+                increment = idx_max - idx_min +1;
                 // get the max
                 Data max = ds[idx_max];
                 if (max<min) {
@@ -450,14 +451,14 @@ namespace bm {
                 _start_ = std::chrono::high_resolution_clock::now();
                 std::vector<Payload> payload = table.lookup_range(min,max);
                 _end_ = std::chrono::high_resolution_clock::now();
-                if (payload.empty()) {
+                if (payload.size() != increment) {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [label] " + label + "\n");
                 }
                 tot_time_probe += _end_ - _start_;
-                probe_count++;
+                probe_count += increment;
                 // update i
                 i += increment;
-            }
+            } else i++;
         }
     done:
         json benchmark;
