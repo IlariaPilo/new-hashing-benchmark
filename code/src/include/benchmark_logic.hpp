@@ -439,10 +439,10 @@ namespace bm {
                 // get the min
                 Data min = ds[idx_min];
                 // get the idx_max
-                size_t increment = range_size?range_size:ranges[i];
-                size_t idx_max = idx_min + increment-1;
+                size_t increment = (range_size?range_size:ranges[i])-1; // remove 1 cause the upper bound is included
+                size_t idx_max = idx_min + increment;
                 idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
-                increment = idx_max - idx_min +1;
+                increment = idx_max - idx_min +1;                       // add 1 cause the upper bound is included
                 // get the max
                 Data max = ds[idx_max];
                 if (max<min) {
@@ -452,7 +452,7 @@ namespace bm {
                 std::vector<Payload> payload = table.lookup_range(min,max);
                 _end_ = std::chrono::high_resolution_clock::now();
                 if (payload.size() != increment) {
-                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [label] " + label + "\n");
+                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
                 }
                 tot_time_probe += _end_ - _start_;
                 probe_count += increment;
