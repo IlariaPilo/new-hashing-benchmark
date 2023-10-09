@@ -135,10 +135,10 @@ namespace hashtable {
                 Slot& s = slots[i];
                 // predicted index
                 size_t p_idx = hashfn(s.key);
-                if (i>p_idx && i-p_idx > max_error_left)
-                    max_error_left = i-p_idx;
-                else if (p_idx-i > max_error_right)
-                    max_error_right = p_idx-i;
+                if (i>p_idx && i-p_idx > max_error_right)
+                    max_error_right = i-p_idx;
+                else if (i<p_idx && p_idx-i > max_error_left)
+                    max_error_left = p_idx-i;
             }
             finalized = true;
         }
