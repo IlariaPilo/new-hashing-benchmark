@@ -432,16 +432,21 @@ namespace bm {
             }
         }
         // Now the range queries
-        for (; i<dataset_size; i++) {
+        while (i<dataset_size) {
             int idx_min = order_probe[i];
             // check if the index exists
             if (idx_min < (int)dataset_size) {
                 // get the min
                 Data min = ds[idx_min];
                 // get the idx_max
-                size_t idx_max = idx_min + range_size?range_size:ranges[i];
+                size_t increment = range_size?range_size:ranges[i];
+                size_t idx_max = idx_min + increment;
+                idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
                 // get the max
-                Data max = ds[idx_max<dataset_size?idx_max:dataset_size-1];
+                Data max = ds[idx_max];
+                if (max<min) {
+                    throw std::runtime_error("\033[1;91mError\033[0m Something went wrong...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [label] " + label + "\n");
+                }
                 _start_ = std::chrono::high_resolution_clock::now();
                 std::vector<Payload> payload = table.lookup_range(min,max);
                 _end_ = std::chrono::high_resolution_clock::now();
@@ -450,6 +455,8 @@ namespace bm {
                 }
                 tot_time_probe += _end_ - _start_;
                 probe_count++;
+                // update i
+                i += increment;
             }
         }
     done:
