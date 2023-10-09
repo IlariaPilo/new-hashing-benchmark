@@ -21,7 +21,8 @@ namespace hashtable {
         const size_t capacity;          // the number of elements in the dataset
         std::vector<Slot> slots;        // the table
         size_t filled;                  // the number of occupied positions
-        size_t max_error;               // to do binary search
+        size_t max_error_left;          // to do binary search
+        size_t max_error_right;         // to do binary search
         bool finalized;
 
         public:
@@ -32,7 +33,7 @@ namespace hashtable {
          * @param hashfn the RMI hash function (already trained) that will be used on top of the structure
         */
         explicit RMISort(const size_t& capacity, const RMIHash hashfn)
-         : hashfn(hashfn), capacity(capacity), filled(0), max_error(0), finalized(false) {
+         : hashfn(hashfn), capacity(capacity), filled(0), max_error_left(0), max_error_right(0), finalized(false) {
             slots.reserve(capacity);
         };
 
@@ -75,8 +76,8 @@ namespace hashtable {
 
             m = hashfn(key);
             // set up l and r for the bounded binary search
-            l = std::max((size_t)0, m-max_error);
-            r = std::min(m+max_error, capacity-1);
+            l = m>max_error_left?m-max_error_left:0;
+            r = std::min(m+max_error_right, capacity-1);
             // check in the keyv array
             while (l <= r) {
                 guess_slot = slots[m];
@@ -110,7 +111,7 @@ namespace hashtable {
                 return output;
             }
             size_t left_idx = search_range(true, min);
-            size_t right_idx = search_range(true, max);
+            size_t right_idx = search_range(false, max);
             for (size_t i=left_idx; i<=right_idx; i++) 
                 output.push_back(slots[i].payload);
             return output;
@@ -134,9 +135,10 @@ namespace hashtable {
                 Slot& s = slots[i];
                 // predicted index
                 size_t p_idx = hashfn(s.key);
-                size_t diff = i>p_idx? i-p_idx:p_idx-i;
-                if (diff > max_error)
-                    max_error = diff;
+                if (i>p_idx && i-p_idx > max_error_left)
+                    max_error_left = i-p_idx;
+                else if (p_idx-i > max_error_right)
+                    max_error_right = p_idx-i;
             }
             finalized = true;
         }
@@ -154,8 +156,8 @@ namespace hashtable {
 
             m = hashfn(key);
             // set up l and r for the bounded binary search
-            l = std::max((size_t)0, m-max_error);
-            r = std::min(m+max_error, capacity-1);
+            l = m>max_error_left?m-max_error_left:0;
+            r = std::min(m+max_error_right, capacity-1);
             // check in the keyv array
             while (l <= r) {
                 guess_key = slots[m].key;
