@@ -64,10 +64,12 @@ namespace hashtable {
          * @return the correspondent payload if the key was found, `std::nullopt` otherwise.
         */
         std::optional<Payload> lookup(const Key& key) const {
-            if (!finalized)
+            if (!finalized) {
                 // structure is not completely filled (YET)
+                std::cerr << "\033[1;93m [warning]\033[0m structure is not completely filled yet.\n";
                 return std::nullopt;
-                
+            }
+                 
             size_t m, l, r;
             Slot guess_slot;
 
@@ -102,6 +104,11 @@ namespace hashtable {
         */
         std::vector<Payload> lookup_range(const Key& min, const Key& max) {
             std::vector<Payload> output;
+            if (!finalized) {
+                // structure is not completely filled (YET)
+                std::cerr << "\033[1;93m [warning]\033[0m structure is not completely filled yet.\n";
+                return output;
+            }
             size_t left_idx = search_range(true, min);
             size_t right_idx = search_range(true, max);
             for (size_t i=left_idx; i<=right_idx; i++) 
