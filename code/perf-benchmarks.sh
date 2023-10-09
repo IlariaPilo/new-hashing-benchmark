@@ -66,6 +66,21 @@ output_file="${output_dir}/perf_${current_datetime}.csv"
 echo "function,table,dataset,cycles,L1-dcache-load-misses,LLC-load-misses,branch-misses" > $output_file
 
 for ds in "${datasets[@]}"; do
+    echo -n "-,-,$ds," >> $output_file
+    sudo perf stat -e cycles,L1-dcache-load-misses,LLC-load-misses,branch-misses -c 100 \
+        cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -d $ds \
+        2>&1 | tee tmp.out
+    # get interesting values
+    cat tmp.out | grep -E 'cycles|L1-dcache-load-misses|LLC-load-misses|branch-misses' | awk '{
+    if (NR == 1) {
+        printf $1;
+    } else {
+        printf ",%s", $1;
+    }
+    }
+    END {
+    print "";
+    }' >> $output_file
     for tab in "${tables[@]}"; do
         for fun in "${functions[@]}"; do
             echo -n "$fun,$tab,$ds," >> $output_file
