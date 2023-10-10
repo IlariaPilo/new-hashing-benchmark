@@ -382,7 +382,7 @@ namespace bm {
         HashFn fn;
         _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
         HashTable table(capacity, fn);
-        const std::string label = "Range:" + table.name() + ":" + dataset_name + ":" + std::to_string(point_query_perc);
+        const std::string label = "Range:" + table.name() + ":" + dataset_name + ":" + std::to_string(point_query_perc) + ":" + std::to_string(range_size);
 
         // get X (the number of point queries)
         size_t X = dataset_size*point_query_perc/100;
@@ -463,6 +463,7 @@ namespace bm {
     done:
         json benchmark;
         benchmark["dataset_size"] = dataset_size;
+        benchmark["range_size"] = range_size;
         benchmark["probe_elem_count"] = probe_count;
         benchmark["tot_time_probe_s"] = tot_time_probe.count();
         benchmark["point_query_%"] = point_query_perc;
