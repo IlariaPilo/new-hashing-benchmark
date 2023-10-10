@@ -45,6 +45,11 @@ SHAPES_FN = {
     'MultiplyPrime': 'D',
     'FibonacciPrime': 'D'
 }
+SHAPES_STRUCT = {
+    'RMI-Chain': 's',
+    'RadixSpline-Chain': 's',
+    'RMI-Sort': 'D'
+}
 SHAPES_DS = {
     'gap_10': '^',
     'uniform': 'D',
@@ -58,6 +63,7 @@ SHAPES_DS = {
     'variance_quarter': '>'
 }
 COLORS = {}
+COLORS_STRUCT = {}
 
 CHAINED = 0
 LINEAR = 1
@@ -98,6 +104,15 @@ def get_table_type(label):
     if 'cuckoo' in label:
         return 'cuckoo'
     
+def get_struct_type(label):
+    label = label.lower()
+    if 'sort' in label:
+        return 'RMI-Sort'
+    if 'radix' in label:
+        return 'RadixSpline-Chain'
+    if 'rmi' in label:
+        return 'RMI-Chain'
+    
 def get_rmi_models(label):
     pattern = r'rmi_hash_(\d+):'
     match = re.search(pattern, label)
@@ -108,7 +123,8 @@ def prepare_fn_colormap():
     cmap = plt.get_cmap('RdYlBu')
     # Create a dictionary of unique colors based on the number of labels
     col_dict = {functions[f_i]: cmap(col_i) for f_i, col_i in enumerate(np.linspace(0, 1, len(functions)))}
-    return col_dict
+    col_struct = {'RMI-Chain': col_dict['RMI'], 'RadixSpline-Chain': col_dict['PGM'], 'RMI-Sort': col_dict['BitMWHC']}
+    return col_dict, col_struct
 
 def groupby_helper(df, static_cols, variable_cols):
     return df.groupby(static_cols)[variable_cols].mean().reset_index()
@@ -537,8 +553,94 @@ def perf(df):
     #plt.show()
     fig.savefig(f'{prefix}.png', bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
 
+# -------- point+range -------- # 
+def point_range(df):
+    datasets = ['wiki','fb']
+    df = df[df["label"].str.lower().str.contains("range")].copy(deep=True)
+    if df.empty:
+        return
+    # remove failed experiments
+    df = df[df["insert_fail_message"]=='']
+    # Group by
+    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','range_size','point_query_%'], ['probe_elem_count','tot_time_probe_s'])
+    df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
+    df['struct'] = df['label'].apply(lambda x : get_struct_type(x))
 
-# =============================== MAINS =============================== #
+    structs = df['struct'].unique()
+
+    # Separate the df in two parts: point and range
+    df_point = df[df['range_size']==0]
+    df_range = df[df['range_size']!=0]
+
+    # Sort the datasets
+    df_point = df_point.sort_values(by='point_query_%')
+    df_range = df_range.sort_values(by='range_size')
+    
+    # Create a single figure with multiple subplots in a row
+    POINT = 0
+    RANGE = 1
+    num_subplots = len(datasets)
+
+    # create the subfigures and subplots
+    fig = plt.figure(figsize=(5, 4))
+    subfigs = fig.subfigures(2, 1, height_ratios=[1.1, 1], hspace=.05)
+
+    axs_point = subfigs[POINT].subplots(1, num_subplots)
+    axs_point = axs_point.flatten()
+    lg1 = subfigs[POINT].supxlabel('Percentage of Point Queries')
+    #lg2 = subfigs[POINT].supylabel('Throughput \n(Million operations/s)')
+
+    axs_range = subfigs[RANGE].subplots(1, num_subplots)
+    axs_range = axs_range.flatten()
+    lg3 = subfigs[RANGE].supxlabel('Range Query Size')
+    #lg4 = subfigs[RANGE].supylabel('Throughput \n(Million operations/s)')
+    
+    # Create a single legend for all subplots
+    legend_labels = []
+
+    # for each dataset
+    for i, _d_ in enumerate(datasets):
+        _point_ = df_point[df_point['dataset_name']==_d_]
+        _range_ = df_range[df_range['dataset_name']==_d_]
+        for _s_ in structs:
+            # Point
+            point_s = _point_[_point_['struct']==_s_]
+            axs_point[i].plot(point_s['point_query_%'], point_s['throughput_M'], color=COLORS_STRUCT[_s_], marker=SHAPES_STRUCT[_s_], label=_s_)
+            # Range
+            range_s = _range_[_range_['struct']==_s_]
+            axs_range[i].plot(range_s['range_size'], range_s['throughput_M'], color=COLORS_STRUCT[_s_], marker=SHAPES_STRUCT[_s_], label=_s_)
+            if _s_ not in legend_labels:
+                legend_labels.append(_s_)
+        
+        # Customize the plot
+        axs_point[i].set_title(f'{_d_}')
+        axs_point[i].set_xlim([0,100])
+        axs_point[i].set_xticks([0,25,50,75,100],['0','25','50','75','100'])
+        axs_range[i].set_xscale('log', base=2)
+        axs_range[i].set_xticks([1,8,64,1024],['1','8','64','1024'])
+
+        # ax[CHAINED].set_ylim([0,8])
+        # ax[LINEAR].set_ylim([0,8])
+        # ax[CUCKOO].set_ylim([0,8])
+        # ax[CHAINED].set_yticks([0,2,4,6,8], ['','','','',''])
+        # ax[LINEAR].set_yticks([0,2,4,6,8], ['','','','',''])
+        # ax[CUCKOO].set_yticks([0,2,4,6,8], ['','','','',''])
+
+        axs_point[i].grid(True)
+        axs_range[i].grid(True)
+    
+    axs_point[0].set_ylabel('Throughput \n(Million operations/s)')
+    axs_range[0].set_ylabel('Throughput \n(Million operations/s)')
+    # axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    # axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    # axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.1))
+
+    #plt.show()
+    fig.savefig(f'{prefix}_range.png', bbox_extra_artists=(lgd,lg1,lg3,), bbox_inches='tight')
+
+# =============================== MAINS =============================== #l
 
 def main_json():
     # Load benchmarks from the file
@@ -555,6 +657,7 @@ def main_json():
         probe(df)
         insert(df)
         build(df)
+        point_range(df)
 
 def main_csv():
     df = pd.read_csv(file_path)
@@ -562,7 +665,7 @@ def main_csv():
     perf(df)
 
 #----------------------------#
-COLORS = prepare_fn_colormap()
+COLORS, COLORS_STRUCT = prepare_fn_colormap()
 if ext == '.json':
     main_json()
 elif ext == '.csv':
