@@ -17,10 +17,16 @@ namespace bm {
     using BMtype = std::function<void(const dataset::Dataset<Data>&, JsonOutput&)>;
     // utility version
     using BMtemplate = std::function<void(const dataset::Dataset<Data>&, JsonOutput&, size_t)>;
+    // struct function+dataset
+    typedef struct BM {
+        BMtype function;
+        dataset::ID dataset;
+    } BM;
 
     // ----------------- utility things ----------------- //
     std::vector<int> order_insert; // will store all values from 0 to N-1
     std::vector<int> order_probe;  // will store uniformly sampled values from 0 to N-1
+    std::vector<int> ranges;       // will store random values in the interval [25,50]
 
     void generate_insert_order(size_t N = 100000000) {
         std::random_device rd;
@@ -41,7 +47,17 @@ namespace bm {
             order_probe.push_back(random_value);
         }
     }
-    std::pair<int, int> get_bm_slice(int threadID, size_t thread_num, std::vector<BMtype>& bm_list) {
+    void fill_ranges(size_t N = 100000000) {
+        ranges.clear();
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> distribution(25,50);
+        for (size_t i = 0; i < N; ++i) {
+            int random_value = distribution(gen);
+            ranges.push_back(random_value);
+        }
+    }
+    std::pair<int, int> get_bm_slice(int threadID, size_t thread_num, std::vector<BM>& bm_list) {
         int BM_COUNT = bm_list.size();
         int mod = BM_COUNT % thread_num;
         int div = BM_COUNT / thread_num;
@@ -61,38 +77,29 @@ namespace bm {
         int start = past_mod_threads*(div+1) + past_threads*div;
         int end = start+slice;
 
-        /* Create the vector */
-        // std::vector<BMtype> output;
-        // output.resize(slice);
-        // for(int i=start, j=0; i<end && i<BM_COUNT; i++, j++)
-        //     output[j] = bm_list[i];
         std::pair<int,int> output(start,end);
         return output;
     }
-    bool find_ds(const dataset::ID* ds_list, int ds_number) {
-        dataset::ID id = dataset::REVERSE_ID.at(ds_number);
-        for(int i = 0; ds_list[i]!=dataset::ID::_NONE_; i++) {
-            if (ds_list[i]==id)
-                return true;
-        }
-        return false;
-    }
 
     /**
-    The function that will run all selected benchmarks in parallel.
+    The function that will run all selected benchmarks (PARALLEL VERSION).
     @param  bm_list the list of benchmarks that will be run
     @param collection the list of datasets benchmarks will be run on
     @param writer the object that handles the output json file 
     */
-    void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
-            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer,
-            size_t how_many = dataset::ID_COUNT) {
+    void run_bms(std::vector<BM>& bm_list,
+            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         // first of all, check thread compatibility
         if (thread_num > bm_list.size())
             thread_num = bm_list.size();
         // initialize arrays to keep things sorted
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order(MAX_DS_SIZE);
+        fill_ranges(MAX_DS_SIZE);
+        // sort the BM array by dataset ID
+        std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
+            return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
+        });
         // begin parallel computation
         #pragma omp parallel num_threads(thread_num)
         {
@@ -102,49 +109,47 @@ namespace bm {
             auto slice = get_bm_slice(threadID, thread_num, bm_list);
             int start = slice.first;
             int end = slice.second;
-            // for each ds
-            for (size_t id=0; id<how_many; id++) {
-                // get the ds
-                const dataset::Dataset<Data>& ds = collection.get_ds(id);
-                // for each function
-                for(int i=start; i<end && i<BM_COUNT; i++) {
-                    if (!find_ds(ds_list[i],id))
-                        continue;
-                    BMtype bm = bm_list[i];
-                    // run the function
-                    bm(ds, writer);
-                }
+            // for each function
+            for(int i=start; i<end && i<BM_COUNT; i++) {
+                BM bm = bm_list[i];
+                // get the dataset
+                const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
+                // run the function
+                bm.function(ds, writer);
             }
         }
         // done!
     }
-    // non-parallel version
-    void run_bms(std::vector<BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
-            dataset::CollectionDS<Data>& collection, JsonOutput& writer,
-            size_t how_many = dataset::ID_COUNT) {
+    /**
+    The function that will run all selected benchmarks (SERIAL VERSION).
+    @param  bm_list the list of benchmarks that will be run
+    @param collection the list of datasets benchmarks will be run on
+    @param writer the object that handles the output json file 
+    */
+    void run_bms(std::vector<BM>& bm_list,
+            dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         int BM_COUNT = bm_list.size();
         // initialize arrays to keep things sorted
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order(MAX_DS_SIZE);
+        fill_ranges(MAX_DS_SIZE);
+        // sort the BM array by dataset ID
+        std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
+            return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
+        });
         // begin computation
-        // for each ds
-        for (size_t id=0; id<how_many; id++) {
-            // get the ds
-            const dataset::Dataset<Data>& ds = collection.get_ds(id);
-            // for each function
-            for(int i=0; i<BM_COUNT; i++) {
-                if (!find_ds(ds_list[i],id))
-                    continue;
-                BMtype bm = bm_list[i];
-                // run the function
-                bm(ds, writer);
-            }
+        for(int i=0; i<BM_COUNT; i++) {
+            BM bm = bm_list[i];
+            // get the dataset
+            const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
+            // run the function
+            bm.function(ds, writer);
         }
         // done!
     }
 
     // ----------------- benchmarks list ----------------- //
-    // collision
+    // collision+distribution
     template <class HashFn>
     void collisions_vs_gaps(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc) {
         // Extract variables
@@ -358,6 +363,131 @@ namespace bm {
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
         else std::cout << label + "\n";
         writer.add_data(benchmark);
+    }
+
+    template <class HashFn, class HashTable>
+    void range_helper(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t point_query_perc, size_t range_size = 0) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
+
+        // Compute capacity given the laod% and the dataset_size
+        size_t capacity;
+        if (typeid(HashTable)==typeid(RMISortRange<HashFn>))
+            capacity = dataset_size;
+        else capacity = dataset_size*100/RANGE_LOAD_PERC;
+        
+        // now, create the table
+        HashFn fn;
+        _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
+        HashTable table(capacity, fn);
+        const std::string label = "Range:" + table.name() + ":" + dataset_name + ":" + std::to_string(point_query_perc) + ":" + std::to_string(range_size);
+
+        // get X (the number of point queries)
+        size_t X = dataset_size*point_query_perc/100;
+
+        // ====================== throughput counters ====================== //
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
+        /*volatile*/ std::chrono::duration<double> tot_time_probe(0);
+        size_t probe_count = 0;
+        std::string fail_what = "";
+        bool insert_fail = false;
+        // ================================================================ //
+
+        // Build the table
+        Payload count = 0;
+        for (int idx : order_insert) {
+            // check if the index exists
+            if (idx < (int)dataset_size) {
+                // get the data
+                Data data = ds[idx];
+                try {
+                    table.insert(data, count);
+                } catch(std::runtime_error& e) {
+                    // if we are here, we failed the insertion
+                    insert_fail = true;
+                    fail_what = e.what();
+                    goto done;
+                }
+                count++;
+            }
+        }
+        // Begin with the point queries
+        size_t i;
+        for (i=0; i<X; i++) {
+            int idx = order_probe[i];
+            // check if the index exists
+            if (idx < (int)dataset_size) {
+                // get the data
+                Data data = ds[idx];
+                _start_ = std::chrono::high_resolution_clock::now();
+                std::optional<Payload> payload = table.lookup(data);
+                _end_ = std::chrono::high_resolution_clock::now();
+                if (!payload.has_value()) {
+                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
+                }
+                tot_time_probe += _end_ - _start_;
+                probe_count++;
+            }
+        }
+        // Now the range queries
+        while (i<dataset_size) {
+            int idx_min = order_probe[i];
+            // check if the index exists
+            if (idx_min < (int)dataset_size) {
+                // get the min
+                Data min = ds[idx_min];
+                // get the idx_max
+                size_t increment = (range_size?range_size:ranges[i])-1; // remove 1 cause the upper bound is included
+                size_t idx_max = idx_min + increment;
+                idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
+                increment = idx_max - idx_min +1;                       // add 1 cause the upper bound is included
+                // get the max
+                Data max = ds[idx_max];
+                if (max<min) {
+                    throw std::runtime_error("\033[1;91mError\033[0m Something went wrong...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [label] " + label + "\n");
+                }
+                _start_ = std::chrono::high_resolution_clock::now();
+                std::vector<Payload> payload = table.lookup_range(min,max);
+                _end_ = std::chrono::high_resolution_clock::now();
+                if (payload.size() != increment) {
+                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
+                }
+                tot_time_probe += _end_ - _start_;
+                probe_count ++;
+                // update i
+                i ++;
+            } else i++;
+        }
+    done:
+        json benchmark;
+        benchmark["dataset_size"] = dataset_size;
+        benchmark["range_size"] = range_size;
+        benchmark["probe_elem_count"] = probe_count;
+        benchmark["tot_time_probe_s"] = tot_time_probe.count();
+        benchmark["point_query_%"] = point_query_perc;
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["function_name"] = HashFn::name();
+        benchmark["insert_fail_message"] = fail_what;
+        benchmark["label"] = label;
+
+        if (insert_fail)
+            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
+        else std::cout << label + "\n";
+        writer.add_data(benchmark);
+    }
+
+    // point-vs-range
+    template <class HashFn, class HashTable>
+    inline void point_vs_range(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t point_query_perc) {
+        range_helper<HashFn,HashTable>(ds_obj, writer, point_query_perc);
+    }
+
+    // full range
+    template <class HashFn, class HashTable>
+    inline void range_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t range_size) {
+        range_helper<HashFn,HashTable>(ds_obj, writer, /* % of point queries */ 0, range_size);
     }
 
     // build time

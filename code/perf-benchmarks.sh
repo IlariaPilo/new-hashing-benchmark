@@ -63,29 +63,21 @@ current_datetime=$(date +%Y-%m-%d_%H-%M)
 output_file="${output_dir}/perf_${current_datetime}.csv"
 
 # plot the header
-echo "function,table,dataset,cycles,L1-dcache-load-misses,LLC-load-misses,branch-misses" > $output_file
+echo "function,table,dataset,cycles,kcycles,instructions,L1-misses,LLC-misses,branch-misses,task-clock,scale,IPC,CPUs,GHz" > $output_file
 
 for ds in "${datasets[@]}"; do
     for tab in "${tables[@]}"; do
         for fun in "${functions[@]}"; do
             echo -n "$fun,$tab,$ds," >> $output_file
-            sudo perf stat -e cycles,L1-dcache-load-misses,LLC-load-misses,branch-misses -c 100 \
-                cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds \
-                2>&1 | tee tmp.out
+            cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds > tmp.out
+            # print some info
+            sed -n 1p tmp.out
             # get interesting values
-            cat tmp.out | grep -E 'cycles|L1-dcache-load-misses|LLC-load-misses|branch-misses' | awk '{
-            if (NR == 1) {
-                printf $1;
-            } else {
-                printf ",%s", $1;
-            }
-            }
-            END {
-            print "";
-            }' >> $output_file
+            sed -n 3p tmp.out | tr -d ' \t' >> $output_file
         done
     done
 done
 
-# remove temporary file
+# remove temporary files
 rm tmp.out
+rm ${output_dir}/perf*.json

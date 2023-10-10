@@ -25,7 +25,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,probe,build,distribution,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe,build,distribution,point,range,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -84,27 +84,27 @@ int pars_args(const int& argc, char* const* const& argv) {
 }
 
 template <class HashFn, class ReductionFn = FastModulo>
-void dilate_probe_list(std::vector<bm::BMtype>& probe_bm_out) {
+void dilate_probe_list(std::vector<bm::BM>& probe_bm_out,dataset::ID id) {
     // Chained
     for (size_t load_perc : chained_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, ChainedTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
         };
-        probe_bm_out.push_back(lambda);
+        probe_bm_out.push_back({lambda, id});
     }
     // Linear
     for (size_t load_perc : linear_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, LinearTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
         };
-        probe_bm_out.push_back(lambda);
+        probe_bm_out.push_back({lambda, id});
     }
     // Cuckoo
     for (size_t load_perc : cuckoo_lf) {
         bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_throughput<HashFn, CuckooTable<HashFn,FastModulo>>(ds_obj, writer, load_perc);
         };
-        probe_bm_out.push_back(lambda);
+        probe_bm_out.push_back({lambda, id});
     }
 }
 
@@ -118,12 +118,14 @@ void dilate_function_list(std::vector<bm::BMtype>& bm_out, const bm::BMtemplate 
     }
 }
 
-void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::ID*> &ds_list,
+void load_bm_list(std::vector<bm::BM>& bm_list,
         const std::vector<bm::BMtype>& collision_bm,
         const bm::BMtype& gap_bm, 
-        const std::vector<bm::BMtype>& probe_bm,
+        const std::vector<bm::BM>& probe_bm,
         const std::vector<bm::BMtype>& build_bm,
-        const std::vector<bm::BMtype>& collisions_vs_gaps /*TODO - add more*/) {
+        const std::vector<bm::BMtype>& collisions_vs_gaps_bm,
+        const std::vector<bm::BMtype>& point_vs_range_bm,
+        const std::vector<bm::BMtype>& range_size_bm /*TODO - add more*/) {
     std::string part;
     size_t start;
     size_t end = 0;
@@ -131,37 +133,52 @@ void load_bm_list(std::vector<bm::BMtype>& bm_list, std::vector<const dataset::I
         end = filter.find(',', start);
         part = filter.substr(start, end-start);
         if (part == "collision" || part == "collisions" || part == "all") {
-            for (const bm::BMtype& bm : collision_bm) {
-                bm_list.push_back(bm);
-                ds_list.push_back(collisions_ds);
+            for (const bm::BMtype& bm_fn : collision_bm) {
+                for (dataset::ID id : collisions_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
         }
         if (part == "gap" || part == "gaps" || part == "all") {
-            bm_list.push_back(gap_bm);
-            ds_list.push_back(gaps_ds);
+            for (dataset::ID id : gaps_ds)
+                bm_list.push_back({gap_bm, id});
             if (part != "all") continue;
         }
         if (part == "probe" || part == "all") {
-            for (const bm::BMtype& bm : probe_bm) {
-                bm_list.push_back(bm);
-                ds_list.push_back(probe_insert_ds);
+            for (const bm::BM& bm_struct : probe_bm) {
+                bm_list.push_back(bm_struct);
             }
             if (part != "all") continue;
         }
         if (part == "build" || part == "all") {
-            for (const bm::BMtype& bm : build_bm) {
-                bm_list.push_back(bm);
-                ds_list.push_back(build_time_ds);
+            for (const bm::BMtype& bm_fn : build_bm) {
+                for (dataset::ID id : build_time_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
             continue;
         }
         if (part == "distribution" || part == "all") {
             how_many = dataset::ID_ALL_COUNT;
-            for (const bm::BMtype& bm : collisions_vs_gaps) {
-                bm_list.push_back(bm);
-                ds_list.push_back(collisions_vs_gaps_ds);
+            for (const bm::BMtype& bm_fn : collisions_vs_gaps_bm) {
+                for (dataset::ID id : collisions_vs_gaps_ds)
+                    bm_list.push_back({bm_fn, id});
+            }
+            if (part != "all") continue;
+            continue;
+        }
+        if (part == "point" || part == "all") {
+            for (const bm::BMtype& bm_fn : point_vs_range_bm) {
+                for (dataset::ID id : range_ds)
+                    bm_list.push_back({bm_fn, id});
+            }
+            if (part != "all") continue;
+            continue;
+        }
+        if (part == "range" || part == "all") {
+            for (const bm::BMtype& bm_fn : range_size_bm) {
+                for (dataset::ID id : range_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             //if (part != "all") continue;
             continue;
@@ -194,8 +211,7 @@ int main(int argc, char* argv[]) {
     JsonOutput writer(output_dir, argv[0], filter);
 
     // Benchmark arrays definition
-    std::vector<bm::BMtype> bm_list;
-    std::vector<const dataset::ID*> ds_list;
+    std::vector<bm::BM> bm_list;
     // ------------- collisions ------------- //
     std::vector<bm::BMtype> collision_bm = {
         // RMI
@@ -234,13 +250,21 @@ int main(int argc, char* argv[]) {
     // ---------------- gaps ---------------- //
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;
     // ---------------- probe --------------- //
-    std::vector<bm::BMtype> probe_bm = {};
-    dilate_probe_list<RMIHash_1k>(probe_bm);
-    dilate_probe_list<RadixSplineHash_1k>(probe_bm);
-    dilate_probe_list<PGMHash_1k>(probe_bm);
-    dilate_probe_list<MURMUR>(probe_bm);
-    dilate_probe_list<MultPrime64>(probe_bm);
-    dilate_probe_list<MWHC>(probe_bm);
+    std::vector<bm::BM> probe_bm = {};
+    dilate_probe_list<RMIHash_10>(probe_bm,dataset::ID::GAP_10);
+    dilate_probe_list<RMIHash_100>(probe_bm,dataset::ID::NORMAL);
+    dilate_probe_list<RMIHash_1k>(probe_bm,dataset::ID::WIKI);
+    dilate_probe_list<RMIHash_10M>(probe_bm,dataset::ID::FB);
+    dilate_probe_list<RMIHash_10M>(probe_bm,dataset::ID::OSM);
+    // for each dataset
+    for (dataset::ID id : probe_insert_ds) {
+        dilate_probe_list<RadixSplineHash_128>(probe_bm,id);
+        dilate_probe_list<PGMHash_100>(probe_bm,id);
+        dilate_probe_list<MURMUR>(probe_bm,id);
+        dilate_probe_list<MultPrime64>(probe_bm,id);
+        dilate_probe_list<MWHC>(probe_bm,id);
+
+    }
     // ---------------- build time --------------- //
     std::vector<bm::BMtype> build_bm = {};
     size_t build_size = sizeof(build_entries)/sizeof(build_entries[0]);
@@ -252,12 +276,24 @@ int main(int argc, char* argv[]) {
     std::vector<bm::BMtype> collisions_vs_gaps_bm = {};
     size_t lf_size = sizeof(collisions_vs_gaps_lf)/sizeof(collisions_vs_gaps_lf[0]);
     dilate_function_list(collisions_vs_gaps_bm, &bm::collisions_vs_gaps<RMIHash_1k>, collisions_vs_gaps_lf, lf_size);
-    // TODO - add more
+    // ---------------- point-vs-range --------------- //
+    std::vector<bm::BMtype> point_vs_range_bm = {};
+    size_t point_size = sizeof(point_queries_perc)/sizeof(point_queries_perc[0]);
+    dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RMIMonotone,ChainedRange<RMIMonotone>>, point_queries_perc, point_size);
+    dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, point_queries_perc, point_size);
+    dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RMIMonotone,RMISortRange<RMIMonotone>>, point_queries_perc, point_size);
+    // ---------------- range-size --------------- //
+    std::vector<bm::BMtype> range_len_bm = {};
+    size_t range_size = sizeof(range_len)/sizeof(range_len[0]);
+    dilate_function_list(range_len_bm, &bm::range_throughput<RMIMonotone,ChainedRange<RMIMonotone>>, range_len, range_size);
+    dilate_function_list(range_len_bm, &bm::range_throughput<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, range_len, range_size);
+    dilate_function_list(range_len_bm, &bm::range_throughput<RMIMonotone,RMISortRange<RMIMonotone>>, range_len, range_size);
+    
 
-    load_bm_list(bm_list, ds_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm);
+    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm, point_vs_range_bm, range_len_bm);
 
     if (bm_list.size()==0) {
-        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: collisions,gaps,probe,build,distribution,point,range,all." << std::endl;   // TODO - add more
         return 1;
     }
 
@@ -266,16 +302,19 @@ int main(int argc, char* argv[]) {
     dataset::CollectionDS<Data> collection(static_cast<size_t>(MAX_DS_SIZE), input_dir, threads, how_many);
     std::cout << "done!" << std::endl << std::endl;
 
-    // for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
-    //     if (ds.get_ds().size() != ds.get_size()) {
-    //         // Throw a runtime exception
-    //         throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
-    //     }
-    // }
+    /*
+    // Uncomment to get extra safety checks
+    for (const dataset::Dataset<Data>& ds : collection.get_collection() ) {
+        if (ds.get_ds().size() != ds.get_size()) {
+            // Throw a runtime exception
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m ds.size()==dataset_size\n           In --> " + dataset::name(ds.get_id()) + "\n           [ds.size()] " + std::to_string(ds.get_ds().size()) + "\n           [dataset_size] " + std::to_string(ds.get_size()) + "\n");
+        }
+    }
+    */
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms(bm_list, ds_list, collection, writer, how_many);
+    bm::run_bms(bm_list, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;

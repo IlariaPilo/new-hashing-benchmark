@@ -30,9 +30,8 @@ prefix, ext = os.path.splitext(os.path.basename(file_path))
 
 prefix = BASE_DIR + 'figs/' + prefix
 
-# ===================================================================== #
+# ============================= UTILITIES ============================= #
 
-# ------- function names ------- #
 SHAPES_FN = {
     'RMI': 's',
     'PGM': 's',
@@ -46,6 +45,11 @@ SHAPES_FN = {
     'MultiplyPrime': 'D',
     'FibonacciPrime': 'D'
 }
+SHAPES_STRUCT = {
+    'RMI-Chain': 's',
+    'RadixSpline-Chain': 's',
+    'RMI-Sort': 'D'
+}
 SHAPES_DS = {
     'gap_10': '^',
     'uniform': 'D',
@@ -58,19 +62,12 @@ SHAPES_DS = {
     'variance_half': '<',
     'variance_quarter': '>'
 }
-COLORS = {
-    'RMI': '#a50026',
-    'PGM': '#f46d43',
-    'Murmur': '#fdae61',
-    'BitMWHC': '#4575b4',
-    'RadixSpline': '#d73027',
-    'MWHC': '#74add1',
-    'RecSplit': '#313695',
-    'AquaHash': '#e0f3f8',
-    'XXHash': '#abd9e9',
-    'MultiplyPrime': '#fee08b',
-    'FibonacciPrime': '#ffffbf'    
-}
+COLORS = {}
+COLORS_STRUCT = {}
+
+CHAINED = 0
+LINEAR = 1
+CUCKOO = 2  
 
 def get_fn_name(label):
     label = label.lower()
@@ -97,10 +94,7 @@ def get_fn_name(label):
     if 'fibonacci' in label:
         return 'FibonacciPrime'
     return None
-
-CHAINED = 0
-LINEAR = 1
-CUCKOO = 2    
+  
 def get_table_type(label):
     label = label.lower()
     if 'linear' in label:
@@ -110,10 +104,32 @@ def get_table_type(label):
     if 'cuckoo' in label:
         return 'cuckoo'
     
+def get_struct_type(label):
+    label = label.lower()
+    if 'sort' in label:
+        return 'RMI-Sort'
+    if 'radix' in label:
+        return 'RadixSpline-Chain'
+    if 'rmi' in label:
+        return 'RMI-Chain'
+    
 def get_rmi_models(label):
     pattern = r'rmi_hash_(\d+):'
     match = re.search(pattern, label)
     return int(match.group(1))
+
+def prepare_fn_colormap():
+    functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit']
+    cmap = plt.get_cmap('RdYlBu')
+    # Create a dictionary of unique colors based on the number of labels
+    col_dict = {functions[f_i]: cmap(col_i) for f_i, col_i in enumerate(np.linspace(0, 1, len(functions)))}
+    col_struct = {'RMI-Chain': col_dict['RMI'], 'RadixSpline-Chain': col_dict['PGM'], 'RMI-Sort': col_dict['BitMWHC']}
+    return col_dict, col_struct
+
+def groupby_helper(df, static_cols, variable_cols):
+    return df.groupby(static_cols)[variable_cols].mean().reset_index()
+
+# ===================================================================== #
 
 # ------- collision plot ------- #
 def collisions(df):
@@ -126,6 +142,8 @@ def collisions(df):
         df = df[df['load_factor_%']==0]
         if df.empty:
             return
+    # Group by
+    df = groupby_helper(df, ['dataset_size','dataset_name','label','function'], ['collisions','tot_time_s'])
     df['throughput_M'] = df.apply(lambda x : x['dataset_size']/(x['tot_time_s']*10**6), axis=1)
     df = df.sort_values(by='throughput_M')
     # Group the DataFrame by the 'dataset_name' column
@@ -183,6 +201,8 @@ def collisions_rmi(df):
         df = df[df['load_factor_%']==0]
         if df.empty:
             return
+    # Group by
+    df = groupby_helper(df, ['dataset_size','dataset_name','label','function'], ['collisions','tot_time_s'])
     df["models"] = df["label"].apply(lambda x : get_rmi_models(x))
     df = df.sort_values(by='models')
 
@@ -252,6 +272,8 @@ def probe(df):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # Group by
+    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['probe_elem_count','tot_time_probe_s'])
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
@@ -301,12 +323,12 @@ def probe(df):
         ax[LINEAR].set_xticks([20,35,50,65,80], ['20','35','50','65','80'])
         ax[CUCKOO].set_xticks([70,85,100], ['70', '85','100'])
 
-        ax[CHAINED].set_ylim([0,15])
-        ax[LINEAR].set_ylim([0,15])
-        ax[CUCKOO].set_ylim([0,15])
-        ax[CHAINED].set_yticks([0,5,10,15], ['','','',''])
-        ax[LINEAR].set_yticks([0,5,10,15], ['','','',''])
-        ax[CUCKOO].set_yticks([0,5,10,15], ['','','',''])
+        ax[CHAINED].set_ylim([0,8])
+        ax[LINEAR].set_ylim([0,8])
+        ax[CUCKOO].set_ylim([0,8])
+        ax[CHAINED].set_yticks([0,2,4,6,8], ['','','','',''])
+        ax[LINEAR].set_yticks([0,2,4,6,8], ['','','','',''])
+        ax[CUCKOO].set_yticks([0,2,4,6,8], ['','','','',''])
 
         ax[CHAINED].grid(True)
         ax[LINEAR].grid(True)
@@ -315,9 +337,9 @@ def probe(df):
     axes[CHAINED,0].set_ylabel('(A)', rotation=0, ha='right', va="center")
     axes[LINEAR,0].set_ylabel('(B)', rotation=0, ha='right', va="center")
     axes[CUCKOO,0].set_ylabel('(C)', rotation=0, ha='right', va="center")
-    axes[CHAINED,0].set_yticks([0,5,10,15], ['0','5','10','15'])
-    axes[LINEAR,0].set_yticks([0,5,10,15], ['0','5','10','15'])
-    axes[CUCKOO,0].set_yticks([0,5,10,15], ['0','5','10','15'])
+    axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     # Add a single legend to the entire figure with labels on the same line
     lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
 
@@ -336,6 +358,8 @@ def insert(df):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # Group by
+    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['insert_elem_count','tot_time_insert_s'])
     df['throughput_M'] = df.apply(lambda x : x['insert_elem_count']/(x['tot_time_insert_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
@@ -385,12 +409,12 @@ def insert(df):
         ax[LINEAR].set_xticks([20,35,50,65,80], ['20','35','50','65','80'])
         ax[CUCKOO].set_xticks([70,85,100], ['70', '85','100'])
 
-        # ax[CHAINED].set_ylim([0,15])
-        # ax[LINEAR].set_ylim([0,15])
-        # ax[CUCKOO].set_ylim([0,15])
-        # ax[CHAINED].set_yticks([0,5,10,15], ['','','',''])
-        # ax[LINEAR].set_yticks([0,5,10,15], ['','','',''])
-        # ax[CUCKOO].set_yticks([0,5,10,15], ['','','',''])
+        ax[CHAINED].set_ylim([0,8])
+        ax[LINEAR].set_ylim([0,8])
+        ax[CUCKOO].set_ylim([0,8])
+        ax[CHAINED].set_yticks([0,2,4,6,8], ['','','','',''])
+        ax[LINEAR].set_yticks([0,2,4,6,8], ['','','','',''])
+        ax[CUCKOO].set_yticks([0,2,4,6,8], ['','','','',''])
 
         ax[CHAINED].grid(True)
         ax[LINEAR].grid(True)
@@ -399,9 +423,9 @@ def insert(df):
     axes[CHAINED,0].set_ylabel('(A)', rotation=0, ha='right', va="center")
     axes[LINEAR,0].set_ylabel('(B)', rotation=0, ha='right', va="center")
     axes[CUCKOO,0].set_ylabel('(C)', rotation=0, ha='right', va="center")
-    # axes[CHAINED,0].set_yticks([0,5,10,15], ['0','5','10','15'])
-    # axes[LINEAR,0].set_yticks([0,5,10,15], ['0','5','10','15'])
-    # axes[CUCKOO,0].set_yticks([0,5,10,15], ['0','5','10','15'])
+    axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     # Add a single legend to the entire figure with labels on the same line
     lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
 
@@ -417,6 +441,8 @@ def build(df):
     df = df[df["label"].str.lower().str.contains("build")].copy(deep=True)
     if df.empty:
         return
+    # Group by
+    df = groupby_helper(df, ['actual_size','dataset_name', 'function', 'label'], ['build_time_s'])
     fig = plt.figure(figsize=(3, 2))
     functions = df['function'].unique()
     for _f_ in functions:
@@ -442,6 +468,9 @@ def distribution(df):
     df = df[df['load_factor_%']!=0]
     if df.empty:
         return
+    # Group by
+    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['collisions','tot_time_s'])
+    df = df.sort_values(by='load_factor_%')
     fig = plt.figure(figsize=(3, 2))
     datasets = df['dataset_name'].unique()
     for _d_ in datasets:
@@ -462,18 +491,15 @@ def distribution(df):
     fig.savefig(f'{prefix}_distribution.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
 # -------- perf -------- # 
-def perf(df):
+def perf(df, no_mwhc=False):
     # Some definitions
     GAP10 = 0
     FB = 1
-    counters = ['cycles', 'L1-dcache-load-misses', 'LLC-load-misses', 'branch-misses']
+    counters = ['cycles', 'L1-misses', 'LLC-misses', 'branch-misses']
     counters_label = ['Cycles', 'L1 misses', 'LLC misses', 'Branch misses']
-    counters_ratio = [f'{c}_ratio' for c in counters]
 
-    # Clean the dataset
     df = df.copy(deep=True)
     df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
-    df[counters_ratio] = df.apply(lambda x : x[counters]/(x['size']), axis=1)
     df = df.sort_values(by='label')
 
     # Prepare the colors
@@ -481,6 +507,9 @@ def perf(df):
     cmap = plt.get_cmap('coolwarm')
     # Create a dictionary of unique colors based on the number of labels
     colors = {labels[lab_i]: cmap(col_i) for lab_i, col_i in enumerate(np.linspace(0, 1, len(labels)))}
+
+    if no_mwhc:
+        df = df[df['function']!='mwhc']
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(counters)
@@ -497,14 +526,14 @@ def perf(df):
         gap10 = group_lab[group_lab['dataset']=='gap10']
         fb = group_lab[group_lab['dataset']=='fb']
         # For each counter
-        for i, count_ratio in enumerate(counters_ratio):
+        for i, count in enumerate(counters):
             ax = axes[:,i]
             # gap10
-            h = ax[GAP10].bar(gap10['label'], gap10[count_ratio], color=colors[name_lab], label=name_lab)
+            h = ax[GAP10].bar(gap10['label'], gap10[count], color=colors[name_lab], label=name_lab)
             if i == 0:
                 handles.append(h)
             # fb
-            ax[FB].bar(fb['label'], fb[count_ratio], color=colors[name_lab], label=name_lab)
+            ax[FB].bar(fb['label'], fb[count], color=colors[name_lab], label=name_lab)
 
             ax[GAP10].set_title(f'{counters_label[i]}')
             ax[GAP10].set_xticks([], [])
@@ -522,10 +551,97 @@ def perf(df):
     laby = fig.supylabel('Performance Counter Ratio')
 
     #plt.show()
-    fig.savefig(f'{prefix}.png', bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
+    name = prefix + ('_no_mwhc' if no_mwhc else '') + '.png'
+    fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
 
+# -------- point+range -------- # 
+def point_range(df):
+    datasets = ['wiki','fb']
+    df = df[df["label"].str.lower().str.contains("range")].copy(deep=True)
+    if df.empty:
+        return
+    # remove failed experiments
+    df = df[df["insert_fail_message"]=='']
+    # Group by
+    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','range_size','point_query_%'], ['probe_elem_count','tot_time_probe_s'])
+    df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
+    df['struct'] = df['label'].apply(lambda x : get_struct_type(x))
 
-# =============================== MAINS =============================== #
+    structs = df['struct'].unique()
+
+    # Separate the df in two parts: point and range
+    df_point = df[df['range_size']==0]
+    df_range = df[df['range_size']!=0]
+
+    # Sort the datasets
+    df_point = df_point.sort_values(by='point_query_%')
+    df_range = df_range.sort_values(by='range_size')
+    
+    # Create a single figure with multiple subplots in a row
+    POINT = 0
+    RANGE = 1
+    num_subplots = len(datasets)
+
+    # create the subfigures and subplots
+    fig = plt.figure(figsize=(5, 4))
+    subfigs = fig.subfigures(2, 1, height_ratios=[1.1, 1], hspace=.05)
+
+    axs_point = subfigs[POINT].subplots(1, num_subplots)
+    axs_point = axs_point.flatten()
+    lg1 = subfigs[POINT].supxlabel('Percentage of Point Queries')
+    #lg2 = subfigs[POINT].supylabel('Throughput \n(Million operations/s)')
+
+    axs_range = subfigs[RANGE].subplots(1, num_subplots)
+    axs_range = axs_range.flatten()
+    lg3 = subfigs[RANGE].supxlabel('Range Query Size')
+    #lg4 = subfigs[RANGE].supylabel('Throughput \n(Million operations/s)')
+    
+    # Create a single legend for all subplots
+    legend_labels = []
+
+    # for each dataset
+    for i, _d_ in enumerate(datasets):
+        _point_ = df_point[df_point['dataset_name']==_d_]
+        _range_ = df_range[df_range['dataset_name']==_d_]
+        for _s_ in structs:
+            # Point
+            point_s = _point_[_point_['struct']==_s_]
+            axs_point[i].plot(point_s['point_query_%'], point_s['throughput_M'], color=COLORS_STRUCT[_s_], marker=SHAPES_STRUCT[_s_], label=_s_)
+            # Range
+            range_s = _range_[_range_['struct']==_s_]
+            axs_range[i].plot(range_s['range_size'], range_s['throughput_M'], color=COLORS_STRUCT[_s_], marker=SHAPES_STRUCT[_s_], label=_s_)
+            if _s_ not in legend_labels:
+                legend_labels.append(_s_)
+        
+        # Customize the plot
+        axs_point[i].set_title(f'{_d_}')
+        axs_point[i].set_xlim([0,100])
+        axs_point[i].set_xticks([0,25,50,75,100],['0','25','50','75','100'])
+        axs_range[i].set_xscale('log', base=2)
+        axs_range[i].set_xticks([1,8,64,1024],['1','8','64','1024'])
+
+        # ax[CHAINED].set_ylim([0,8])
+        # ax[LINEAR].set_ylim([0,8])
+        # ax[CUCKOO].set_ylim([0,8])
+        # ax[CHAINED].set_yticks([0,2,4,6,8], ['','','','',''])
+        # ax[LINEAR].set_yticks([0,2,4,6,8], ['','','','',''])
+        # ax[CUCKOO].set_yticks([0,2,4,6,8], ['','','','',''])
+
+        axs_point[i].grid(True)
+        axs_range[i].grid(True)
+    
+    axs_point[0].set_ylabel('Throughput \n(Million operations/s)')
+    axs_range[0].set_ylabel('Throughput \n(Million operations/s)')
+    # axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    # axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    # axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.1))
+
+    #plt.show()
+    fig.savefig(f'{prefix}_range.png', bbox_extra_artists=(lgd,lg1,lg3,), bbox_inches='tight')
+
+# =============================== MAINS =============================== #l
 
 def main_json():
     # Load benchmarks from the file
@@ -542,15 +658,15 @@ def main_json():
         probe(df)
         insert(df)
         build(df)
+        point_range(df)
 
 def main_csv():
     df = pd.read_csv(file_path)
-    df['size'] = df['dataset'].apply(lambda x : 10**8 if x=='gap10' else 86976116)
     perf(df)
+    perf(df, no_mwhc=True)
 
-
-
-
+#----------------------------#
+COLORS, COLORS_STRUCT = prepare_fn_colormap()
 if ext == '.json':
     main_json()
 elif ext == '.csv':
