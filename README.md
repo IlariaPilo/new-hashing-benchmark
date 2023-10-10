@@ -92,7 +92,9 @@ Arguments:
 ```
 Results are saved in the specified output directory, in a file called `perf_<timestamp>.csv`.
 
-#### ⚠️ perf troubleshooting
+#### 🚨 DON'T PANIC [perf troubleshooting]
+If the perf benchmark script returns "Error opening counter cycles", try the following steps.
+
 Before running perf benchmarks, it might be necessary to run on the *__host machine__*: 
 ```sh
 sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
