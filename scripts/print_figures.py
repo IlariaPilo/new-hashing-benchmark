@@ -491,7 +491,7 @@ def distribution(df):
     fig.savefig(f'{prefix}_distribution.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
 # -------- perf -------- # 
-def perf(df):
+def perf(df, no_mwhc=False, remove_baseline=False):
     # Some definitions
     GAP10 = 0
     FB = 1
@@ -500,16 +500,28 @@ def perf(df):
     counters_ratio = [f'{c}_ratio' for c in counters]
 
     # Clean the dataset
+    baselines = df[df['function']=='-']
+    if remove_baseline and baselines.empty:
+        return
+    df = df[df['function']!='-']
     df = df.copy(deep=True)
     df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
+
+    if remove_baseline:
+        gap10_bl = baselines[baselines['dataset']=='gap10'][counters].iloc[0]
+        fb_bl = baselines[baselines['dataset']=='fb'][counters].iloc[0]
+        df[counters] = df.apply(lambda x : x[counters]-gap10_bl if x['dataset']=='gap10' else x[counters]-fb_bl, axis=1)
     df[counters_ratio] = df.apply(lambda x : x[counters]/(x['size']), axis=1)
     df = df.sort_values(by='label')
 
     # Prepare the colors
     labels = df['label'].unique()
-    cmap = plt.get_cmap('RdYlBu')
+    cmap = plt.get_cmap('coolwarm')
     # Create a dictionary of unique colors based on the number of labels
     colors = {labels[lab_i]: cmap(col_i) for lab_i, col_i in enumerate(np.linspace(0, 1, len(labels)))}
+
+    if no_mwhc:
+        df = df[df['function']!='mwhc']
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(counters)
@@ -551,7 +563,8 @@ def perf(df):
     laby = fig.supylabel('Performance Counter Ratio')
 
     #plt.show()
-    fig.savefig(f'{prefix}.png', bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
+    name = prefix + ('_no_mwhc' if no_mwhc else '') + ('_remove_baseline' if remove_baseline else '') + '.png'
+    fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
 
 # -------- point+range -------- # 
 def point_range(df):
@@ -663,6 +676,9 @@ def main_csv():
     df = pd.read_csv(file_path)
     df['size'] = df['dataset'].apply(lambda x : 10**8 if x=='gap10' else 86976116)
     perf(df)
+    perf(df, no_mwhc=True)
+    perf(df, remove_baseline=True)
+    perf(df, no_mwhc=True, remove_baseline=True)
 
 #----------------------------#
 COLORS, COLORS_STRUCT = prepare_fn_colormap()
