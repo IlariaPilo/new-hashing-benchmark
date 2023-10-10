@@ -491,27 +491,15 @@ def distribution(df):
     fig.savefig(f'{prefix}_distribution.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
 # -------- perf -------- # 
-def perf(df, no_mwhc=False, remove_baseline=False):
+def perf(df, no_mwhc=False):
     # Some definitions
     GAP10 = 0
     FB = 1
-    counters = ['cycles', 'L1-dcache-load-misses', 'LLC-load-misses', 'branch-misses']
+    counters = ['cycles', 'L1-misses', 'LLC-misses', 'branch-misses']
     counters_label = ['Cycles', 'L1 misses', 'LLC misses', 'Branch misses']
-    counters_ratio = [f'{c}_ratio' for c in counters]
 
-    # Clean the dataset
-    baselines = df[df['function']=='-']
-    if remove_baseline and baselines.empty:
-        return
-    df = df[df['function']!='-']
     df = df.copy(deep=True)
     df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
-
-    if remove_baseline:
-        gap10_bl = baselines[baselines['dataset']=='gap10'][counters].iloc[0]
-        fb_bl = baselines[baselines['dataset']=='fb'][counters].iloc[0]
-        df[counters] = df.apply(lambda x : x[counters]-gap10_bl if x['dataset']=='gap10' else x[counters]-fb_bl, axis=1)
-    df[counters_ratio] = df.apply(lambda x : x[counters]/(x['size']), axis=1)
     df = df.sort_values(by='label')
 
     # Prepare the colors
@@ -538,14 +526,14 @@ def perf(df, no_mwhc=False, remove_baseline=False):
         gap10 = group_lab[group_lab['dataset']=='gap10']
         fb = group_lab[group_lab['dataset']=='fb']
         # For each counter
-        for i, count_ratio in enumerate(counters_ratio):
+        for i, count in enumerate(counters):
             ax = axes[:,i]
             # gap10
-            h = ax[GAP10].bar(gap10['label'], gap10[count_ratio], color=colors[name_lab], label=name_lab)
+            h = ax[GAP10].bar(gap10['label'], gap10[count], color=colors[name_lab], label=name_lab)
             if i == 0:
                 handles.append(h)
             # fb
-            ax[FB].bar(fb['label'], fb[count_ratio], color=colors[name_lab], label=name_lab)
+            ax[FB].bar(fb['label'], fb[count], color=colors[name_lab], label=name_lab)
 
             ax[GAP10].set_title(f'{counters_label[i]}')
             ax[GAP10].set_xticks([], [])
@@ -563,7 +551,7 @@ def perf(df, no_mwhc=False, remove_baseline=False):
     laby = fig.supylabel('Performance Counter Ratio')
 
     #plt.show()
-    name = prefix + ('_no_mwhc' if no_mwhc else '') + ('_remove_baseline' if remove_baseline else '') + '.png'
+    name = prefix + ('_no_mwhc' if no_mwhc else '') + '.png'
     fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
 
 # -------- point+range -------- # 
@@ -674,11 +662,8 @@ def main_json():
 
 def main_csv():
     df = pd.read_csv(file_path)
-    df['size'] = df['dataset'].apply(lambda x : 10**8 if x=='gap10' else 86976116)
     perf(df)
     perf(df, no_mwhc=True)
-    perf(df, remove_baseline=True)
-    perf(df, no_mwhc=True, remove_baseline=True)
 
 #----------------------------#
 COLORS, COLORS_STRUCT = prepare_fn_colormap()
