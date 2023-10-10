@@ -102,4 +102,15 @@ sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
 If you are using the Docker container, don't forget to add the `--perf` option when executing `run.sh`.
 
 ## 3 | Process the results
+<!-- TODO add more -->
+
+
+## 🧩 Third party components
+This repository is based on the following components:
+- [`hashtable`](https://github.com/DominikHorn/hashtable) by Dominik Horn — A C++ library exposing various hashtable implementations;
+- [`hashing`](https://github.com/DominikHorn/hashing) by Dominik Horn — A C++ library exposing various state-of-the-art non-cryptographic hash functions and reduction algorithms;
+- [`exotic-hashing`](https://github.com/DominikHorn/exotic-hashing) by Dominik Horn — A C++ library exposing various state-of-the-art exotic hash functions;
+- [`learned-hashing`](https://github.com/DominikHorn/learned-hashing) by Dominik Horn — A C++ library exposing various state-of-the-art learned hash functions;
+- [`json`](https://github.com/nlohmann/json) by Niels Lohmann — A library to handle json serialization in C++;
+- [`perfevent`](https://github.com/viktorleis/perfevent), by Viktor Leis — A header-only C++ wrapper for Linux' perf event API.
 
