@@ -455,7 +455,7 @@ namespace bm {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
                 }
                 tot_time_probe += _end_ - _start_;
-                probe_count += increment;
+                probe_count ++;
                 // update i
                 i += increment;
             } else i++;
