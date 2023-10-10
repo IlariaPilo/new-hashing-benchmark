@@ -293,7 +293,7 @@ int main(int argc, char* argv[]) {
     load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm, point_vs_range_bm, range_len_bm);
 
     if (bm_list.size()==0) {
-        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! Available filters: collisions, gaps, all." << std::endl;   // TODO - add more
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: collisions,gaps,probe,build,distribution,point,range,all." << std::endl;   // TODO - add more
         return 1;
     }
 

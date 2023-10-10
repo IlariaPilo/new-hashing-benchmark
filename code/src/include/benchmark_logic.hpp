@@ -457,7 +457,7 @@ namespace bm {
                 tot_time_probe += _end_ - _start_;
                 probe_count ++;
                 // update i
-                i += increment;
+                i ++;
             } else i++;
         }
     done:
