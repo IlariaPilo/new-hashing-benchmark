@@ -9,6 +9,7 @@
 #include "include/benchmark_logic.hpp"
 #include "include/configs.hpp"
 #include "include/datasets.hpp"
+#include "thirdparty/perfevent/PerfEvent.hpp"
 
 #define LOAD_PERC 80
 
@@ -114,8 +115,8 @@ int main(int argc, char* argv[]) {
     if (do_exit)
         return do_exit-1;
     // Check if mandatory options are provided
-    if (input_dir == "" || output_dir == "" || ds_name == "") {
-        std::cerr << "Error: --input, --output and --dataset arguments must be provided." << std::endl;
+    if (input_dir == "" || output_dir == "" || ds_name == "" || h_fun_name=="" || table_name=="") {
+        std::cerr << "Error: all arguments must be provided." << std::endl;
         show_usage();
         return 1;
     }
@@ -127,51 +128,76 @@ int main(int argc, char* argv[]) {
     else ds_id = dataset::ID::FB;
     dataset::Dataset<Data> ds(ds_id, static_cast<size_t>(MAX_DS_SIZE), input_dir);
 
-    if (h_fun_name=="" || table_name=="")
-        return 0;
-
     // Create a JsonWriter instance (for the output file)
     JsonOutput writer(output_dir, argv[0], "perf-" + h_fun_name + "-" + table_name + "-" + ds_name);
 
+    PerfEvent e;
     // Call the right function
     if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "chain") {
+        e.startCounters();
         bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "chain") {
+        e.startCounters();
         bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (h_fun_name == "mult" && table_name == "chain") {
+        e.startCounters();
         bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (h_fun_name == "mwhc" && table_name == "chain") {
+        e.startCounters();
         bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "linear") {
+        e.startCounters();
         bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "linear") {
+        e.startCounters();
         bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (h_fun_name == "mult" && table_name == "linear") {
+        e.startCounters();
         bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (h_fun_name == "mwhc" && table_name == "linear") {
+        e.startCounters();
         bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "cuckoo") {
+        e.startCounters();
         bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "cuckoo") {
+        e.startCounters();
         bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (h_fun_name == "mult" && table_name == "cuckoo") {
+        e.startCounters();
         bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
     else if (h_fun_name == "mwhc" && table_name == "cuckoo") {
+        e.startCounters();
         bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
+        e.stopCounters();
     }
+    // print results
+    // we use the size of the dataset as a normalizing factor
+    e.printReport(std::cout, ds.get_size());
     
     return 0;
 }
