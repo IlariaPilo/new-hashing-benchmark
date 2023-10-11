@@ -1,6 +1,6 @@
 import argparse
 import json
-from collections import defaultdict
+import glob
 # Thanks ChatGPT for this basic script
 
 def main():
@@ -9,6 +9,14 @@ def main():
     parser.add_argument("-o", "--output-file", required=True, help="Output JSON file name")
 
     args = parser.parse_args()
+
+    # Expand file patterns using glob if necessary
+    expanded_input_files = []
+    for input_file in args.input_files:
+        if glob.has_magic(input_file):
+            expanded_input_files.extend(glob.glob(input_file))
+        else:
+            expanded_input_files.append(input_file)
 
     # Read the JSON files and merge the arrays
     merged_benchmarks = []
