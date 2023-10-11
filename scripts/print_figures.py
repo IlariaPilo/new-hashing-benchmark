@@ -667,10 +667,12 @@ def main_csv():
 
 #----------------------------#
 COLORS, COLORS_STRUCT = prepare_fn_colormap()
-if ext == '.json':
-    main_json()
-elif ext == '.csv':
-    main_csv()
-else:
-    print(f'Sorry, extension {ext} is not supported :c')
-    sys.exit(1)
+
+if __name__ == '__main__':
+    if ext == '.json':
+        main_json()
+    elif ext == '.csv':
+        main_csv()
+    else:
+        print(f'Sorry, extension {ext} is not supported :c')
+        sys.exit(1)
