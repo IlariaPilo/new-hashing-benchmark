@@ -2,8 +2,6 @@
 
 A repository based on the same components of [hashing-benchmark](https://github.com/DominikHorn/hashing-benchmark), with the aim of reproducing results of the [Can Learned Models Replace Hash Functions?](https://dl.acm.org/doi/10.14778/3570690.3570702) article.
 
-<!-- TODO add table of contents -->
-
 ## 0 | Clone the repository
 The repository can be cloned by running: 
 ```sh
@@ -139,7 +137,7 @@ This script can be particularly useful to leverage the average capability of `pr
 [`scripts/`](./scripts/) : contains three utility scripts.
 
 1. [`merge_results.py`](./scripts/merge_results.py) : allows to merge two or more .json files containing benchmark results.  
-2. [`print_figures-py`](./scripts/merge_results.py) : generates plots starting from a .json or .csv result file.
+2. [`print_figures.py`](./scripts/merge_results.py) : generates plots starting from a .json or .csv result file.
 3. [`setup_datasets.sh`](./scripts/setup_datasets.sh) : downloads SOSD datasets required to run the benchmarks. 
 
 ## 🧩 Third party components
