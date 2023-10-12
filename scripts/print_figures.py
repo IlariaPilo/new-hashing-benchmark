@@ -62,6 +62,20 @@ SHAPES_DS = {
     'variance_half': '<',
     'variance_quarter': '>'
 }
+F_MAP = {
+    'RMI': 0,
+    'RadixSpline': 1,
+    'PGM': 2,
+    'Murmur': 3,
+    'MultiplyPrime': 4,
+    'FibonacciPrime': 5,
+    'XXHash': 6,
+    'AquaHash': 7,
+    'MWHC': 8,
+    'BitMWHC': 9,
+    'RecSplit': 10
+}
+    
 COLORS = {}
 COLORS_STRUCT = {}
 
@@ -129,6 +143,11 @@ def prepare_fn_colormap():
 def groupby_helper(df, static_cols, variable_cols):
     return df.groupby(static_cols)[variable_cols].mean().reset_index()
 
+def sort_labels(labels, handles):
+    pairs = list(zip(labels, handles))
+    sorted_pairs = sorted(pairs, key=lambda pair: F_MAP[pair[0]])
+    return zip(*sorted_pairs)
+
 # ===================================================================== #
 
 # ------- collision plot ------- #
@@ -177,8 +196,9 @@ def collisions(df):
         #ax.set_xlim([0, 150])
         ax.grid(True)
     
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.28))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.28))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Hash Computation Throughput (Million operations/s)')
@@ -334,8 +354,10 @@ def probe(df):
     axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Load Factor (%)')
@@ -416,8 +438,10 @@ def insert(df):
     axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Load Factor (%)')
