@@ -62,6 +62,20 @@ SHAPES_DS = {
     'variance_half': '<',
     'variance_quarter': '>'
 }
+F_MAP = {
+    'RMI': 0,
+    'RadixSpline': 1,
+    'PGM': 2,
+    'Murmur': 3,
+    'MultiplyPrime': 4,
+    'FibonacciPrime': 5,
+    'XXHash': 6,
+    'AquaHash': 7,
+    'MWHC': 8,
+    'BitMWHC': 9,
+    'RecSplit': 10
+}
+    
 COLORS = {}
 COLORS_STRUCT = {}
 
@@ -119,8 +133,8 @@ def get_rmi_models(label):
     return int(match.group(1))
 
 def prepare_fn_colormap():
-    functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit']
-    cmap = plt.get_cmap('RdYlBu')
+    functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit'][::-1]
+    cmap = plt.get_cmap('turbo')
     # Create a dictionary of unique colors based on the number of labels
     col_dict = {functions[f_i]: cmap(col_i) for f_i, col_i in enumerate(np.linspace(0, 1, len(functions)))}
     col_struct = {'RMI-Chain': col_dict['RMI'], 'RadixSpline-Chain': col_dict['PGM'], 'RMI-Sort': col_dict['BitMWHC']}
@@ -128,6 +142,11 @@ def prepare_fn_colormap():
 
 def groupby_helper(df, static_cols, variable_cols):
     return df.groupby(static_cols)[variable_cols].mean().reset_index()
+
+def sort_labels(labels, handles):
+    pairs = list(zip(labels, handles))
+    sorted_pairs = sorted(pairs, key=lambda pair: F_MAP[pair[0]])
+    return zip(*sorted_pairs)
 
 # ===================================================================== #
 
@@ -143,11 +162,9 @@ def collisions(df):
         if df.empty:
             return
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function'], ['collisions','tot_time_s'])
+    df = groupby_helper(df, ['dataset_name','label','function'], ['dataset_size','collisions','tot_time_s'])
     df['throughput_M'] = df.apply(lambda x : x['dataset_size']/(x['tot_time_s']*10**6), axis=1)
     df = df.sort_values(by='throughput_M')
-    # Group the DataFrame by the 'dataset_name' column
-    g_ds = df.groupby('dataset_name')
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -158,9 +175,8 @@ def collisions(df):
     
     # Iterate through the groups and create subplots
     i = 0
-    for name_ds, group_ds in g_ds:
-        if name_ds not in datasets:
-            continue
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
         g_fn = group_ds.groupby('function')
         ax = axes[i]
         i += 1
@@ -180,8 +196,9 @@ def collisions(df):
         #ax.set_xlim([0, 150])
         ax.grid(True)
     
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.28))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.28))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Hash Computation Throughput (Million operations/s)')
@@ -202,7 +219,7 @@ def collisions_rmi(df):
         if df.empty:
             return
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function'], ['collisions','tot_time_s'])
+    df = groupby_helper(df, ['dataset_name','label','function'], ['dataset_size','collisions','tot_time_s'])
     df["models"] = df["label"].apply(lambda x : get_rmi_models(x))
     df = df.sort_values(by='models')
 
@@ -223,7 +240,7 @@ def collisions_rmi(df):
     uni_tick_labels = [f"$10^{int(tick)}$" for tick in uni_ticks]
     normal_tick_labels = [f"$10^{int(tick)}$" for tick in normal_ticks]
     axes[0].set_xticks(uni_ticks[1::2], uni_tick_labels[1::2])
-    axes[1].set_xticks(normal_ticks[1::2], normal_tick_labels[1::2])    
+    axes[1].set_xticks(normal_ticks[1::2], normal_tick_labels[1::2])
     
     axes[0].set_title('uniform')
     axes[1].set_title('normal')
@@ -266,19 +283,17 @@ def gaps(df):
 
 # ------- probe ------- #
 def probe(df):
-    datasets = ['gap_10','osm','normal','wiki','fb']
+    datasets = ['gap_10','normal','wiki','osm','fb']
     df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
     if df.empty:
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['probe_elem_count','tot_time_probe_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
-    # Group the DataFrame by the 'dataset_name' column
-    g_ds = df.groupby('dataset_name')
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -289,9 +304,8 @@ def probe(df):
     
     i = 0
     # for each dataset
-    for name_ds, group_ds in g_ds:
-        if name_ds not in datasets:
-            continue
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
         g_fn = group_ds.groupby('function')
         ax = axes[:,i]
         i += 1
@@ -340,8 +354,10 @@ def probe(df):
     axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Load Factor (%)')
@@ -359,12 +375,10 @@ def insert(df):
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['insert_elem_count','tot_time_insert_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','insert_elem_count','tot_time_insert_s'])
     df['throughput_M'] = df.apply(lambda x : x['insert_elem_count']/(x['tot_time_insert_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
-    # Group the DataFrame by the 'dataset_name' column
-    g_ds = df.groupby('dataset_name')
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -374,10 +388,8 @@ def insert(df):
     legend_labels = []
     
     i = 0
-    # for each dataset
-    for name_ds, group_ds in g_ds:
-        if name_ds not in datasets:
-            continue
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
         g_fn = group_ds.groupby('function')
         ax = axes[:,i]
         i += 1
@@ -426,8 +438,10 @@ def insert(df):
     axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
+
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1.12))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Load Factor (%)')
@@ -453,7 +467,10 @@ def build(df):
     plt.yscale('log')
     labx = plt.xlabel('Dataset Size (number of entries)')
     laby = plt.ylabel('Build Time (s)')
-    lgd = fig.legend(loc='upper center', labels=functions, ncol=len(functions)//2+len(functions)%2, bbox_to_anchor=(0.5, 1.3))
+
+    labels, handles = sort_labels(functions, [line for line in fig.axes[0].lines])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(functions)//2+len(functions)%2, bbox_to_anchor=(0.5, 1.3))
     plt.grid(True)
     fig.savefig(f'{prefix}_build.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
@@ -469,7 +486,7 @@ def distribution(df):
     if df.empty:
         return
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['collisions','tot_time_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','collisions','tot_time_s'])
     df = df.sort_values(by='load_factor_%')
     fig = plt.figure(figsize=(3, 2))
     datasets = df['dataset_name'].unique()
@@ -563,7 +580,7 @@ def point_range(df):
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','range_size','point_query_%'], ['probe_elem_count','tot_time_probe_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','range_size','point_query_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
     df['struct'] = df['label'].apply(lambda x : get_struct_type(x))
 
