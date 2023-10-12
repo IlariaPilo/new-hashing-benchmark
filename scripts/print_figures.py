@@ -467,7 +467,10 @@ def build(df):
     plt.yscale('log')
     labx = plt.xlabel('Dataset Size (number of entries)')
     laby = plt.ylabel('Build Time (s)')
-    lgd = fig.legend(loc='upper center', labels=functions, ncol=len(functions)//2+len(functions)%2, bbox_to_anchor=(0.5, 1.3))
+
+    labels, handles = sort_labels(functions, [line for line in fig.axes[0].lines])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(functions)//2+len(functions)%2, bbox_to_anchor=(0.5, 1.3))
     plt.grid(True)
     fig.savefig(f'{prefix}_build.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
