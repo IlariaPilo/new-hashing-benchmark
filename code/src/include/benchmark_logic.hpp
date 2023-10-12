@@ -311,9 +311,19 @@ namespace bm {
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
-        // will hold the probe distribution
+
+        // Choose probe distribution
         std::vector<int>* order_probe = nullptr;
         std::string probe_label;
+        switch(probe_type) {
+            case ProbeType::UNIFORM:
+                order_probe = &order_probe_uniform;
+                probe_label = "uniform";
+                break;
+            case ProbeType::PARETO_80_20:
+                order_probe = &order_probe_80_20;
+                probe_label = "80-20";
+        }
 
         // Compute capacity given the laod% and the dataset_size
         size_t capacity = dataset_size*100/load_perc;
@@ -322,7 +332,7 @@ namespace bm {
         HashFn fn;
         _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
         HashTable table(capacity, fn);
-        const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc);
+        const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
 
         // ====================== throughput counters ====================== //
         /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
@@ -355,16 +365,6 @@ namespace bm {
                 count++;
                 insert_count++;
             }
-        }
-        // Choose probe distribution
-        switch(probe_type) {
-            case ProbeType::UNIFORM:
-                order_probe = &order_probe_uniform;
-                probe_label = "uniform";
-                break;
-            case ProbeType::PARETO_80_20:
-                order_probe = &order_probe_80_20;
-                probe_label = "80-20";
         }
         for (int i : *order_probe) {
             // check if the index exists
@@ -408,9 +408,19 @@ namespace bm {
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
-        // will hold the probe distribution
+        
+        // Choose probe distribution
         std::vector<int>* order_probe = nullptr;
         std::string probe_label;
+        switch(probe_type) {
+            case ProbeType::UNIFORM:
+                order_probe = &order_probe_uniform;
+                probe_label = "uniform";
+                break;
+            case ProbeType::PARETO_80_20:
+                order_probe = &order_probe_80_20;
+                probe_label = "80-20";
+        }
 
         // Compute capacity given the laod% and the dataset_size
         size_t capacity;
@@ -422,7 +432,7 @@ namespace bm {
         HashFn fn;
         _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
         HashTable table(capacity, fn);
-        const std::string label = "Range:" + table.name() + ":" + dataset_name + ":" + std::to_string(point_query_perc) + ":" + std::to_string(range_size);
+        const std::string label = "Range:" + table.name() + ":" + dataset_name + ":" + std::to_string(point_query_perc) + ":" + std::to_string(range_size) + ":" + probe_label;
 
         // get X (the number of point queries)
         size_t X = dataset_size*point_query_perc/100;
@@ -452,16 +462,6 @@ namespace bm {
                 }
                 count++;
             }
-        }
-        // Choose probe distribution
-        switch(probe_type) {
-            case ProbeType::UNIFORM:
-                order_probe = &order_probe_uniform;
-                probe_label = "uniform";
-                break;
-            case ProbeType::PARETO_80_20:
-                order_probe = &order_probe_80_20;
-                probe_label = "80-20";
         }
         // Begin with the point queries
         size_t i;
