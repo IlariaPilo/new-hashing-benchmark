@@ -24,10 +24,15 @@ namespace bm {
     } BM;
 
     // ----------------- utility things ----------------- //
-    std::vector<int> order_insert; // will store all values from 0 to N-1
-    std::vector<int> order_probe;  // will store uniformly sampled values from 0 to N-1
-    std::vector<int> ranges;       // will store random values in the interval [25,50]
+    std::vector<int> order_insert;          // will store all values from 0 to N-1
+    std::vector<int> order_probe_uniform;   // will store uniformly sampled values from 0 to N-1
+    std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
+    std::vector<int> ranges;                // will store random values in the interval [25,50]
 
+    enum class ProbeType {
+        UNIFORM = 0,
+        PARETO_80_20 = 1
+    };
     void generate_insert_order(size_t N = 100000000) {
         std::random_device rd;
         std::default_random_engine rng(rd());
@@ -37,14 +42,38 @@ namespace bm {
         }
         std::shuffle(order_insert.begin(), order_insert.end(), rng);
     }
-    void generate_probe_order(size_t N = 100000000) {
-        order_probe.clear();
+    void generate_probe_order_uniform(size_t N = 100000000) {
+        order_probe_uniform.clear();
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<int> distribution(0, N-1);
         for (size_t i = 0; i < N; ++i) {
             int random_value = distribution(gen);
-            order_probe.push_back(random_value);
+            order_probe_uniform.push_back(random_value);
+        }
+    }
+    void generate_probe_order_80_20(size_t N = 100000000) {
+        order_probe_80_20.clear();
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<double> access_percent_dist(0.0, 1.0);
+        
+        // First,create a weighted distribution
+        std::vector<double> weights(N);
+        for (size_t i = 0; i < N; ++i) {
+            // get the access percent
+            double access_perc = access_percent_dist(gen);
+            if (access_perc >= 0.8)
+                // 80% weight with 20% of probability
+                weights[i] = 0.8;
+            else
+                // 20% weight with 80% of probability
+                weights[i] = 0.2;
+        }
+        std::discrete_distribution<int> distribution(weights.begin(), weights.end());
+        for (size_t i = 0; i < N; ++i) {
+            int random_value = distribution(gen);
+            order_probe_80_20.push_back(random_value);
         }
     }
     void fill_ranges(size_t N = 100000000) {
@@ -94,7 +123,8 @@ namespace bm {
             thread_num = bm_list.size();
         // initialize arrays to keep things sorted
         generate_insert_order(MAX_DS_SIZE);
-        generate_probe_order(MAX_DS_SIZE);
+        generate_probe_order_uniform(MAX_DS_SIZE);
+        generate_probe_order_80_20(MAX_DS_SIZE);
         fill_ranges(MAX_DS_SIZE);
         // sort the BM array by dataset ID
         std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
@@ -131,7 +161,8 @@ namespace bm {
         int BM_COUNT = bm_list.size();
         // initialize arrays to keep things sorted
         generate_insert_order(MAX_DS_SIZE);
-        generate_probe_order(MAX_DS_SIZE);
+        generate_probe_order_uniform(MAX_DS_SIZE);
+        generate_probe_order_80_20(MAX_DS_SIZE);
         fill_ranges(MAX_DS_SIZE);
         // sort the BM array by dataset ID
         std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
@@ -273,13 +304,16 @@ namespace bm {
         writer.add_data(benchmark);
     }
 
-    // probe throughput
+    // probe throughput helper
     template <class HashFn, class HashTable>
-    void probe_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc) {
+    void probe_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
+        // will hold the probe distribution
+        std::vector<int>* order_probe = nullptr;
+        std::string probe_label;
 
         // Compute capacity given the laod% and the dataset_size
         size_t capacity = dataset_size*100/load_perc;
@@ -300,7 +334,6 @@ namespace bm {
         // ================================================================ //
 
         // Build the table
-        // std::cout << "Start building table... ";
         Payload count = 0;
         for (int i : order_insert) {
             // check if the index exists
@@ -321,14 +354,19 @@ namespace bm {
                 tot_time_insert += _end_ - _start_;
                 count++;
                 insert_count++;
-                // if (count % 10000000 == 1)
-                //     std::cout << "Done " << count << " inserts.\n";
             }
         }
-        // std::cout << "done\n";
-
-        // std::cout << "Start benchmarking... ";
-        for (int i : order_probe) {
+        // Choose probe distribution
+        switch(probe_type) {
+            case ProbeType::UNIFORM:
+                order_probe = &order_probe_uniform;
+                probe_label = "uniform";
+                break;
+            case ProbeType::PARETO_80_20:
+                order_probe = &order_probe_80_20;
+                probe_label = "80-20";
+        }
+        for (int i : *order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
                 // get the data
@@ -341,11 +379,8 @@ namespace bm {
                 }
                 tot_time_probe += _end_ - _start_;
                 probe_count++;
-                // if (probe_count % 10000000 == 1)
-                //     std::cout << "Done " << probe_count << " lookups.\n";
             }
         }
-        // std::cout << "done\n";
     done:
         json benchmark;
         benchmark["dataset_size"] = dataset_size;
@@ -358,6 +393,7 @@ namespace bm {
         benchmark["function_name"] = HashFn::name();
         benchmark["insert_fail_message"] = fail_what;
         benchmark["label"] = label;
+        benchmark["probe_type"] = probe_label;
 
         if (insert_fail)
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
@@ -366,11 +402,15 @@ namespace bm {
     }
 
     template <class HashFn, class HashTable>
-    void range_helper(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t point_query_perc, size_t range_size = 0) {
+    void range_helper(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t point_query_perc, 
+            size_t range_size = 0, ProbeType probe_type = ProbeType::UNIFORM) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
         const std::vector<Data>& ds = ds_obj.get_ds();
+        // will hold the probe distribution
+        std::vector<int>* order_probe = nullptr;
+        std::string probe_label;
 
         // Compute capacity given the laod% and the dataset_size
         size_t capacity;
@@ -413,10 +453,20 @@ namespace bm {
                 count++;
             }
         }
+        // Choose probe distribution
+        switch(probe_type) {
+            case ProbeType::UNIFORM:
+                order_probe = &order_probe_uniform;
+                probe_label = "uniform";
+                break;
+            case ProbeType::PARETO_80_20:
+                order_probe = &order_probe_80_20;
+                probe_label = "80-20";
+        }
         // Begin with the point queries
         size_t i;
         for (i=0; i<X; i++) {
-            int idx = order_probe[i];
+            int idx = (*order_probe)[i];
             // check if the index exists
             if (idx < (int)dataset_size) {
                 // get the data
@@ -433,7 +483,7 @@ namespace bm {
         }
         // Now the range queries
         while (i<dataset_size) {
-            int idx_min = order_probe[i];
+            int idx_min = (*order_probe)[i];
             // check if the index exists
             if (idx_min < (int)dataset_size) {
                 // get the min
@@ -471,6 +521,7 @@ namespace bm {
         benchmark["function_name"] = HashFn::name();
         benchmark["insert_fail_message"] = fail_what;
         benchmark["label"] = label;
+        benchmark["probe_type"] = probe_label;
 
         if (insert_fail)
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
@@ -481,13 +532,22 @@ namespace bm {
     // point-vs-range
     template <class HashFn, class HashTable>
     inline void point_vs_range(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t point_query_perc) {
-        range_helper<HashFn,HashTable>(ds_obj, writer, point_query_perc);
+        range_helper<HashFn,HashTable>(ds_obj, writer, point_query_perc, /* range size*/ 0, ProbeType::UNIFORM);
     }
-
     // full range
     template <class HashFn, class HashTable>
     inline void range_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t range_size) {
-        range_helper<HashFn,HashTable>(ds_obj, writer, /* % of point queries */ 0, range_size);
+        range_helper<HashFn,HashTable>(ds_obj, writer, /* % of point queries */ 0, range_size, ProbeType::UNIFORM);
+    }
+    // point-vs-range
+    template <class HashFn, class HashTable>
+    inline void point_vs_range_pareto(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t point_query_perc) {
+        range_helper<HashFn,HashTable>(ds_obj, writer, point_query_perc, /* range size*/ 0, ProbeType::PARETO_80_20);
+    }
+    // full range
+    template <class HashFn, class HashTable>
+    inline void range_throughput_pareto(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t range_size) {
+        range_helper<HashFn,HashTable>(ds_obj, writer, /* % of point queries */ 0, range_size, ProbeType::PARETO_80_20);
     }
 
     // build time

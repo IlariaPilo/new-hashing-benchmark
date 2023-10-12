@@ -55,9 +55,8 @@ The executable file is called `cmake-build-release/src/benchmarks`, and it can b
 Arguments:
   -i, --input INPUT_DIR     Directory storing the datasets
   -o, --output OUTPUT_DIR   Directory that will store the output
-  -t, --threads THREADS     Number of threads to use to load the datasets (default: all)
   -f, --filter FILTER       Type of benchmark to execute, *comma-separated*
-                            Options = collisions,gaps,probe,build,distribution,point,range,all (default: all) 
+                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all (default: all) 
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `<filter>_<timestamp>.json`.
@@ -70,10 +69,13 @@ Notice that the numbers in the parenthesis refer to the experiment number in the
 - _collisions_ : compute the throughput/collisions tradeoff for different hash functions on different datasets [7.2]
 - _gaps_ : compute the gap distribution of various datasets [7.1-datasets]
 - _probe_ : compute the insert and probe throughput in three types of tables for different hash functions on different datasets [7.3-probe throughput;insert throughput]
+- _probe80\_20_ : the _probe_ experiment using the 80-20 distribution to simulate real-world data access [new]
 - _build_ : compare the build time for different hash functions [7.4-build time]
 - _distribution_ : compare the number of collisions when changing the variance of the gap distribution, as well as the load factor [7.4-gap distribution]
 - _point_ : a range query experiment, comparing the performance of different tables undergoing mixed workloads point-range queries [7.5-point queries percentage]
+- _point80\_20_ : the _point_ experiment using the 80-20 distribution to simulate real-world data access [new]
 - _range_ : a range query experiment, comparing the performance of different tables undergoing range queries fo various sizes [7.5-range query size]
+- _range80\_20_ : the _range_ experiment using the 80-20 distribution to simulate real-world data access [new]
 <!-- TODO add more -->
 
 ### 📟 `perf`
