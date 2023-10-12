@@ -119,8 +119,8 @@ def get_rmi_models(label):
     return int(match.group(1))
 
 def prepare_fn_colormap():
-    functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit']
-    cmap = plt.get_cmap('RdYlBu')
+    functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit'][::-1]
+    cmap = plt.get_cmap('turbo')
     # Create a dictionary of unique colors based on the number of labels
     col_dict = {functions[f_i]: cmap(col_i) for f_i, col_i in enumerate(np.linspace(0, 1, len(functions)))}
     col_struct = {'RMI-Chain': col_dict['RMI'], 'RadixSpline-Chain': col_dict['PGM'], 'RMI-Sort': col_dict['BitMWHC']}
@@ -146,8 +146,6 @@ def collisions(df):
     df = groupby_helper(df, ['dataset_size','dataset_name','label','function'], ['collisions','tot_time_s'])
     df['throughput_M'] = df.apply(lambda x : x['dataset_size']/(x['tot_time_s']*10**6), axis=1)
     df = df.sort_values(by='throughput_M')
-    # Group the DataFrame by the 'dataset_name' column
-    g_ds = df.groupby('dataset_name')
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -158,9 +156,8 @@ def collisions(df):
     
     # Iterate through the groups and create subplots
     i = 0
-    for name_ds, group_ds in g_ds:
-        if name_ds not in datasets:
-            continue
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
         g_fn = group_ds.groupby('function')
         ax = axes[i]
         i += 1
@@ -266,7 +263,7 @@ def gaps(df):
 
 # ------- probe ------- #
 def probe(df):
-    datasets = ['gap_10','osm','normal','wiki','fb']
+    datasets = ['gap_10','normal','wiki','osm','fb']
     df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
     if df.empty:
         return
@@ -277,8 +274,6 @@ def probe(df):
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
-    # Group the DataFrame by the 'dataset_name' column
-    g_ds = df.groupby('dataset_name')
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -289,9 +284,8 @@ def probe(df):
     
     i = 0
     # for each dataset
-    for name_ds, group_ds in g_ds:
-        if name_ds not in datasets:
-            continue
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
         g_fn = group_ds.groupby('function')
         ax = axes[:,i]
         i += 1
@@ -363,8 +357,6 @@ def insert(df):
     df['throughput_M'] = df.apply(lambda x : x['insert_elem_count']/(x['tot_time_insert_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
-    # Group the DataFrame by the 'dataset_name' column
-    g_ds = df.groupby('dataset_name')
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -374,10 +366,8 @@ def insert(df):
     legend_labels = []
     
     i = 0
-    # for each dataset
-    for name_ds, group_ds in g_ds:
-        if name_ds not in datasets:
-            continue
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
         g_fn = group_ds.groupby('function')
         ax = axes[:,i]
         i += 1
