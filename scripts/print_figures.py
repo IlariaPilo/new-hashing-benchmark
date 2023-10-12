@@ -162,7 +162,7 @@ def collisions(df):
         if df.empty:
             return
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function'], ['collisions','tot_time_s'])
+    df = groupby_helper(df, ['dataset_name','label','function'], ['dataset_size','collisions','tot_time_s'])
     df['throughput_M'] = df.apply(lambda x : x['dataset_size']/(x['tot_time_s']*10**6), axis=1)
     df = df.sort_values(by='throughput_M')
     
@@ -219,7 +219,7 @@ def collisions_rmi(df):
         if df.empty:
             return
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function'], ['collisions','tot_time_s'])
+    df = groupby_helper(df, ['dataset_name','label','function'], ['dataset_size','collisions','tot_time_s'])
     df["models"] = df["label"].apply(lambda x : get_rmi_models(x))
     df = df.sort_values(by='models')
 
@@ -240,7 +240,7 @@ def collisions_rmi(df):
     uni_tick_labels = [f"$10^{int(tick)}$" for tick in uni_ticks]
     normal_tick_labels = [f"$10^{int(tick)}$" for tick in normal_ticks]
     axes[0].set_xticks(uni_ticks[1::2], uni_tick_labels[1::2])
-    axes[1].set_xticks(normal_ticks[1::2], normal_tick_labels[1::2])    
+    axes[1].set_xticks(normal_ticks[1::2], normal_tick_labels[1::2])
     
     axes[0].set_title('uniform')
     axes[1].set_title('normal')
@@ -290,7 +290,7 @@ def probe(df):
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['probe_elem_count','tot_time_probe_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
@@ -375,7 +375,7 @@ def insert(df):
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['insert_elem_count','tot_time_insert_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','insert_elem_count','tot_time_insert_s'])
     df['throughput_M'] = df.apply(lambda x : x['insert_elem_count']/(x['tot_time_insert_s']*10**6), axis=1)
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df = df.sort_values(by='load_factor_%')
@@ -486,7 +486,7 @@ def distribution(df):
     if df.empty:
         return
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','load_factor_%'], ['collisions','tot_time_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','collisions','tot_time_s'])
     df = df.sort_values(by='load_factor_%')
     fig = plt.figure(figsize=(3, 2))
     datasets = df['dataset_name'].unique()
@@ -580,7 +580,7 @@ def point_range(df):
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
     # Group by
-    df = groupby_helper(df, ['dataset_size','dataset_name','label','function','range_size','point_query_%'], ['probe_elem_count','tot_time_probe_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','range_size','point_query_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
     df['struct'] = df['label'].apply(lambda x : get_struct_type(x))
 
