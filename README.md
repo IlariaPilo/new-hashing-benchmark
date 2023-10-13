@@ -5,7 +5,7 @@ A repository based on the same components of [hashing-benchmark](https://github.
 ## 0 | Clone the repository
 The repository can be cloned by running: 
 ```sh
-git clone https://github.com/IlariaPilo/new-hashing-benchmark
+git clone --recursive https://github.com/IlariaPilo/new-hashing-benchmark
 ```
 
 ## 1 | Setup
