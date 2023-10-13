@@ -345,7 +345,8 @@ namespace bm {
 
         // Build the table
         Payload count = 0;
-        #pragma omp parallel for reduction(+:tot_time_insert,insert_count) private(count,_start_,_end_)
+        _start_ = std::chrono::high_resolution_clock::now();
+        #pragma omp parallel for reduction(+:insert_count) private(count)
         for (int i : order_insert) {
             #pragma omp cancellation point for
             // check if the index exists
@@ -353,10 +354,7 @@ namespace bm {
                 // get the data
                 Data data = ds[i];
                 try {
-                    _start_ = std::chrono::high_resolution_clock::now();
-                    table.insert(data, count);
-                    _end_ = std::chrono::high_resolution_clock::now();                 
-                    tot_time_insert += _end_ - _start_;
+                    table.insert(data, count);                
                     count++;
                     insert_count++;
                 } catch(std::runtime_error& e) {
@@ -367,24 +365,27 @@ namespace bm {
                 }
             }
         }
+        _end_ = std::chrono::high_resolution_clock::now(); 
+        tot_time_insert += _end_ - _start_;
         if (insert_fail) goto done;
 
-        #pragma omp parallel for reduction(+:tot_time_probe,probe_count) private(_start_,_end_)
+
+        _start_ = std::chrono::high_resolution_clock::now();
+        #pragma omp parallel for reduction(+:probe_count) private(_start_,_end_)
         for (int i : *order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
-                _start_ = std::chrono::high_resolution_clock::now();
                 std::optional<Payload> payload = table.lookup(data);
-                _end_ = std::chrono::high_resolution_clock::now();
                 if (!payload.has_value()) {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
                 }
-                tot_time_probe += _end_ - _start_;
                 probe_count++;
             }
         }
+        _end_ = std::chrono::high_resolution_clock::now();
+        tot_time_probe += _end_ - _start_;
     done:
         json benchmark;
         benchmark["dataset_size"] = dataset_size;
@@ -471,7 +472,9 @@ namespace bm {
         }
         if (insert_fail) goto done;
 
-        #pragma omp parallel for reduction(+:tot_time_probe,probe_count) private(_start_,_end_)
+
+        _start_ = std::chrono::high_resolution_clock::now();
+        #pragma omp parallel for reduction(+:probe_count) private(_start_,_end_)
         // Begin with the point queries
         for (size_t i=0; i<dataset_size; i++) {
             int idx_min = (*order_probe)[i];
@@ -481,9 +484,7 @@ namespace bm {
                 Data min = ds[idx_min];
                 // point queries
                 if (i<X) {
-                    _start_ = std::chrono::high_resolution_clock::now();
                     std::optional<Payload> payload = table.lookup(min);
-                    _end_ = std::chrono::high_resolution_clock::now();
                     if (!payload.has_value()) {
                         throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(min) + "\n           [label] " + label + "\n");
                     }
@@ -507,10 +508,11 @@ namespace bm {
                         throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
                     }
                 }
-                tot_time_probe += _end_ - _start_;
                 probe_count++;
             }
         }
+        _end_ = std::chrono::high_resolution_clock::now();
+        tot_time_probe += _end_ - _start_;
     done:
         json benchmark;
         benchmark["dataset_size"] = dataset_size;
