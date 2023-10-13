@@ -115,11 +115,11 @@ python3 scripts/print_figures.py <json_or_csv_file>
 Figures are saved in the `figs/` directory, in files called `<json_or_csv_file>_<fig_suffix>.png`.
 
 ### 🧶 Merging benchmarks
-The [`merge_results`](./scripts/merge_results.py) Python script can be used to merge two or more .json output files. 
+The [`merge_results`](./scripts/merge_results.py) Python script can be used to merge two or more .json or .csv output files. 
 ```sh
-python3 scripts/merge_results.py -o <merged_file>.json <list_of_input_files>
+python3 scripts/merge_results.py -o <merged_file> <list_of_input_files>
 ```
-Results are saved in the specified `<merged_file>.json` file.
+Results are saved in the specified `<merged_file>.json` and `<merged_file>.csv` files.
 
 This script can be particularly useful to leverage the average capability of `print_figures`.
 

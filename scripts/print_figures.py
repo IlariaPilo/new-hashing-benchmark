@@ -282,13 +282,24 @@ def gaps(df):
     fig.savefig(f'{prefix}_gaps.png')
 
 # ------- probe ------- #
-def probe(df):
+def probe(df, pareto=False):
     datasets = ['gap_10','normal','wiki','osm','fb']
     df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
     if df.empty:
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+
+    # Back-compatibility
+    if 'probe_type' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe_type']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+    
     # Group by
     df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
@@ -364,16 +375,28 @@ def probe(df):
     laby = fig.supylabel('Probe Throughput (Million operations/s)')
 
     #plt.show()
-    fig.savefig(f'{prefix}_probe.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
+    name = prefix + '_probe' + ('_pareto.png' if pareto else '.png')
+    fig.savefig(name, bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
 # ------- insert ------- #
-def insert(df):
+def insert(df, pareto=False):
     datasets = ['wiki','fb']
     df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
     if df.empty:
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+
+    # Back-compatibility
+    if 'probe_type' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe_type']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+
     # Group by
     df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','insert_elem_count','tot_time_insert_s'])
     df['throughput_M'] = df.apply(lambda x : x['insert_elem_count']/(x['tot_time_insert_s']*10**6), axis=1)
@@ -448,7 +471,8 @@ def insert(df):
     laby = fig.supylabel('Insert Throughput (Million operations/s)')
 
     #plt.show()
-    fig.savefig(f'{prefix}_insert.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
+    name = prefix + '_insert' + ('_pareto.png' if pareto else '.png')
+    fig.savefig(name, bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
 # ------- build plot ------- #
 def build(df):
@@ -508,7 +532,7 @@ def distribution(df):
     fig.savefig(f'{prefix}_distribution.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
 # -------- perf -------- # 
-def perf(df, no_mwhc=False):
+def perf(df, no_mwhc=False, pareto=False):
     # Some definitions
     GAP10 = 0
     FB = 1
@@ -527,7 +551,18 @@ def perf(df, no_mwhc=False):
 
     if no_mwhc:
         df = df[df['function']!='mwhc']
-
+    # Back-compatibility
+    if 'probe' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+    
+    # average
+    df = groupby_helper(df, ['function','table','dataset'], ['cycles','kcycles','instructions','L1-misses','LLC-misses','branch-misses','task-clock','scale','IPC','CPUs','GHz'])
     # Create a single figure with multiple subplots in a row
     num_subplots = len(counters)
     fig, axes = plt.subplots(2, num_subplots, figsize=(9, 5))  # Adjust figsize as needed
@@ -572,13 +607,24 @@ def perf(df, no_mwhc=False):
     fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
 
 # -------- point+range -------- # 
-def point_range(df):
+def point_range(df, pareto=False):
     datasets = ['wiki','fb']
     df = df[df["label"].str.lower().str.contains("range")].copy(deep=True)
     if df.empty:
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+
+    # Back-compatibility
+    if 'probe_type' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe_type']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+
     # Group by
     df = groupby_helper(df, ['dataset_name','label','function','range_size','point_query_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
     df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
@@ -637,26 +683,17 @@ def point_range(df):
         axs_range[i].set_xscale('log', base=2)
         axs_range[i].set_xticks([1,8,64,1024],['1','8','64','1024'])
 
-        # ax[CHAINED].set_ylim([0,8])
-        # ax[LINEAR].set_ylim([0,8])
-        # ax[CUCKOO].set_ylim([0,8])
-        # ax[CHAINED].set_yticks([0,2,4,6,8], ['','','','',''])
-        # ax[LINEAR].set_yticks([0,2,4,6,8], ['','','','',''])
-        # ax[CUCKOO].set_yticks([0,2,4,6,8], ['','','','',''])
-
         axs_point[i].grid(True)
         axs_range[i].grid(True)
     
     axs_point[0].set_ylabel('Throughput \n(Million operations/s)')
     axs_range[0].set_ylabel('Throughput \n(Million operations/s)')
-    # axes[CHAINED,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
-    # axes[LINEAR,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
-    # axes[CUCKOO,0].set_yticks([0,2,4,6,8], ['0','2','4','6','8'])
     # Add a single legend to the entire figure with labels on the same line
     lgd = fig.legend(handles=[line for line in fig.axes[0].lines], loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.1))
 
     #plt.show()
-    fig.savefig(f'{prefix}_range.png', bbox_extra_artists=(lgd,lg1,lg3,), bbox_inches='tight')
+    name = prefix + '_range' + ('_pareto.png' if pareto else '.png')
+    fig.savefig(name, bbox_extra_artists=(lgd,lg1,lg3,), bbox_inches='tight')
 
 # =============================== MAINS =============================== #l
 
@@ -673,9 +710,12 @@ def main_json():
         distribution(df)
         gaps(df)
         probe(df)
+        probe(df, pareto=True)
         insert(df)
+        insert(df, pareto=True)
         build(df)
         point_range(df)
+        point_range(df, pareto=True)
 
 def main_csv():
     df = pd.read_csv(file_path)
