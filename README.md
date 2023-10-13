@@ -1,11 +1,13 @@
-# New Hashing Benchmarking
+# New Hashing Benchmarking [PARALLEL]
 
 A repository based on the same components of [hashing-benchmark](https://github.com/DominikHorn/hashing-benchmark), with the aim of reproducing results of the [Can Learned Models Replace Hash Functions?](https://dl.acm.org/doi/10.14778/3570690.3570702) article.
+
+⚠️ This is the _parallel_ version of the repository, meaning that the _probe_, _point_ and _range_ experiments build and query the table in a parallel fashion. For the _serial_ version, take a look at the [singleT](https://github.com/IlariaPilo/new-hashing-benchmark) branch.
 
 ## 0 | Clone the repository
 The repository can be cloned by running: 
 ```sh
-git clone https://github.com/IlariaPilo/new-hashing-benchmark
+git clone --recursive --branch multiT https://github.com/IlariaPilo/new-hashing-benchmark
 ```
 
 ## 1 | Setup
