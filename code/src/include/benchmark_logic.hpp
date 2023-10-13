@@ -345,7 +345,9 @@ namespace bm {
 
         // Build the table
         Payload count = 0;
+        #pragma omp parallel for reduction(+:tot_time_insert,insert_count) private(count,_start_,_end_)
         for (int i : order_insert) {
+            #pragma omp cancellation point for
             // check if the index exists
             if (i < (int)dataset_size) {
                 // get the data
@@ -353,19 +355,21 @@ namespace bm {
                 try {
                     _start_ = std::chrono::high_resolution_clock::now();
                     table.insert(data, count);
-                    _end_ = std::chrono::high_resolution_clock::now();
+                    _end_ = std::chrono::high_resolution_clock::now();                 
+                    tot_time_insert += _end_ - _start_;
+                    count++;
+                    insert_count++;
                 } catch(std::runtime_error& e) {
                     // if we are here, we failed the insertion
+                    #pragma omp cancel for
                     insert_fail = true;
                     fail_what = e.what();
-                    goto done;
                 }
-                
-                tot_time_insert += _end_ - _start_;
-                count++;
-                insert_count++;
             }
         }
+        if (insert_fail) goto done;
+
+        #pragma omp parallel for reduction(+:tot_time_probe,probe_count) private(_start_,_end_)
         for (int i : *order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -447,7 +451,9 @@ namespace bm {
 
         // Build the table
         Payload count = 0;
+        #pragma omp parallel for private(count)
         for (int idx : order_insert) {
+            #pragma omp cancellation point for
             // check if the index exists
             if (idx < (int)dataset_size) {
                 // get the data
@@ -456,59 +462,54 @@ namespace bm {
                     table.insert(data, count);
                 } catch(std::runtime_error& e) {
                     // if we are here, we failed the insertion
+                    #pragma omp cancel for
                     insert_fail = true;
                     fail_what = e.what();
-                    goto done;
                 }
                 count++;
             }
         }
+        if (insert_fail) goto done;
+
+        #pragma omp parallel for reduction(+:tot_time_probe,probe_count) private(_start_,_end_)
         // Begin with the point queries
-        size_t i;
-        for (i=0; i<X; i++) {
-            int idx = (*order_probe)[i];
+        for (size_t i=0; i<dataset_size; i++) {
+            int idx_min = (*order_probe)[i];
             // check if the index exists
-            if (idx < (int)dataset_size) {
+            if (idx_min < (int)dataset_size) {
                 // get the data
-                Data data = ds[idx];
-                _start_ = std::chrono::high_resolution_clock::now();
-                std::optional<Payload> payload = table.lookup(data);
-                _end_ = std::chrono::high_resolution_clock::now();
-                if (!payload.has_value()) {
-                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
+                Data min = ds[idx_min];
+                // point queries
+                if (i<X) {
+                    _start_ = std::chrono::high_resolution_clock::now();
+                    std::optional<Payload> payload = table.lookup(min);
+                    _end_ = std::chrono::high_resolution_clock::now();
+                    if (!payload.has_value()) {
+                        throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(min) + "\n           [label] " + label + "\n");
+                    }
+                }
+                // range queries
+                else {
+                    // get the idx_max
+                    size_t increment = (range_size?range_size:ranges[i])-1; // remove 1 cause the upper bound is included
+                    size_t idx_max = idx_min + increment;
+                    idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
+                    increment = idx_max - idx_min +1;                       // add 1 cause the upper bound is included
+                    // get the max
+                    Data max = ds[idx_max];
+                    if (max<min) {
+                        throw std::runtime_error("\033[1;91mError\033[0m Something went wrong...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [label] " + label + "\n");
+                    }
+                    _start_ = std::chrono::high_resolution_clock::now();
+                    std::vector<Payload> payload = table.lookup_range(min,max);
+                    _end_ = std::chrono::high_resolution_clock::now();
+                    if (payload.size() != increment) {
+                        throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
+                    }
                 }
                 tot_time_probe += _end_ - _start_;
                 probe_count++;
             }
-        }
-        // Now the range queries
-        while (i<dataset_size) {
-            int idx_min = (*order_probe)[i];
-            // check if the index exists
-            if (idx_min < (int)dataset_size) {
-                // get the min
-                Data min = ds[idx_min];
-                // get the idx_max
-                size_t increment = (range_size?range_size:ranges[i])-1; // remove 1 cause the upper bound is included
-                size_t idx_max = idx_min + increment;
-                idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
-                increment = idx_max - idx_min +1;                       // add 1 cause the upper bound is included
-                // get the max
-                Data max = ds[idx_max];
-                if (max<min) {
-                    throw std::runtime_error("\033[1;91mError\033[0m Something went wrong...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [label] " + label + "\n");
-                }
-                _start_ = std::chrono::high_resolution_clock::now();
-                std::vector<Payload> payload = table.lookup_range(min,max);
-                _end_ = std::chrono::high_resolution_clock::now();
-                if (payload.size() != increment) {
-                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
-                }
-                tot_time_probe += _end_ - _start_;
-                probe_count ++;
-                // update i
-                i ++;
-            } else i++;
         }
     done:
         json benchmark;

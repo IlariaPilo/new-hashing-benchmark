@@ -8,6 +8,6 @@ set(HASHTABLE_LIBRARY hashtable)
 FetchContent_Declare(
   ${HASHTABLE_LIBRARY}
   GIT_REPOSITORY https://github.com/IlariaPilo/hashtable
-  GIT_TAG 75e70aa
+  GIT_TAG 72d7569
   )
 FetchContent_MakeAvailable(${HASHTABLE_LIBRARY})

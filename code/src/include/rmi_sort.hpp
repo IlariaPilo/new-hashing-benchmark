@@ -46,15 +46,18 @@ namespace hashtable {
          * @return "true" if there is still space to store the pair, "false" otherwise.
         */
         bool insert(const Key& key, const Payload& payload) {
-            if (filled >= capacity)
-                return false;
-            // put in the array
-            slots.push_back({key,payload});
-            // update filled
-            filled++;
-            if (filled == capacity) {
-                // we are done, call finalize
-                finalize();
+            #pragma omp critical
+            {
+                if (filled >= capacity)
+                    return false;
+                // put in the array
+                slots.push_back({key,payload});
+                // update filled
+                filled++;
+                if (filled == capacity) {
+                    // we are done, call finalize
+                    finalize();
+                }
             }
             return true;
         }
