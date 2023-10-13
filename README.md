@@ -2,6 +2,8 @@
 
 A repository based on the same components of [hashing-benchmark](https://github.com/DominikHorn/hashing-benchmark), with the aim of reproducing results of the [Can Learned Models Replace Hash Functions?](https://dl.acm.org/doi/10.14778/3570690.3570702) article.
 
+⚠️ This is the _serial_ version of the repository, meaning that the _probe_, _point_ and _range_ experiments build and query the table in a serial fashion. For the _parallel_ version, take a look at the [multiT](https://github.com/IlariaPilo/new-hashing-benchmark/tree/multiT) branch.
+
 ## 0 | Clone the repository
 The repository can be cloned by running: 
 ```sh
