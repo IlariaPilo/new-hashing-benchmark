@@ -137,7 +137,7 @@ namespace bm {
                 break;
             default:
                 // this should never happen in practice
-                throw std::runtime_error("\033[1;Error\033[0m this thread should not exist...\n           [threadID] " + std::to_string(threadID) + "\n");
+                throw std::runtime_error("\033[1;91mError\033[0m this thread should not exist...\n           [threadID] " + std::to_string(threadID) + "\n");
         }
         }
     }
