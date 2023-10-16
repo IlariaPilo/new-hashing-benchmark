@@ -123,10 +123,27 @@ namespace bm {
     void init(size_t thread_num) {
         std::cout << "BEGIN INIT\n"; 
         THREADS = thread_num;
-        generate_insert_order(MAX_DS_SIZE);
-        generate_probe_order_uniform(MAX_DS_SIZE);
-        generate_probe_order_80_20(MAX_DS_SIZE);
-        fill_ranges(MAX_DS_SIZE);
+        #pragma omp parallel num_threads(4) 
+        {
+        int threadID = omp_get_thread_num();
+        switch(threadID) {
+            case 0:
+                generate_insert_order(MAX_DS_SIZE);
+                break;
+            case 1:
+                generate_probe_order_uniform(MAX_DS_SIZE);
+                break;
+            case 2:
+                generate_probe_order_80_20(MAX_DS_SIZE);
+                break;
+            case 3:
+                fill_ranges(MAX_DS_SIZE);
+                break;
+            default:
+                // this should never happen in practice
+                throw std::runtime_error("\033[1;Error\033[0m this thread should not exist...\n           [threadID] " + std::to_string(threadID) + "\n");
+        }
+        }
         std::cout << "END INIT\n"; 
     }
 
