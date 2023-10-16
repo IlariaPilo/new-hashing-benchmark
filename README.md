@@ -57,14 +57,12 @@ The executable file is called `cmake-build-release/src/benchmarks`, and it can b
 Arguments:
   -i, --input INPUT_DIR     Directory storing the datasets
   -o, --output OUTPUT_DIR   Directory that will store the output
+  -t, --threads THREADS     Number of threads to use (default: all)
   -f, --filter FILTER       Type of benchmark to execute, *comma-separated*
                             Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all (default: all) 
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `<filter>_<timestamp>.json`.
-
-<!--⚠️ *__Warning :__* the thread option is currently ignored due to a concurrency bug. Hopefully it will come back soon! -->
-<!-- TODO hopefully remove -->
 
 ### 📌 Benchmark types
 Notice that the numbers in the parenthesis refer to the experiment number in the article.

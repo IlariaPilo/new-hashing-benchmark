@@ -24,6 +24,7 @@ namespace bm {
     } BM;
 
     // ----------------- utility things ----------------- //
+    size_t THREADS;
     std::vector<int> order_insert;          // will store all values from 0 to N-1
     std::vector<int> order_probe_uniform;   // will store uniformly sampled values from 0 to N-1
     std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
@@ -111,59 +112,28 @@ namespace bm {
     }
 
     /**
-    The function that will run all selected benchmarks (PARALLEL VERSION).
-    @param  bm_list the list of benchmarks that will be run
-    @param collection the list of datasets benchmarks will be run on
-    @param writer the object that handles the output json file 
+     * Init all global variable to support benchmarks
+     * @param the number of threads that will be used in the parallel build & probe
     */
-    void run_bms(std::vector<BM>& bm_list,
-            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
-        // first of all, check thread compatibility
-        if (thread_num > bm_list.size())
-            thread_num = bm_list.size();
-        // initialize arrays to keep things sorted
+    void init(size_t thread_num) {
+        THREADS = thread_num;
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order_uniform(MAX_DS_SIZE);
         generate_probe_order_80_20(MAX_DS_SIZE);
         fill_ranges(MAX_DS_SIZE);
-        // sort the BM array by dataset ID
-        std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
-            return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
-        });
-        // begin parallel computation
-        #pragma omp parallel num_threads(thread_num)
-        {
-            int threadID = omp_get_thread_num();
-            int BM_COUNT = bm_list.size();
-            // get slice of benchmarks
-            auto slice = get_bm_slice(threadID, thread_num, bm_list);
-            int start = slice.first;
-            int end = slice.second;
-            // for each function
-            for(int i=start; i<end && i<BM_COUNT; i++) {
-                BM bm = bm_list[i];
-                // get the dataset
-                const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
-                // run the function
-                bm.function(ds, writer);
-            }
-        }
-        // done!
     }
+
     /**
-    The function that will run all selected benchmarks (SERIAL VERSION).
-    @param  bm_list the list of benchmarks that will be run
+    The function that will run all selected benchmarks
+    @param bm_list the list of benchmarks that will be run
+    @param thread_num the number of threads that will be used in the parallel build & probe
     @param collection the list of datasets benchmarks will be run on
     @param writer the object that handles the output json file 
     */
-    void run_bms(std::vector<BM>& bm_list,
+    void run_bms(std::vector<BM>& bm_list, size_t thread_num,
             dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         int BM_COUNT = bm_list.size();
-        // initialize arrays to keep things sorted
-        generate_insert_order(MAX_DS_SIZE);
-        generate_probe_order_uniform(MAX_DS_SIZE);
-        generate_probe_order_80_20(MAX_DS_SIZE);
-        fill_ranges(MAX_DS_SIZE);
+        init(thread_num);
         // sort the BM array by dataset ID
         std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
             return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
@@ -346,7 +316,7 @@ namespace bm {
         // Build the table
         Payload count = 0;
         _start_ = std::chrono::high_resolution_clock::now();
-        #pragma omp parallel for reduction(+:insert_count) private(count)
+        #pragma omp parallel for reduction(+:insert_count) private(count) num_threads(THREADS)
         for (int i : order_insert) {
             #pragma omp cancellation point for
             // check if the index exists
@@ -371,7 +341,7 @@ namespace bm {
 
 
         _start_ = std::chrono::high_resolution_clock::now();
-        #pragma omp parallel for reduction(+:probe_count) private(_start_,_end_)
+        #pragma omp parallel for reduction(+:probe_count) private(_start_,_end_) num_threads(THREADS)
         for (int i : *order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -452,7 +422,7 @@ namespace bm {
 
         // Build the table
         Payload count = 0;
-        #pragma omp parallel for private(count)
+        #pragma omp parallel for private(count) num_threads(THREADS)
         for (int idx : order_insert) {
             #pragma omp cancellation point for
             // check if the index exists
@@ -474,7 +444,7 @@ namespace bm {
 
 
         _start_ = std::chrono::high_resolution_clock::now();
-        #pragma omp parallel for reduction(+:probe_count) private(_start_,_end_)
+        #pragma omp parallel for reduction(+:probe_count) private(_start_,_end_) num_threads(THREADS)
         // Begin with the point queries
         for (size_t i=0; i<dataset_size; i++) {
             int idx_min = (*order_probe)[i];

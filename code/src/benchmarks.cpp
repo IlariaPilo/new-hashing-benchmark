@@ -23,7 +23,7 @@ void show_usage() {
     std::cout << "Arguments:" << std::endl;
     std::cout << "  -i, --input INPUT_DIR     Directory storing the datasets" << std::endl;
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
-    // std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
+    std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
     std::cout << "                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
@@ -55,7 +55,6 @@ int pars_args(const int& argc, char* const* const& argv) {
                 return 2;
             }
         }
-        /*
         if (arg == "--threads" || arg == "-t") {
             if (i + 1 < argc) {
                 threads = std::stoi(argv[i + 1]);
@@ -65,7 +64,7 @@ int pars_args(const int& argc, char* const* const& argv) {
                 std::cerr << "Error: --threads requires an argument." << std::endl;
                 return 2;
             }
-        }*/
+        }
         if (arg == "--filter" || arg == "-f") {
             if (i + 1 < argc) {
                 filter = argv[i + 1];
@@ -232,7 +231,7 @@ int main(int argc, char* argv[]) {
     // std::cout << "Running on " << threads << " thread" << (threads>1? "s.":".") << std::endl << std::endl;
 
     // Create a JsonWriter instance (for the output file)
-    JsonOutput writer(output_dir, argv[0], filter);
+    JsonOutput writer(output_dir, argv[0], filter, threads);
 
     // Benchmark arrays definition
     std::vector<bm::BM> bm_list;
@@ -364,7 +363,7 @@ int main(int argc, char* argv[]) {
 
     // Run!
     std::cout << "Begin benchmarking on "<< bm_list.size() <<" function" << (bm_list.size()>1? "s...":"...") << std::endl;
-    bm::run_bms(bm_list, collection, writer);
+    bm::run_bms(bm_list, threads, collection, writer);
     std::cout << "done!" << std::endl << std::endl;
     
     return 0;

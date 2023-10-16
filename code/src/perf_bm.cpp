@@ -151,8 +151,14 @@ int main(int argc, char* argv[]) {
     else if (probe_distr == "80-20")
         probe_type = bm::ProbeType::PARETO_80_20;
 
+    // get thread number
+    size_t threads = sysconf(_SC_NPROCESSORS_ONLN);
+
     // Create a JsonWriter instance (for the output file)
-    JsonOutput writer(output_dir, argv[0], "perf-" + h_fun_name + "-" + table_name + "-" + ds_name);
+    JsonOutput writer(output_dir, argv[0], "perf-" + h_fun_name + "-" + table_name + "-" + ds_name, threads);
+
+    // init benchmarks
+    bm::init(threads);
 
     PerfEvent e;
     // Call the right function
