@@ -3,6 +3,7 @@
 # Default values for input and output directories
 input_dir=""
 output_dir=""
+threads=$(nproc --all)
 
 # Function to display usage instructions
 usage() {
@@ -10,6 +11,7 @@ usage() {
     echo "Arguments:"
     echo "  -i, --input  INPUT_DIR    Directory storing the datasets"
     echo "  -o, --output OUTPUT_DIR   Directory that will store the output"
+    echo "  -t, --threads THREADS     The number of threads to be used (default: all)"
     echo -e "  -h, --help                Display this help message\n"
     exit 1
 }
@@ -25,6 +27,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -o|--output)
             output_dir="$2"
+            shift 2
+            ;;
+        -t|--threads)
+            threads="$2"
             shift 2
             ;;
         -h|--help)
@@ -71,7 +77,7 @@ for ds in "${datasets[@]}"; do
         for fun in "${functions[@]}"; do
             for prb in "${probe[@]}"; do
                 echo -n "$fun,$tab,$ds,$prb," >> $output_file
-                cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds -p $prb > tmp.out
+                cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds -p $prb -n $threads > tmp.out
                 # print some info
                 sed -n 1p tmp.out
                 # get interesting values

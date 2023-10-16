@@ -90,6 +90,7 @@ This script can be used as follows:
 Arguments:
   -i, --input  INPUT_DIR    Directory storing the datasets
   -o, --output OUTPUT_DIR   Directory that will store the output
+  -t, --threads THREADS     The number of threads to be used (default: all)
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `perf_<timestamp>.csv`.

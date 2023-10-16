@@ -14,6 +14,7 @@
 #define LOAD_PERC 80
 
 /* ======== options ======== */
+    size_t threads;
     std::string input_dir = "";
     std::string output_dir = "";
     std::string h_fun_name = "";
@@ -32,6 +33,7 @@ void show_usage() {
     std::cout << "  -f, --function HASH_FN     Function to use. Options = rmi,mult,mwhc" << std::endl;
     std::cout << "  -t, --table TABLE          Table to use. Options = chain,linear,cuckoo" << std::endl;
     std::cout << "  -p, --probe DISTRIBUTION   Distribution used to probe. Options = uniform,80-20 (default: uniform)" << std::endl;
+    std::cout << "  -n, --n_threads THREADS    The number of threads to be used (default: all)" << std::endl;
     std::cout << "  -h, --help                 Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -58,6 +60,16 @@ int pars_args(const int& argc, char* const* const& argv) {
                 continue;
             } else {
                 std::cerr << "Error: --output requires an argument." << std::endl;
+                return 2;
+            }
+        }
+        if (arg == "--n_threads" || arg == "-n") {
+            if (i + 1 < argc) {
+                threads = std::stoi(argv[i + 1]);
+                i++; // Skip the next argument
+                continue;
+            } else {
+                std::cerr << "Error: --n_threads requires an argument." << std::endl;
                 return 2;
             }
         }
@@ -126,6 +138,8 @@ int pars_args(const int& argc, char* const* const& argv) {
 }
 
 int main(int argc, char* argv[]) {
+    // get thread number
+    threads = sysconf(_SC_NPROCESSORS_ONLN);
     // Parse command-line arguments
     int do_exit = pars_args(argc, argv);
     if (do_exit)
@@ -150,9 +164,6 @@ int main(int argc, char* argv[]) {
         probe_type = bm::ProbeType::UNIFORM;
     else if (probe_distr == "80-20")
         probe_type = bm::ProbeType::PARETO_80_20;
-
-    // get thread number
-    size_t threads = sysconf(_SC_NPROCESSORS_ONLN);
 
     // Create a JsonWriter instance (for the output file)
     JsonOutput writer(output_dir, argv[0], "perf-" + h_fun_name + "-" + table_name + "-" + ds_name, threads);
