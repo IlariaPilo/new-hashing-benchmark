@@ -111,47 +111,18 @@ namespace bm {
     }
 
     /**
-    The function that will run all selected benchmarks (PARALLEL VERSION).
-    @param  bm_list the list of benchmarks that will be run
-    @param collection the list of datasets benchmarks will be run on
-    @param writer the object that handles the output json file 
+     * Init all global variable to support benchmarks
+     * @param the number of threads that will be used in the parallel build & probe
     */
-    void run_bms(std::vector<BM>& bm_list,
-            size_t thread_num, dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
-        // first of all, check thread compatibility
-        if (thread_num > bm_list.size())
-            thread_num = bm_list.size();
-        // initialize arrays to keep things sorted
+    void init() {
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order_uniform(MAX_DS_SIZE);
         generate_probe_order_80_20(MAX_DS_SIZE);
         fill_ranges(MAX_DS_SIZE);
-        // sort the BM array by dataset ID
-        std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
-            return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
-        });
-        // begin parallel computation
-        #pragma omp parallel num_threads(thread_num)
-        {
-            int threadID = omp_get_thread_num();
-            int BM_COUNT = bm_list.size();
-            // get slice of benchmarks
-            auto slice = get_bm_slice(threadID, thread_num, bm_list);
-            int start = slice.first;
-            int end = slice.second;
-            // for each function
-            for(int i=start; i<end && i<BM_COUNT; i++) {
-                BM bm = bm_list[i];
-                // get the dataset
-                const dataset::Dataset<Data>& ds = collection.get_ds(bm.dataset);
-                // run the function
-                bm.function(ds, writer);
-            }
-        }
-        // done!
     }
+
     /**
-    The function that will run all selected benchmarks (SERIAL VERSION).
+    The function that will run all selected benchmarks
     @param  bm_list the list of benchmarks that will be run
     @param collection the list of datasets benchmarks will be run on
     @param writer the object that handles the output json file 
@@ -160,10 +131,7 @@ namespace bm {
             dataset::CollectionDS<Data>& collection, JsonOutput& writer) {
         int BM_COUNT = bm_list.size();
         // initialize arrays to keep things sorted
-        generate_insert_order(MAX_DS_SIZE);
-        generate_probe_order_uniform(MAX_DS_SIZE);
-        generate_probe_order_80_20(MAX_DS_SIZE);
-        fill_ranges(MAX_DS_SIZE);
+        init();
         // sort the BM array by dataset ID
         std::sort(bm_list.begin(), bm_list.end(), [](BM lhs, BM rhs) {
             return static_cast<int>(lhs.dataset) < static_cast<int>(rhs.dataset);
