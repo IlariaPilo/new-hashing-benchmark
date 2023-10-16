@@ -76,6 +76,7 @@ for ds in "${datasets[@]}"; do
                 sed -n 1p tmp.out
                 # get interesting values
                 sed -n 3p tmp.out | tr -d ' \t' >> $output_file
+            done
         done
     done
 done
