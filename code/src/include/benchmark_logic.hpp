@@ -43,6 +43,7 @@ namespace bm {
         std::random_device rd;
         std::default_random_engine rng(rd());
         order_insert.clear();
+        order_insert.reserve(N);
         for (size_t i = 0; i < N; ++i) {
             order_insert.push_back(i);
         }
@@ -50,6 +51,7 @@ namespace bm {
     }
     void generate_probe_order_uniform(size_t N = 100000000) {
         order_probe_uniform.clear();
+        order_probe_uniform.reserve(N);
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<int> distribution(0, N-1);
@@ -60,6 +62,7 @@ namespace bm {
     }
     void generate_probe_order_80_20(size_t N = 100000000) {
         order_probe_80_20.clear();
+        order_probe_80_20.reserve(N);
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<double> access_percent_dist(0.0, 1.0);
@@ -84,6 +87,7 @@ namespace bm {
     }
     void fill_ranges(size_t N = 100000000) {
         ranges.clear();
+        ranges.reserve(N);
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<int> distribution(25,50);
