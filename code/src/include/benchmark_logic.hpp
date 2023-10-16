@@ -12,6 +12,11 @@
 
 // For a detailed description of the benchmarks, please consult the README of the project
 
+// declare specific reduction
+#pragma omp declare reduction(vec_int_sum : std::vector<int> : \
+                              std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<int>())) \
+                    initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
+
 namespace bm {
     // bm function pointer type
     using BMtype = std::function<void(const dataset::Dataset<Data>&, JsonOutput&)>;
@@ -116,11 +121,13 @@ namespace bm {
      * @param the number of threads that will be used in the parallel build & probe
     */
     void init(size_t thread_num) {
+        std::cout << "BEGIN INIT\n"; 
         THREADS = thread_num;
         generate_insert_order(MAX_DS_SIZE);
         generate_probe_order_uniform(MAX_DS_SIZE);
         generate_probe_order_80_20(MAX_DS_SIZE);
         fill_ranges(MAX_DS_SIZE);
+        std::cout << "END INIT\n"; 
     }
 
     /**
@@ -170,7 +177,7 @@ namespace bm {
         // now, start counting collisions
 
         // stores the hash value (that is, the key) for each entry in the dataset
-        std::vector<Key> keys_count;
+        std::vector<int> keys_count;
         keys_count.resize(capacity, 0);
 
         // ====================== collision counters ====================== //
@@ -181,13 +188,17 @@ namespace bm {
         size_t NOT_collisions_count = 0;
         // ================================================================ //
 
-        for (auto data : ds) {
-            _start_ = std::chrono::high_resolution_clock::now();
-            index = fn(data);
-            _end_ = std::chrono::high_resolution_clock::now();
-            keys_count[index]++;
-            tot_time += _end_ - _start_;
+        _start_ = std::chrono::high_resolution_clock::now();
+        #pragma omp parallel for reduction(vec_int_sum:keys_count) num_threads(THREADS)
+        for (int i : order_insert) {
+            // check if the index exists
+            if (i < (int)dataset_size) {
+                Data data = ds[i];
+                index = fn(data);
+                keys_count[index]++;
+            }
         }
+        _end_ = std::chrono::high_resolution_clock::now();
         // count collisions
         for (auto k : keys_count) {
             if (k > 1)
