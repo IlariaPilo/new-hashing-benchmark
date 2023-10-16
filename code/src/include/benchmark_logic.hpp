@@ -211,7 +211,7 @@ namespace bm {
 
         _start_ = std::chrono::high_resolution_clock::now();
         #pragma omp parallel for reduction(vec_int_sum:keys_count) num_threads(THREADS)
-        for (int _=0; _<dataset_size; _++) {
+        for (size_t _=0; _<dataset_size; _++) {
             int i = order_insert[_];
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -350,7 +350,7 @@ namespace bm {
         Payload count = 0;
         _start_ = std::chrono::high_resolution_clock::now();
         #pragma omp parallel for reduction(+:insert_count) private(count) num_threads(THREADS)
-        for (int _=0; _<dataset_size; _++) {
+        for (size_t _=0; _<dataset_size; _++) {
             int i = order_insert[_];
             #pragma omp cancellation point for
             // check if the index exists
@@ -375,7 +375,7 @@ namespace bm {
 
         _start_ = std::chrono::high_resolution_clock::now();
         #pragma omp parallel for reduction(+:probe_count) private(_start_,_end_) num_threads(THREADS)
-        for (int _=0; _<dataset_size; _++) {
+        for (size_t _=0; _<dataset_size; _++) {
             int i = (*order_probe)[_];
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -457,7 +457,7 @@ namespace bm {
         // Build the table
         Payload count = 0;
         #pragma omp parallel for private(count) num_threads(THREADS)
-        for (int _=0; _<dataset_size; _++) {
+        for (size_t _=0; _<dataset_size; _++) {
             int idx = order_insert[_];
             #pragma omp cancellation point for
             // check if the index exists
