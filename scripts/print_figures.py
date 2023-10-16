@@ -562,7 +562,7 @@ def perf(df, no_mwhc=False, pareto=False):
         return
     
     # average
-    df = groupby_helper(df, ['function','table','dataset'], ['cycles','kcycles','instructions','L1-misses','LLC-misses','branch-misses','task-clock','scale','IPC','CPUs','GHz'])
+    df = groupby_helper(df, ['function','table','dataset','label'], ['cycles','kcycles','instructions','L1-misses','LLC-misses','branch-misses','task-clock','scale','IPC','CPUs','GHz'])
     # Create a single figure with multiple subplots in a row
     num_subplots = len(counters)
     fig, axes = plt.subplots(2, num_subplots, figsize=(9, 5))  # Adjust figsize as needed
@@ -603,7 +603,7 @@ def perf(df, no_mwhc=False, pareto=False):
     laby = fig.supylabel('Performance Counter Ratio')
 
     #plt.show()
-    name = prefix + ('_no_mwhc' if no_mwhc else '') + '.png'
+    name = prefix + ('_no_mwhc' if no_mwhc else '') + ('_pareto' if pareto else '') + '.png'
     fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
 
 # -------- point+range -------- # 
@@ -720,7 +720,7 @@ def main_json():
 def main_csv():
     df = pd.read_csv(file_path)
     perf(df)
-    perf(df, no_mwhc=True)
+    perf(df, pareto=True)
 
 #----------------------------#
 COLORS, COLORS_STRUCT = prepare_fn_colormap()
