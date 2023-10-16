@@ -200,17 +200,17 @@ namespace bm {
         size_t NOT_collisions_count = 0;
         // ================================================================ //
 
-        _start_ = std::chrono::high_resolution_clock::now();
         for (int i : order_insert) {
             // check if the index exists
             if (i < (int)dataset_size) {
                 Data data = ds[i];
+                _start_ = std::chrono::high_resolution_clock::now();
                 index = fn(data);
+                _end_ = std::chrono::high_resolution_clock::now();
                 keys_count[index]++;
+                tot_time += _end_ - _start_;
             }
         }
-        _end_ = std::chrono::high_resolution_clock::now();
-        tot_time = _end_ - _start_;
         // count collisions
         for (auto k : keys_count) {
             if (k > 1)
@@ -338,14 +338,15 @@ namespace bm {
 
         // Build the table
         Payload count = 0;
-        _start_ = std::chrono::high_resolution_clock::now();
         for (int i : order_insert) {
             // check if the index exists
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
                 try {
+                    _start_ = std::chrono::high_resolution_clock::now();
                     table.insert(data, count);
+                    _end_ = std::chrono::high_resolution_clock::now();
                 } catch(std::runtime_error& e) {
                     // if we are here, we failed the insertion
                     insert_fail = true;
@@ -354,26 +355,25 @@ namespace bm {
                 }
                 count++;
                 insert_count++;
+                tot_time_insert += _end_ - _start_;
             }
         }
-        _end_ = std::chrono::high_resolution_clock::now();
-        tot_time_insert = _end_ - _start_;
 
-        _start_ = std::chrono::high_resolution_clock::now();
         for (int i : *order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
+                _start_ = std::chrono::high_resolution_clock::now();
                 std::optional<Payload> payload = table.lookup(data);
+                _end_ = std::chrono::high_resolution_clock::now();
                 if (!payload.has_value()) {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
                 }
                 probe_count++;
+                tot_time_probe += _end_ - _start_;
             }
         }
-        _end_ = std::chrono::high_resolution_clock::now();
-        tot_time_probe = _end_ - _start_;
 
     done:
         json benchmark;
@@ -459,24 +459,23 @@ namespace bm {
         }
         // Begin with the point queries
         size_t i;
-        _start_ = std::chrono::high_resolution_clock::now();
         for (i=0; i<X; i++) {
             int idx = (*order_probe)[i];
             // check if the index exists
             if (idx < (int)dataset_size) {
                 // get the data
                 Data data = ds[idx];
+                _start_ = std::chrono::high_resolution_clock::now();
                 std::optional<Payload> payload = table.lookup(data);
+                _end_ = std::chrono::high_resolution_clock::now();
                 if (!payload.has_value()) {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
                 }
                 probe_count++;
+                tot_time_probe += _end_ - _start_;
             }
         }
-        _end_ = std::chrono::high_resolution_clock::now();
-        tot_time_probe += _end_ - _start_;
 
-        _start_ = std::chrono::high_resolution_clock::now();
         // Now the range queries
         while (i<dataset_size) {
             int idx_min = (*order_probe)[i];
@@ -491,17 +490,18 @@ namespace bm {
                 increment = idx_max - idx_min +1;                       // add 1 cause the upper bound is included
                 // get the max
                 Data max = ds[idx_max];
+                _start_ = std::chrono::high_resolution_clock::now();
                 std::vector<Payload> payload = table.lookup_range(min,max);
+                _end_ = std::chrono::high_resolution_clock::now();
                 if (payload.size() != increment) {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
                 }
                 probe_count ++;
+                tot_time_probe += _end_ - _start_;
                 // update i
                 i ++;
             } else i++;
         }
-        _end_ = std::chrono::high_resolution_clock::now();
-        tot_time_probe += _end_ - _start_;
         
     done:
         json benchmark;
