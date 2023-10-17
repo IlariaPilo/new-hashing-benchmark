@@ -90,29 +90,6 @@ namespace bm {
             ranges.push_back(random_value);
         }
     }
-    std::pair<int, int> get_bm_slice(int threadID, size_t thread_num, std::vector<BM>& bm_list) {
-        int BM_COUNT = bm_list.size();
-        int mod = BM_COUNT % thread_num;
-        int div = BM_COUNT / thread_num;
-        size_t slice = (size_t)div;
-        /* We also take a look in the past to set the starting point! */
-        int past_mod_threads = -1;      // the ones with +1 in the slice
-        int past_threads = -1;          // all the other ones
-        if (threadID < mod) {
-            slice++;
-            past_mod_threads = threadID;
-            past_threads = 0;
-        } else {
-            past_mod_threads = mod;
-            past_threads = threadID - mod;
-        }
-        /* Define start and end */
-        int start = past_mod_threads*(div+1) + past_threads*div;
-        int end = start+slice;
-
-        std::pair<int,int> output(start,end);
-        return output;
-    }
 
     /**
      * Init all global variable to support benchmarks
@@ -177,12 +154,13 @@ namespace bm {
 
         // ====================== collision counters ====================== //
         Key index;
-        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
-        /*volatile*/ std::chrono::duration<double> tot_time(0);
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
+        /*volatile*/ std::chrono::duration<double> tot_time(0), tot_for(0);
         size_t collisions_count = 0;
         size_t NOT_collisions_count = 0;
         // ================================================================ //
 
+        start_for = std::chrono::high_resolution_clock::now();
         for (int i : order_insert) {
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -194,6 +172,9 @@ namespace bm {
                 tot_time += _end_ - _start_;
             }
         }
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_for = end_for - start_for;
+
         // count collisions
         for (auto k : keys_count) {
             if (k > 1)
@@ -209,6 +190,7 @@ namespace bm {
 
         benchmark["dataset_size"] = dataset_size;
         benchmark["tot_time_s"] = tot_time.count();
+        benchmark["tot_for_time_s"] = tot_for.count();
         benchmark["collisions"] = collisions_count;
         benchmark["dataset_name"] = dataset_name;
         benchmark["load_factor_%"] = load_perc;
@@ -311,8 +293,8 @@ namespace bm {
         const std::string label = "Probe:" + table.name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
 
         // ====================== throughput counters ====================== //
-        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
-        /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_time_probe(0);
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
+        /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_time_probe(0), tot_for_insert(0), tot_for_probe(0);
         size_t insert_count = 0;
         size_t probe_count = 0;
         std::string fail_what = "";
@@ -321,6 +303,7 @@ namespace bm {
 
         // Build the table
         Payload count = 0;
+        start_for = std::chrono::high_resolution_clock::now();
         for (int i : order_insert) {
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -341,7 +324,10 @@ namespace bm {
                 tot_time_insert += _end_ - _start_;
             }
         }
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_for_insert = end_for - start_for;
 
+        start_for = std::chrono::high_resolution_clock::now();
         for (int i : *order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
@@ -357,6 +343,8 @@ namespace bm {
                 tot_time_probe += _end_ - _start_;
             }
         }
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_for_probe = end_for - start_for;
 
     done:
         json benchmark;
@@ -365,6 +353,8 @@ namespace bm {
         benchmark["insert_elem_count"] = insert_count;
         benchmark["tot_time_probe_s"] = tot_time_probe.count();
         benchmark["tot_time_insert_s"] = tot_time_insert.count();
+        benchmark["tot_for_time_probe_s"] = tot_for_probe.count();
+        benchmark["tot_for_time_insert_s"] = tot_for_insert.count();
         benchmark["load_factor_%"] = load_perc;
         benchmark["dataset_name"] = dataset_name;
         benchmark["function_name"] = HashFn::name();
@@ -415,8 +405,8 @@ namespace bm {
         size_t X = dataset_size*point_query_perc/100;
 
         // ====================== throughput counters ====================== //
-        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_;
-        /*volatile*/ std::chrono::duration<double> tot_time_probe(0);
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
+        /*volatile*/ std::chrono::duration<double> tot_time_probe(0), tot_for_probe(0);
         size_t probe_count = 0;
         std::string fail_what = "";
         bool insert_fail = false;
@@ -440,51 +430,45 @@ namespace bm {
                 count++;
             }
         }
+        start_for = std::chrono::high_resolution_clock::now();
         // Begin with the point queries
-        size_t i;
-        for (i=0; i<X; i++) {
-            int idx = (*order_probe)[i];
+        for (size_t i=0; i<dataset_size; i++) {
+            int idx_min = (*order_probe)[i];
             // check if the index exists
-            if (idx < (int)dataset_size) {
+            if (idx_min < (int)dataset_size) {
                 // get the data
-                Data data = ds[idx];
-                _start_ = std::chrono::high_resolution_clock::now();
-                std::optional<Payload> payload = table.lookup(data);
-                _end_ = std::chrono::high_resolution_clock::now();
-                if (!payload.has_value()) {
-                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
+                Data min = ds[idx_min];
+                // point queries
+                if (i<X) {
+                    _start_ = std::chrono::high_resolution_clock::now();
+                    std::optional<Payload> payload = table.lookup(min);
+                    _end_ = std::chrono::high_resolution_clock::now();
+                    if (!payload.has_value()) {
+                        throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(min) + "\n           [label] " + label + "\n");
+                    }
+                }
+                // range queries
+                else {
+                    // get the idx_max
+                    size_t increment = (range_size?range_size:ranges[i])-1; // remove 1 cause the upper bound is included
+                    size_t idx_max = idx_min + increment;
+                    idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
+                    increment = idx_max - idx_min +1;                       // add 1 cause the upper bound is included
+                    // get the max
+                    Data max = ds[idx_max];
+                    _start_ = std::chrono::high_resolution_clock::now();
+                    std::vector<Payload> payload = table.lookup_range(min,max);
+                    _end_ = std::chrono::high_resolution_clock::now();
+                    if (payload.size() != increment) {
+                        throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
+                    }
                 }
                 probe_count++;
                 tot_time_probe += _end_ - _start_;
             }
         }
-
-        // Now the range queries
-        while (i<dataset_size) {
-            int idx_min = (*order_probe)[i];
-            // check if the index exists
-            if (idx_min < (int)dataset_size) {
-                // get the min
-                Data min = ds[idx_min];
-                // get the idx_max
-                size_t increment = (range_size?range_size:ranges[i])-1; // remove 1 cause the upper bound is included
-                size_t idx_max = idx_min + increment;
-                idx_max = idx_max<dataset_size?idx_max:dataset_size-1;
-                increment = idx_max - idx_min +1;                       // add 1 cause the upper bound is included
-                // get the max
-                Data max = ds[idx_max];
-                _start_ = std::chrono::high_resolution_clock::now();
-                std::vector<Payload> payload = table.lookup_range(min,max);
-                _end_ = std::chrono::high_resolution_clock::now();
-                if (payload.size() != increment) {
-                    throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [min] " + std::to_string(min) + "\n           [max] " + std::to_string(max) + "\n           [size] " + std::to_string(payload.size()) + "\n           [increment] " + std::to_string(increment) + "\n           [label] " + label + "\n");
-                }
-                probe_count ++;
-                tot_time_probe += _end_ - _start_;
-                // update i
-                i ++;
-            } else i++;
-        }
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_for_probe = end_for - start_for;
         
     done:
         json benchmark;
@@ -492,6 +476,7 @@ namespace bm {
         benchmark["range_size"] = range_size;
         benchmark["probe_elem_count"] = probe_count;
         benchmark["tot_time_probe_s"] = tot_time_probe.count();
+        benchmark["tot_for_time_probe_s"] = tot_for_probe.count();
         benchmark["point_query_%"] = point_query_perc;
         benchmark["dataset_name"] = dataset_name;
         benchmark["function_name"] = HashFn::name();
