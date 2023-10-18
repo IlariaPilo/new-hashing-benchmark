@@ -24,6 +24,7 @@ namespace bm {
     } BM;
 
     // ----------------- utility things ----------------- //
+    size_t N;
     std::vector<int> order_insert;          // will store all values from 0 to N-1
     std::vector<int> order_probe_uniform;   // will store uniformly sampled values from 0 to N-1
     std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
@@ -96,10 +97,11 @@ namespace bm {
      * @param the number of threads that will be used in the parallel build & probe
     */
     void init() {
-        generate_insert_order(MAX_DS_SIZE);
-        generate_probe_order_uniform(MAX_DS_SIZE);
-        generate_probe_order_80_20(MAX_DS_SIZE);
-        fill_ranges(MAX_DS_SIZE);
+        N = MAX_DS_SIZE;
+        generate_insert_order(N);
+        generate_probe_order_uniform(N);
+        generate_probe_order_80_20(N);
+        fill_ranges(N);
     }
 
     /**
@@ -432,7 +434,7 @@ namespace bm {
         }
         start_for = std::chrono::high_resolution_clock::now();
         // Begin with the point queries
-        for (size_t i=0; i<dataset_size; i++) {
+        for (size_t i=0; i<N; i++) {
             int idx_min = (*order_probe)[i];
             // check if the index exists
             if (idx_min < (int)dataset_size) {
