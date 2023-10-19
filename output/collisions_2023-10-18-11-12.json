@@ -1,140 +1,157 @@
 {
     "benchmarks": [
         {
-            "collisions": 63208628,
+            "collisions": 63210558,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:xxh3_64:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5783950387673513
+            "tot_for_time_s": 16.161623303,
+            "tot_time_s": 1.5652150976320716
         },
         {
-            "collisions": 63216829,
+            "collisions": 63209837,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:murmur_finalizer64:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5612309677809844
+            "tot_for_time_s": 16.088264108,
+            "tot_time_s": 1.5295258396929778
         },
         {
-            "collisions": 4311982,
+            "collisions": 4313732,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_100000000:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 13.423339238369802
+            "tot_for_time_s": 28.086011027,
+            "tot_time_s": 13.403554187197892
         },
         {
-            "collisions": 14783151,
+            "collisions": 14783990,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_10000000:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 12.439326092835673
+            "tot_for_time_s": 27.180788878,
+            "tot_time_s": 12.474916572633203
         },
         {
-            "collisions": 98996483,
+            "collisions": 98996517,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:MultHash64:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5150243007215167
+            "tot_for_time_s": 16.114266686,
+            "tot_time_s": 1.484564696189502
         },
         {
-            "collisions": 18937132,
+            "collisions": 18936896,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps100000_epsrec100000:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.7720964305031774
+            "tot_for_time_s": 19.240835898,
+            "tot_time_s": 4.790825892083616
         },
         {
-            "collisions": 17827816,
+            "collisions": 17831394,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err4_rbits18:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 7.193299603889638
+            "tot_for_time_s": 22.583588938,
+            "tot_time_s": 7.8728601048996065
         },
         {
-            "collisions": 17672256,
+            "collisions": 17675422,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_1000000:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 7.714314782138285
+            "tot_for_time_s": 22.514824069,
+            "tot_time_s": 7.943817725158138
         },
         {
-            "collisions": 86595188,
+            "collisions": 86597827,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:MultFibonacciPrime64:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.4753186931669642
+            "tot_for_time_s": 16.092855693,
+            "tot_time_s": 1.47492796018685
         },
         {
-            "collisions": 20835860,
+            "collisions": 20837478,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps1024_epsrec1024:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.767059631280165
+            "tot_for_time_s": 19.328536726,
+            "tot_time_s": 4.775402035806574
         },
         {
-            "collisions": 17962210,
+            "collisions": 17967710,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_100000:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.063716744430089
+            "tot_for_time_s": 18.582518638,
+            "tot_time_s": 4.07652539751242
         },
         {
-            "collisions": 63208469,
+            "collisions": 63215852,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:aqua0_64:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.4957321262612608
+            "tot_for_time_s": 16.286767084,
+            "tot_time_s": 1.4869348837216791
         },
         {
-            "collisions": 17989584,
+            "collisions": 17991514,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err16_rbits18:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.372552804946899
+            "tot_for_time_s": 19.842901511,
+            "tot_time_s": 5.338095454905987
         },
         {
-            "collisions": 17997376,
+            "collisions": 17995636,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_10000:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.8792971011358848
+            "tot_for_time_s": 17.30102455,
+            "tot_time_s": 2.853112816888033
         },
         {
-            "collisions": 18000904,
+            "collisions": 18006312,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps128_epsrec128:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.404811461286578
+            "tot_for_time_s": 19.921554729,
+            "tot_time_s": 5.38532161716274
         },
         {
-            "collisions": 17999152,
+            "collisions": 17999834,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err128_rbits18:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.7868191893974488
+            "tot_for_time_s": 18.248410723,
+            "tot_time_s": 3.7797628854509164
         },
         {
-            "collisions": 17995162,
+            "collisions": 17997734,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_1000:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.4386358262162933
+            "tot_for_time_s": 16.961514895,
+            "tot_time_s": 2.4474368988901047
         },
         {
             "collisions": 0,
@@ -142,55 +159,62 @@
             "dataset_size": 100000000,
             "label": "Collisions:MWHC:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 18.526729560096484
+            "tot_for_time_s": 33.48563547,
+            "tot_time_s": 18.548685171159313
         },
         {
-            "collisions": 17998366,
+            "collisions": 18000764,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_2:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.1984376444848763
+            "tot_for_time_s": 16.768939273,
+            "tot_time_s": 2.224791552601486
         },
         {
-            "collisions": 17998526,
+            "collisions": 18000156,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err100000_rbits18:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.6475662565479245
+            "tot_for_time_s": 18.074730898,
+            "tot_time_s": 3.646618881509277
         },
         {
-            "collisions": 18026134,
+            "collisions": 18035088,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps32_epsrec32:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.326443770568297
+            "tot_for_time_s": 18.89227033,
+            "tot_time_s": 4.379962590437183
         },
         {
-            "collisions": 17998080,
+            "collisions": 18002010,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err1024_rbits18:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.646652479522437
+            "tot_for_time_s": 18.077465255,
+            "tot_time_s": 3.6437038314776897
         },
         {
-            "collisions": 17997162,
+            "collisions": 18001504,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_100:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.2327850974165524
+            "tot_for_time_s": 16.783697583,
+            "tot_time_s": 2.23775862547653
         },
         {
-            "collisions": 30007584,
+            "collisions": 29999796,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:BitMWHC:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 13.674469862899107
+            "tot_for_time_s": 29.231366941,
+            "tot_time_s": 14.273692019745125
         },
         {
             "collisions": 0,
@@ -198,127 +222,143 @@
             "dataset_size": 100000000,
             "label": "Collisions:RecSplit_leaf12_bucket9:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 21.45006783070509
+            "tot_for_time_s": 35.179453987,
+            "tot_time_s": 19.909647887702512
         },
         {
-            "collisions": 17999766,
+            "collisions": 17999702,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_10:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.201934609521403
+            "tot_for_time_s": 16.774749715,
+            "tot_time_s": 2.224203023538239
         },
         {
-            "collisions": 17764819,
+            "collisions": 17774609,
             "dataset_name": "gap_10",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps2_epsrec2:gap_10:0",
             "load_factor_%": 0,
-            "tot_time_s": 9.310399271661147
+            "tot_for_time_s": 25.448756419,
+            "tot_time_s": 10.627152123319808
         },
         {
-            "collisions": 62369963,
+            "collisions": 62384077,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err100000_rbits18:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.9463533046864123
+            "tot_for_time_s": 18.364457187,
+            "tot_time_s": 3.950070581657349
         },
         {
-            "collisions": 62372106,
+            "collisions": 62384890,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err128_rbits18:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.367130435608976
+            "tot_for_time_s": 18.862889909,
+            "tot_time_s": 4.3664670556195295
         },
         {
-            "collisions": 48743125,
+            "collisions": 48747886,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_100000000:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 13.397340595946783
+            "tot_for_time_s": 28.072488365,
+            "tot_time_s": 13.400800420180785
         },
         {
-            "collisions": 62739248,
+            "collisions": 62749030,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps100000_epsrec100000:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.77540813957734
+            "tot_for_time_s": 19.236090528,
+            "tot_time_s": 4.796432509157094
         },
         {
-            "collisions": 62254773,
+            "collisions": 62263542,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps2_epsrec2:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 18.524254852995934
+            "tot_for_time_s": 33.157332362,
+            "tot_time_s": 18.488279834963443
         },
         {
-            "collisions": 62373405,
+            "collisions": 62377247,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err1024_rbits18:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.0548834991911455
+            "tot_for_time_s": 18.516698326,
+            "tot_time_s": 4.066800555116765
         },
         {
-            "collisions": 61408652,
+            "collisions": 61432674,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err4_rbits18:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 15.39819454205608
+            "tot_for_time_s": 30.462844935,
+            "tot_time_s": 15.426797386992437
         },
         {
-            "collisions": 62418826,
+            "collisions": 62425790,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps1024_epsrec1024:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.4199189093422495
+            "tot_for_time_s": 19.966530366,
+            "tot_time_s": 5.457050921390034
         },
         {
-            "collisions": 62347384,
+            "collisions": 62355938,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:radix_spline_err16_rbits18:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 6.906096416126781
+            "tot_for_time_s": 21.275524947,
+            "tot_time_s": 6.763750484157282
         },
         {
-            "collisions": 62420688,
+            "collisions": 62436710,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps128_epsrec128:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.674248593524921
+            "tot_for_time_s": 20.200423265,
+            "tot_time_s": 5.642365340494655
         },
         {
-            "collisions": 62512797,
+            "collisions": 62532330,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:pgm_hash_eps32_epsrec32:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.823629670961926
+            "tot_for_time_s": 20.487560545,
+            "tot_time_s": 5.9168083345269356
         },
         {
-            "collisions": 62371748,
+            "collisions": 62382195,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_2:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.1980301584966173
+            "tot_for_time_s": 16.738988652,
+            "tot_time_s": 2.2234089086069995
         },
         {
-            "collisions": 62367428,
+            "collisions": 62377947,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_100000:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.063661069426746
+            "tot_for_time_s": 18.558104632,
+            "tot_time_s": 4.07552083352016
         },
         {
             "collisions": 0,
@@ -326,79 +366,89 @@
             "dataset_size": 100000000,
             "label": "Collisions:MWHC:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 18.52722113310325
+            "tot_for_time_s": 33.449096259,
+            "tot_time_s": 18.546636139115016
         },
         {
-            "collisions": 62375464,
+            "collisions": 62383113,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_1000:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.435569100222459
+            "tot_for_time_s": 16.983831791,
+            "tot_time_s": 2.4952978849383007
         },
         {
-            "collisions": 62370184,
+            "collisions": 62380588,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_100:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.2486291744154365
+            "tot_for_time_s": 16.755430467,
+            "tot_time_s": 2.237166652473635
         },
         {
-            "collisions": 63209008,
+            "collisions": 63209277,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:xxh3_64:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5774961637696834
+            "tot_for_time_s": 16.161705157,
+            "tot_time_s": 1.5658377236364498
         },
         {
-            "collisions": 62364528,
+            "collisions": 62380599,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_10000:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.869009890122023
+            "tot_for_time_s": 17.295974254,
+            "tot_time_s": 2.846001087883981
         },
         {
-            "collisions": 29999960,
+            "collisions": 30008812,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:BitMWHC:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 13.681733656929621
+            "tot_for_time_s": 28.553559315,
+            "tot_time_s": 13.651645588860857
         },
         {
-            "collisions": 63212756,
+            "collisions": 63204840,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:aqua0_64:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.4951774052628117
+            "tot_for_time_s": 16.283242223,
+            "tot_time_s": 1.4856116917468687
         },
         {
-            "collisions": 62372523,
+            "collisions": 62387126,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_10:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.199873084527167
+            "tot_for_time_s": 16.741067606,
+            "tot_time_s": 2.222661748550983
         },
         {
-            "collisions": 62493831,
+            "collisions": 62498189,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:MultFibonacciPrime64:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.4744240741708936
+            "tot_for_time_s": 16.085529557,
+            "tot_time_s": 1.4746473661946173
         },
         {
-            "collisions": 62235714,
+            "collisions": 62245488,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_1000000:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 7.779772313040487
+            "tot_for_time_s": 22.29578683,
+            "tot_time_s": 7.716216912333145
         },
         {
             "collisions": 0,
@@ -406,39 +456,44 @@
             "dataset_size": 100000000,
             "label": "Collisions:RecSplit_leaf12_bucket9:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 20.030864520738437
+            "tot_for_time_s": 35.547635623,
+            "tot_time_s": 20.09717624168665
         },
         {
-            "collisions": 62540154,
+            "collisions": 62541972,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:MultHash64:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5130140327127208
+            "tot_for_time_s": 16.111243539,
+            "tot_time_s": 1.4842524971935205
         },
         {
-            "collisions": 60365957,
+            "collisions": 60378120,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:rmi_hash_10000000:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 12.438641484912825
+            "tot_for_time_s": 27.115412247,
+            "tot_time_s": 12.44142146759598
         },
         {
-            "collisions": 63212398,
+            "collisions": 63209353,
             "dataset_name": "uniform",
             "dataset_size": 100000000,
             "label": "Collisions:murmur_finalizer64:uniform:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5610045987889551
+            "tot_for_time_s": 16.082817952,
+            "tot_time_s": 1.5284931417101302
         },
         {
-            "collisions": 26096284,
+            "collisions": 26102468,
             "dataset_name": "fb",
             "dataset_size": 86976116,
             "label": "Collisions:BitMWHC:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 11.370481030424092
+            "tot_for_time_s": 24.353310655,
+            "tot_time_s": 11.38294331648927
         },
         {
             "collisions": 74055165,
@@ -446,7 +501,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:radix_spline_err100000_rbits18:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.4025955074368484
+            "tot_for_time_s": 15.828030446,
+            "tot_time_s": 3.3955336843285475
         },
         {
             "collisions": 58397378,
@@ -454,7 +510,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:pgm_hash_eps2_epsrec2:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 21.927428630469198
+            "tot_for_time_s": 35.37210344,
+            "tot_time_s": 22.18237923215359
         },
         {
             "collisions": 0,
@@ -462,7 +519,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:RecSplit_leaf12_bucket9:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 16.298764578497376
+            "tot_for_time_s": 29.621354989,
+            "tot_time_s": 16.441460509376935
         },
         {
             "collisions": 0,
@@ -470,7 +528,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:MWHC:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 16.00662034321614
+            "tot_for_time_s": 29.061154419,
+            "tot_time_s": 16.04392335253395
         },
         {
             "collisions": 70046817,
@@ -478,7 +537,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:pgm_hash_eps32_epsrec32:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 8.732003276012172
+            "tot_for_time_s": 22.064415453,
+            "tot_time_s": 8.816792278986501
         },
         {
             "collisions": 54982002,
@@ -486,7 +546,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:xxh3_64:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.3713832212387895
+            "tot_for_time_s": 14.082857364,
+            "tot_time_s": 1.3612858742064637
         },
         {
             "collisions": 72946049,
@@ -494,7 +555,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:pgm_hash_eps128_epsrec128:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 10.35576005997612
+            "tot_for_time_s": 23.188900592,
+            "tot_time_s": 10.418580087984218
         },
         {
             "collisions": 54987459,
@@ -502,7 +564,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:aqua0_64:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.3022208999768559
+            "tot_for_time_s": 14.185512379,
+            "tot_time_s": 1.296983874179951
         },
         {
             "collisions": 54934152,
@@ -510,7 +573,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:MultFibonacciPrime64:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.2829490355553037
+            "tot_for_time_s": 14.001082979,
+            "tot_time_s": 1.2831582705522415
         },
         {
             "collisions": 74399962,
@@ -518,7 +582,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:pgm_hash_eps1024_epsrec1024:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 6.223461815199092
+            "tot_for_time_s": 18.705317691,
+            "tot_time_s": 6.215800906194467
         },
         {
             "collisions": 54933107,
@@ -526,7 +591,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:MultHash64:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.3106592532160466
+            "tot_for_time_s": 14.032005685,
+            "tot_time_s": 1.2924429474840615
         },
         {
             "collisions": 74258531,
@@ -534,7 +600,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:pgm_hash_eps100000_epsrec100000:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.136685551412162
+            "tot_for_time_s": 16.570739364,
+            "tot_time_s": 4.152506033919363
         },
         {
             "collisions": 54977124,
@@ -542,7 +609,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:murmur_finalizer64:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.3568069033468995
+            "tot_for_time_s": 14.005346105,
+            "tot_time_s": 1.3296092654395677
         },
         {
             "collisions": 74094386,
@@ -550,7 +618,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_10:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.915262670344337
+            "tot_for_time_s": 14.393787625,
+            "tot_time_s": 1.9260457351407583
         },
         {
             "collisions": 74024355,
@@ -558,7 +627,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_1000:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.1224428693865267
+            "tot_for_time_s": 14.594269314,
+            "tot_time_s": 2.1477206792895815
         },
         {
             "collisions": 73826933,
@@ -566,7 +636,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_10000:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.487906340117059
+            "tot_for_time_s": 14.901054731,
+            "tot_time_s": 2.468895582965622
         },
         {
             "collisions": 72573983,
@@ -574,7 +645,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_100000:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.5108113963092387
+            "tot_for_time_s": 16.095761428,
+            "tot_time_s": 3.5218065384065733
         },
         {
             "collisions": 74081922,
@@ -582,7 +654,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_100:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.9262206762164504
+            "tot_for_time_s": 14.423703283,
+            "tot_time_s": 1.9486920361289122
         },
         {
             "collisions": 69416184,
@@ -590,7 +663,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_1000000:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.487761779913514
+            "tot_for_time_s": 18.161582604,
+            "tot_time_s": 5.475499058968483
         },
         {
             "collisions": 63062663,
@@ -598,7 +672,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_10000000:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 9.537047425657033
+            "tot_for_time_s": 22.346106281,
+            "tot_time_s": 9.579361987513726
         },
         {
             "collisions": 55425531,
@@ -606,7 +681,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_100000000:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 11.082901872722442
+            "tot_for_time_s": 23.878401755,
+            "tot_time_s": 11.090094831801746
         },
         {
             "collisions": 55096309,
@@ -614,7 +690,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:radix_spline_err4_rbits18:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 20.82263715835309
+            "tot_for_time_s": 34.309545422,
+            "tot_time_s": 20.99251414407754
         },
         {
             "collisions": 63989416,
@@ -622,7 +699,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:radix_spline_err16_rbits18:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 11.543126945864229
+            "tot_for_time_s": 24.687571537,
+            "tot_time_s": 11.448632407925672
         },
         {
             "collisions": 74100748,
@@ -630,7 +708,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:rmi_hash_2:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.9071837682563186
+            "tot_for_time_s": 14.390185368,
+            "tot_time_s": 1.9284222961476343
         },
         {
             "collisions": 73580645,
@@ -638,7 +717,8 @@
             "dataset_size": 86976116,
             "label": "Collisions:radix_spline_err1024_rbits18:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.487286488829396
+            "tot_for_time_s": 17.020572682,
+            "tot_time_s": 4.5024549618797245
         },
         {
             "collisions": 70481335,
@@ -646,23 +726,26 @@
             "dataset_size": 86976116,
             "label": "Collisions:radix_spline_err128_rbits18:fb:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.850956810194513
+            "tot_for_time_s": 18.460150546,
+            "tot_time_s": 5.879030304172802
         },
         {
-            "collisions": 28578313,
+            "collisions": 28578346,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:radix_spline_err1024_rbits18:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.930060365468824
+            "tot_for_time_s": 15.982794225,
+            "tot_time_s": 2.9129667034280957
         },
         {
-            "collisions": 27420299,
+            "collisions": 27420541,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:pgm_hash_eps32_epsrec32:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.436509809080075
+            "tot_for_time_s": 18.691149792,
+            "tot_time_s": 5.5034285984571785
         },
         {
             "collisions": 57168011,
@@ -670,39 +753,44 @@
             "dataset_size": 90437017,
             "label": "Collisions:murmur_finalizer64:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.411219882211729
+            "tot_for_time_s": 14.558847307,
+            "tot_time_s": 1.38264668725198
         },
         {
-            "collisions": 26668721,
+            "collisions": 26668698,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:pgm_hash_eps2_epsrec2:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 11.146614077862044
+            "tot_for_time_s": 24.408420706,
+            "tot_time_s": 11.063606174862239
         },
         {
-            "collisions": 29251469,
+            "collisions": 29242222,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_1000000:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.303072212907438
+            "tot_for_time_s": 15.425467288,
+            "tot_time_s": 2.2813997210825394
         },
         {
-            "collisions": 59746101,
+            "collisions": 59729780,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_100:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.9795119642187236
+            "tot_for_time_s": 15.126335137,
+            "tot_time_s": 2.002577608053439
         },
         {
-            "collisions": 83675943,
+            "collisions": 83675948,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:MultHash64:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.3626876901212017
+            "tot_for_time_s": 14.578007176,
+            "tot_time_s": 1.343156054399464
         },
         {
             "collisions": 0,
@@ -710,7 +798,8 @@
             "dataset_size": 90437017,
             "label": "Collisions:RecSplit_leaf12_bucket9:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 17.227164027159453
+            "tot_for_time_s": 31.138808917,
+            "tot_time_s": 17.402842770987235
         },
         {
             "collisions": 0,
@@ -718,373 +807,419 @@
             "dataset_size": 90437017,
             "label": "Collisions:MWHC:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 16.67675079553407
+            "tot_for_time_s": 30.241860101,
+            "tot_time_s": 16.708167296787458
         },
         {
-            "collisions": 29520817,
+            "collisions": 29523162,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_100000:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.071103093322446
+            "tot_for_time_s": 15.232925662,
+            "tot_time_s": 2.0647513752111113
         },
         {
-            "collisions": 71641616,
+            "collisions": 71641618,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:MultFibonacciPrime64:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.3331328624582126
+            "tot_for_time_s": 14.55542983,
+            "tot_time_s": 1.3342128474559847
         },
         {
-            "collisions": 57167268,
+            "collisions": 57167266,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:xxh3_64:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.4255624551303938
+            "tot_for_time_s": 14.633706988,
+            "tot_time_s": 1.4149372950623902
         },
         {
-            "collisions": 29713232,
+            "collisions": 29707766,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_10000:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.9933414270503311
+            "tot_for_time_s": 15.126472315,
+            "tot_time_s": 1.9876403539894345
         },
         {
-            "collisions": 57161072,
+            "collisions": 57161075,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:aqua0_64:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.352444023807475
+            "tot_for_time_s": 14.771867362,
+            "tot_time_s": 1.3751149120435966
         },
         {
-            "collisions": 35146111,
+            "collisions": 35170284,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_1000:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.9817070712366716
+            "tot_for_time_s": 15.153056526,
+            "tot_time_s": 2.0036124351749036
         },
         {
-            "collisions": 29761953,
+            "collisions": 29760482,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:radix_spline_err100000_rbits18:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.105742342278357
+            "tot_for_time_s": 15.199783606,
+            "tot_time_s": 2.0892562716263168
         },
         {
-            "collisions": 88726034,
+            "collisions": 88726914,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_2:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.978506421261011
+            "tot_for_time_s": 14.59592922,
+            "tot_time_s": 2.002532319200936
         },
         {
-            "collisions": 27100036,
+            "collisions": 27100037,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:radix_spline_err16_rbits18:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 7.112316125104263
+            "tot_for_time_s": 20.348093302,
+            "tot_time_s": 7.142386782096674
         },
         {
-            "collisions": 27678097,
+            "collisions": 27673788,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:pgm_hash_eps100000_epsrec100000:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.331407578281376
+            "tot_for_time_s": 17.446330156,
+            "tot_time_s": 4.347972644912114
         },
         {
-            "collisions": 27219897,
+            "collisions": 27225611,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_100000000:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.6770651124045344
+            "tot_for_time_s": 16.756900391,
+            "tot_time_s": 3.6644732283021444
         },
         {
-            "collisions": 88726034,
+            "collisions": 88726914,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_10:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.9882888863348145
+            "tot_for_time_s": 14.597741709,
+            "tot_time_s": 2.002248462118986
         },
         {
-            "collisions": 29392032,
+            "collisions": 29391006,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:pgm_hash_eps1024_epsrec1024:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 6.385316012125791
+            "tot_for_time_s": 19.464643138,
+            "tot_time_s": 6.346045145142151
         },
         {
-            "collisions": 27498331,
+            "collisions": 27498692,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:rmi_hash_10000000:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.951768841989254
+            "tot_for_time_s": 16.075111522,
+            "tot_time_s": 2.9687030713486178
         },
         {
-            "collisions": 27801428,
+            "collisions": 27801680,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:pgm_hash_eps128_epsrec128:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 6.509163833073727
+            "tot_for_time_s": 19.710181722,
+            "tot_time_s": 6.520303844095117
         },
         {
-            "collisions": 26530490,
+            "collisions": 26530487,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:radix_spline_err4_rbits18:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 14.139664204270627
+            "tot_for_time_s": 29.272195237,
+            "tot_time_s": 13.981455062271449
         },
         {
-            "collisions": 27485232,
+            "collisions": 27485261,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:radix_spline_err128_rbits18:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.16727932652534
+            "tot_for_time_s": 17.4469043,
+            "tot_time_s": 4.300547560583711
         },
         {
-            "collisions": 27138874,
+            "collisions": 27133464,
             "dataset_name": "wiki",
             "dataset_size": 90437017,
             "label": "Collisions:BitMWHC:wiki:0",
             "load_factor_%": 0,
-            "tot_time_s": 11.998391789573239
+            "tot_for_time_s": 25.479714622,
+            "tot_time_s": 12.005446829629339
         },
         {
-            "collisions": 29929756,
+            "collisions": 29931260,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:BitMWHC:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 13.701455229547689
+            "tot_for_time_s": 28.531783555,
+            "tot_time_s": 13.703428401485098
         },
         {
-            "collisions": 63666530,
+            "collisions": 63668632,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_10:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.193783988505464
+            "tot_for_time_s": 16.724808866,
+            "tot_time_s": 2.2198427475062865
         },
         {
-            "collisions": 63048305,
+            "collisions": 63046113,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:xxh3_64:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.6442574180782417
+            "tot_for_time_s": 16.121206133,
+            "tot_time_s": 1.5629086106466303
         },
         {
-            "collisions": 63037093,
+            "collisions": 63039450,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_1000:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.384773146346284
+            "tot_for_time_s": 16.878724322,
+            "tot_time_s": 2.412310836112905
         },
         {
-            "collisions": 76354993,
+            "collisions": 76351348,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_2:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.1876785164503243
+            "tot_for_time_s": 16.674079832,
+            "tot_time_s": 2.2175233416224565
         },
         {
-            "collisions": 63045623,
+            "collisions": 63045438,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_100:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.2388856193855378
+            "tot_for_time_s": 16.729649574,
+            "tot_time_s": 2.226740799439049
         },
         {
             "collisions": 0,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:MWHC:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 18.511102510150053
+            "tot_for_time_s": 33.437544214,
+            "tot_time_s": 18.57377217131339
         },
         {
             "collisions": 0,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:RecSplit_leaf12_bucket9:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 19.88085480862983
+            "tot_for_time_s": 34.935768534,
+            "tot_time_s": 19.805704603818995
         },
         {
-            "collisions": 63354099,
+            "collisions": 63354180,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:pgm_hash_eps100000_epsrec100000:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.774616613146687
+            "tot_for_time_s": 19.235922999,
+            "tot_time_s": 4.798157806793582
         },
         {
-            "collisions": 63136159,
+            "collisions": 63140894,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:radix_spline_err100000_rbits18:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.721684092502256
+            "tot_for_time_s": 18.110016035,
+            "tot_time_s": 3.7110728414241136
         },
         {
-            "collisions": 62865667,
+            "collisions": 62868198,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:pgm_hash_eps2_epsrec2:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 18.607522585061606
+            "tot_for_time_s": 33.282305117,
+            "tot_time_s": 18.652259756120486
         },
         {
-            "collisions": 63040498,
+            "collisions": 63042869,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:radix_spline_err1024_rbits18:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.777486924396918
+            "tot_for_time_s": 18.156693644,
+            "tot_time_s": 3.770923712323806
         },
         {
-            "collisions": 63185529,
+            "collisions": 63189798,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:pgm_hash_eps32_epsrec32:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 6.188686836481372
+            "tot_for_time_s": 20.710681148,
+            "tot_time_s": 6.212112338942112
         },
         {
-            "collisions": 63039679,
+            "collisions": 63039779,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:radix_spline_err128_rbits18:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 4.159370783429361
+            "tot_for_time_s": 18.590633382,
+            "tot_time_s": 4.145530387409362
         },
         {
-            "collisions": 63083534,
+            "collisions": 63076631,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:pgm_hash_eps128_epsrec128:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 7.235235544261678
+            "tot_for_time_s": 21.677434241,
+            "tot_time_s": 7.230323831279252
         },
         {
-            "collisions": 62984263,
+            "collisions": 62984032,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:radix_spline_err16_rbits18:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 6.833276474083489
+            "tot_for_time_s": 21.270893199,
+            "tot_time_s": 6.812946896110604
         },
         {
-            "collisions": 63050128,
+            "collisions": 63060689,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:pgm_hash_eps1024_epsrec1024:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 5.50585593158983
+            "tot_for_time_s": 19.983621019,
+            "tot_time_s": 5.5006627284360645
         },
         {
-            "collisions": 62015361,
+            "collisions": 62014508,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:radix_spline_err4_rbits18:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 18.82993502659033
+            "tot_for_time_s": 34.263799408,
+            "tot_time_s": 18.775435736564695
         },
         {
-            "collisions": 63038136,
+            "collisions": 63037787,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_10000:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 2.744633910045489
+            "tot_for_time_s": 17.134944731,
+            "tot_time_s": 2.7196151099786006
         },
         {
-            "collisions": 53434612,
+            "collisions": 53437970,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_100000000:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 13.225702515551461
+            "tot_for_time_s": 27.864572079,
+            "tot_time_s": 13.237027791586891
         },
         {
-            "collisions": 63050021,
+            "collisions": 63049146,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:murmur_finalizer64:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5962068892118315
+            "tot_for_time_s": 16.037203016,
+            "tot_time_s": 1.5242299447274545
         },
         {
-            "collisions": 60952939,
+            "collisions": 60950193,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_10000000:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 11.775986053589062
+            "tot_for_time_s": 26.483492835,
+            "tot_time_s": 11.831522516503236
         },
         {
-            "collisions": 63042652,
+            "collisions": 63038041,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:MultHash64:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.5232047702978304
+            "tot_for_time_s": 16.064507701,
+            "tot_time_s": 1.4816177651573867
         },
         {
-            "collisions": 62840172,
+            "collisions": 62847471,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_1000000:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 6.150745916200358
+            "tot_for_time_s": 20.684749292,
+            "tot_time_s": 6.169299580113024
         },
         {
-            "collisions": 63042900,
+            "collisions": 63047783,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:MultFibonacciPrime64:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.4832207647299733
+            "tot_for_time_s": 16.043764441,
+            "tot_time_s": 1.4716907371831016
         },
         {
-            "collisions": 63021874,
+            "collisions": 63020288,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:rmi_hash_100000:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 3.9355179315615256
+            "tot_for_time_s": 18.426212764,
+            "tot_time_s": 3.9334530237037595
         },
         {
-            "collisions": 63042896,
+            "collisions": 63041590,
             "dataset_name": "normal",
-            "dataset_size": 99730490,
+            "dataset_size": 99730541,
             "label": "Collisions:aqua0_64:normal:0",
             "load_factor_%": 0,
-            "tot_time_s": 1.512361123877828
+            "tot_for_time_s": 16.244513956,
+            "tot_time_s": 1.4835179467177033
         }
     ],
     "context": {
-        "date": "2023-10-16T13:34:05+00:00",
+        "date": "2023-10-18T11:12:51+00:00",
         "executable": "cmake-build-release/src/benchmarks",
-        "host_name": "b59fafcf0e54",
+        "host_name": "60ba38893701",
         "num_cpus": 24,
         "num_threads": 1
     }
