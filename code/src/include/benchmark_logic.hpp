@@ -12,11 +12,6 @@
 
 // For a detailed description of the benchmarks, please consult the README of the project
 
-// declare specific reduction
-#pragma omp declare reduction(vec_int_sum : std::vector<int> : \
-                              std::transform(omp_out.begin(), omp_out.end(), omp_in.begin(), omp_out.begin(), std::plus<int>())) \
-                    initializer(omp_priv = decltype(omp_orig)(omp_orig.size()))
-
 namespace bm {
     // bm function pointer type
     using BMtype = std::function<void(const dataset::Dataset<Data>&, JsonOutput&)>;
@@ -158,7 +153,7 @@ namespace bm {
         // now, start counting collisions
 
         // stores the hash value (that is, the key) for each entry in the dataset
-        std::vector<int> keys_count;
+        std::vector<Key> keys_count;
         keys_count.resize(capacity, 0);
 
         // ====================== collision counters ====================== //
@@ -170,9 +165,7 @@ namespace bm {
         // ================================================================ //
 
         start_for = std::chrono::high_resolution_clock::now();
-        #pragma omp parallel for reduction(vec_int_sum:keys_count) reduction(+:tot_time) private(_start_,_end_) num_threads(THREADS)
-        for (size_t _=0; _<N; _++) {
-            int i = order_insert[_];
+        for (int i : order_insert) {
             // check if the index exists
             if (i < (int)dataset_size) {
                 Data data = ds[i];
@@ -185,6 +178,7 @@ namespace bm {
         }
         end_for = std::chrono::high_resolution_clock::now();
         tot_for = end_for - start_for;
+
         // count collisions
         for (auto k : keys_count) {
             if (k > 1)
@@ -208,7 +202,6 @@ namespace bm {
         std::cout << label + "\n";
         writer.add_data(benchmark);
     }
-    
     // collision wrapper
     template <class HashFn>
     inline void collision_stats(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
