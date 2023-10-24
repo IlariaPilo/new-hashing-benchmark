@@ -9,6 +9,7 @@
 #include "output_json.hpp"
 #include "datasets.hpp"
 #include "configs.hpp"
+#include "thirdparty/perfevent/PerfEvent.hpp"
 
 // For a detailed description of the benchmarks, please consult the README of the project
 
@@ -26,6 +27,8 @@ namespace bm {
     // ----------------- utility things ----------------- //
     size_t THREADS;
     size_t N;
+    bool is_perf;
+    PerfEvent e;
     std::vector<int> order_insert;          // will store all values from 0 to N-1
     std::vector<int> order_probe_uniform;   // will store uniformly sampled values from 0 to N-1
     std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
@@ -97,7 +100,8 @@ namespace bm {
      * Init all global variable to support benchmarks
      * @param the number of threads that will be used in the parallel build & probe
     */
-    void init(size_t thread_num) {
+    void init(size_t thread_num, bool perf = false) {
+        is_perf = perf;
         THREADS = thread_num;
         N = MAX_DS_SIZE;
         generate_insert_order(N);
@@ -334,6 +338,8 @@ namespace bm {
         tot_for_insert = end_for - start_for;
         if (insert_fail) goto done;
 
+        if (is_perf)
+            e.startCounters();
         start_for = std::chrono::high_resolution_clock::now();
         #pragma omp parallel for reduction(+:probe_count,tot_time_probe) private(_start_,_end_) num_threads(THREADS)
         for (size_t _=0; _<N; _++) {
@@ -353,6 +359,8 @@ namespace bm {
             }
         }
         end_for = std::chrono::high_resolution_clock::now();
+        if (is_perf)
+            e.stopCounters();
         tot_for_probe = end_for - start_for;
     done:
         json benchmark;
@@ -374,6 +382,10 @@ namespace bm {
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
         else std::cout << label + "\n";
         writer.add_data(benchmark);
+        if (is_perf)
+            // print results
+            // we use the size of the dataset as a normalizing factor
+            e.printReport(std::cout, dataset_size);
     }
 
     template <class HashFn, class HashTable>

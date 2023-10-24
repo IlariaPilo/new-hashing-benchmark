@@ -9,7 +9,6 @@
 #include "include/benchmark_logic.hpp"
 #include "include/configs.hpp"
 #include "include/datasets.hpp"
-#include "thirdparty/perfevent/PerfEvent.hpp"
 
 #define LOAD_PERC 80
 
@@ -169,75 +168,47 @@ int main(int argc, char* argv[]) {
     JsonOutput writer(output_dir, argv[0], "perf-" + h_fun_name + "-" + table_name + "-" + ds_name, threads);
 
     // init benchmarks
-    bm::init(threads);
+    bm::init(threads, true);
 
-    PerfEvent e;
     // Call the right function
     if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "chain") {
-        e.startCounters();
         bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "chain") {
-        e.startCounters();
         bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (h_fun_name == "mult" && table_name == "chain") {
-        e.startCounters();
         bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (h_fun_name == "mwhc" && table_name == "chain") {
-        e.startCounters();
         bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "linear") {
-        e.startCounters();
         bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "linear") {
-        e.startCounters();
         bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (h_fun_name == "mult" && table_name == "linear") {
-        e.startCounters();
         bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (h_fun_name == "mwhc" && table_name == "linear") {
-        e.startCounters();
         bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "cuckoo") {
-        e.startCounters();
         bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "cuckoo") {
-        e.startCounters();
         bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (h_fun_name == "mult" && table_name == "cuckoo") {
-        e.startCounters();
         bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
     else if (h_fun_name == "mwhc" && table_name == "cuckoo") {
-        e.startCounters();
         bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
-        e.stopCounters();
     }
-    // print results
-    // we use the size of the dataset as a normalizing factor
-    e.printReport(std::cout, ds.get_size());
     
     return 0;
 }
