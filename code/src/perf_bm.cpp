@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
     JsonOutput writer(output_dir, argv[0], "perf-" + h_fun_name + "-" + table_name + "-" + ds_name);
 
     // init benchmarks values
-    bm::init();
+    bm::init(true);
 
     // Call the right function
     if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "chain") {
