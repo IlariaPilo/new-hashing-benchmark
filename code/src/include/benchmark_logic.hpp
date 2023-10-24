@@ -9,6 +9,7 @@
 #include "output_json.hpp"
 #include "datasets.hpp"
 #include "configs.hpp"
+#include "thirdparty/perfevent/PerfEvent.hpp"
 
 // For a detailed description of the benchmarks, please consult the README of the project
 
@@ -25,6 +26,8 @@ namespace bm {
 
     // ----------------- utility things ----------------- //
     size_t N;
+    bool is_perf;
+    PerfEvent e;
     std::vector<int> order_insert;          // will store all values from 0 to N-1
     std::vector<int> order_probe_uniform;   // will store uniformly sampled values from 0 to N-1
     std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
@@ -96,7 +99,8 @@ namespace bm {
      * Init all global variable to support benchmarks
      * @param the number of threads that will be used in the parallel build & probe
     */
-    void init() {
+    void init(bool perf = false) {
+        is_perf = perf;
         N = MAX_DS_SIZE;
         generate_insert_order(N);
         generate_probe_order_uniform(N);
@@ -335,9 +339,13 @@ namespace bm {
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
+                if (is_perf)
+                    e.startCounters();
                 _start_ = std::chrono::high_resolution_clock::now();
                 std::optional<Payload> payload = table.lookup(data);
                 _end_ = std::chrono::high_resolution_clock::now();
+                if (is_perf)
+                    e.stopCounters();
                 if (!payload.has_value()) {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
                 }
@@ -368,6 +376,10 @@ namespace bm {
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
         else std::cout << label + "\n";
         writer.add_data(benchmark);
+        if (is_perf)
+            // print results
+            // we use the size of the dataset as a normalizing factor
+            e.printReport(std::cout, dataset_size);
     }
 
     template <class HashFn, class HashTable>
