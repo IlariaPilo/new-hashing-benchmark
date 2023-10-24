@@ -333,19 +333,17 @@ namespace bm {
         end_for = std::chrono::high_resolution_clock::now();
         tot_for_insert = end_for - start_for;
 
+        if (is_perf)
+            e.startCounters();
         start_for = std::chrono::high_resolution_clock::now();
         for (int i : *order_probe) {
             // check if the index exists
             if (i < (int)dataset_size) {
                 // get the data
                 Data data = ds[i];
-                if (is_perf)
-                    e.startCounters();
                 _start_ = std::chrono::high_resolution_clock::now();
                 std::optional<Payload> payload = table.lookup(data);
                 _end_ = std::chrono::high_resolution_clock::now();
-                if (is_perf)
-                    e.stopCounters();
                 if (!payload.has_value()) {
                     throw std::runtime_error("\033[1;91mError\033[0m Data not found...\n           [data] " + std::to_string(data) + "\n           [label] " + label + "\n");
                 }
@@ -354,6 +352,8 @@ namespace bm {
             }
         }
         end_for = std::chrono::high_resolution_clock::now();
+        if (is_perf)
+            e.stopCounters();
         tot_for_probe = end_for - start_for;
 
     done:
