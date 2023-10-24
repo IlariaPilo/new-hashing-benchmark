@@ -26,9 +26,9 @@ def main():
     csv_files = []
     for input_file in expanded_input_files:
         _, ext = os.path.splitext(os.path.basename(input_file))
-        if ext == 'json':
+        if ext == '.json':
             json_files.append(input_file)
-        elif ext == 'csv':
+        elif ext == '.csv':
             csv_files.append(input_file)
         # else, we ignore the file
 
@@ -58,7 +58,8 @@ def main():
         if 'probe_type' in df.columns:
             df['probe_type'] = 'uniform'
         if csv_df.empty:
-            csv_df.columns = df.columns
+            csv_df = df.copy()
+            continue
         # concatenate
         csv_df = pd.concat([csv_df, df], ignore_index=True)
 
