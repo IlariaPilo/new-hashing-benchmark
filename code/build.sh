@@ -14,6 +14,18 @@ TARGET=${1:-"benchmarks perf_bm"}
 BUILD_TYPE=${2:-"RELEASE"}
 BUILD_DIR="cmake-build-$(echo "${BUILD_TYPE}" | awk '{print tolower($0)}')/"
 
+# check in which branch are we
+if [ -d "${BUILD_DIR}" ] && [ -e "${BUILD_DIR}/_deps/hashtable-src/include/thirdparty/spinlock.hpp" ]; then
+    read -ep $'\n\033[1;93m [warning]\033[0m It looks like you built the multiT branch. Do you want to remove it and build the singleT one? [y/N] ' remove_choice
+    if [ "$remove_choice" = "y" ] || [ "$remove_choice" = "Y" ]; then
+        rm -fr ${BUILD_DIR}
+    else
+        echo " --> Operation aborted. No files removed."
+        echo
+        exit 1
+    fi
+fi
+
 # Generate cmake project files
 cmake \
   -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \

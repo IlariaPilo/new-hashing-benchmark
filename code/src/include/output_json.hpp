@@ -21,7 +21,7 @@ using json = nlohmann::json;
 
 class JsonOutput {
 public:
-    JsonOutput(const std::string& file_directory, const std::string& arg0, std::string filter = "") {
+    JsonOutput(const std::string& file_directory, const std::string& arg0, std::string filter = "", size_t thread_num = 1) {
         // first, get current time
         std::time_t current_time = std::time(nullptr);
         std::tm* local_time = std::localtime(&current_time);
@@ -39,7 +39,7 @@ public:
             throw std::runtime_error("Error opening JSON file.\n           [Hint!] Check that directory " + file_directory + " exists.\n");
         } else {
             // First, we make the context
-            json_output["context"] = make_context(arg0, local_time);
+            json_output["context"] = make_context(arg0, local_time, thread_num);
             // Then, we create the benchmark array
             json_output["benchmarks"] = json::array();
         }
@@ -66,7 +66,7 @@ private:
     json json_output;
     std::ofstream output_file;
 
-    json make_context(const std::string& arg0, std::tm* local_time) {
+    json make_context(const std::string& arg0, std::tm* local_time, size_t thread_num) {
         json context;
         // -------------- date -------------- //
         // Get the time zone offset in minutes
@@ -84,6 +84,7 @@ private:
         context["host_name"] = hostname;
         context["executable"] = arg0;
         context["num_cpus"] = sysconf(_SC_NPROCESSORS_ONLN);
+        context["num_threads"] = thread_num;
         //context["mhz_per_cpu"] = TODO, maybe;
         return context;
     }

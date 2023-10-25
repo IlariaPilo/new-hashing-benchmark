@@ -23,9 +23,9 @@ void show_usage() {
     std::cout << "Arguments:" << std::endl;
     std::cout << "  -i, --input INPUT_DIR     Directory storing the datasets" << std::endl;
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
-    std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
+    // std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,probe,build,distribution,point,range,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -55,6 +55,7 @@ int pars_args(const int& argc, char* const* const& argv) {
                 return 2;
             }
         }
+        /*
         if (arg == "--threads" || arg == "-t") {
             if (i + 1 < argc) {
                 threads = std::stoi(argv[i + 1]);
@@ -64,7 +65,7 @@ int pars_args(const int& argc, char* const* const& argv) {
                 std::cerr << "Error: --threads requires an argument." << std::endl;
                 return 2;
             }
-        }
+        }*/
         if (arg == "--filter" || arg == "-f") {
             if (i + 1 < argc) {
                 filter = argv[i + 1];
@@ -84,25 +85,25 @@ int pars_args(const int& argc, char* const* const& argv) {
 }
 
 template <class HashFn, class ReductionFn = FastModulo>
-void dilate_probe_list(std::vector<bm::BM>& probe_bm_out,dataset::ID id) {
+void dilate_probe_list(std::vector<bm::BM>& probe_bm_out,dataset::ID id, bm::ProbeType probe_type = bm::ProbeType::UNIFORM) {
     // Chained
     for (size_t load_perc : chained_lf) {
-        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_throughput<HashFn, ChainedTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
+        bm::BMtype lambda = [load_perc, probe_type](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, ChainedTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc, probe_type);
         };
         probe_bm_out.push_back({lambda, id});
     }
     // Linear
     for (size_t load_perc : linear_lf) {
-        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_throughput<HashFn, LinearTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc);
+        bm::BMtype lambda = [load_perc, probe_type](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, LinearTable<HashFn,ReductionFn>>(ds_obj, writer, load_perc, probe_type);
         };
         probe_bm_out.push_back({lambda, id});
     }
     // Cuckoo
     for (size_t load_perc : cuckoo_lf) {
-        bm::BMtype lambda = [load_perc](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_throughput<HashFn, CuckooTable<HashFn,FastModulo>>(ds_obj, writer, load_perc);
+        bm::BMtype lambda = [load_perc, probe_type](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            bm::probe_throughput<HashFn, CuckooTable<HashFn,FastModulo>>(ds_obj, writer, load_perc, probe_type);
         };
         probe_bm_out.push_back({lambda, id});
     }
@@ -121,11 +122,12 @@ void dilate_function_list(std::vector<bm::BMtype>& bm_out, const bm::BMtemplate 
 void load_bm_list(std::vector<bm::BM>& bm_list,
         const std::vector<bm::BMtype>& collision_bm,
         const bm::BMtype& gap_bm, 
-        const std::vector<bm::BM>& probe_bm,
+        const std::vector<bm::BM>& probe_bm, const std::vector<bm::BM>& probe_pareto_bm,
         const std::vector<bm::BMtype>& build_bm,
         const std::vector<bm::BMtype>& collisions_vs_gaps_bm,
-        const std::vector<bm::BMtype>& point_vs_range_bm,
-        const std::vector<bm::BMtype>& range_size_bm /*TODO - add more*/) {
+        const std::vector<bm::BMtype>& point_vs_range_bm, const std::vector<bm::BMtype>& point_vs_range_pareto_bm,
+        const std::vector<bm::BMtype>& range_size_bm, const std::vector<bm::BMtype>& range_size_pareto_bm
+    /*TODO - add more*/) {
     std::string part;
     size_t start;
     size_t end = 0;
@@ -146,6 +148,12 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
         }
         if (part == "probe" || part == "all") {
             for (const bm::BM& bm_struct : probe_bm) {
+                bm_list.push_back(bm_struct);
+            }
+            if (part != "all") continue;
+        }
+        if (part == "probe80_20" || part == "all") {
+            for (const bm::BM& bm_struct : probe_pareto_bm) {
                 bm_list.push_back(bm_struct);
             }
             if (part != "all") continue;
@@ -175,8 +183,24 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
             if (part != "all") continue;
             continue;
         }
+        if (part == "point80_20" || part == "all") {
+            for (const bm::BMtype& bm_fn : point_vs_range_pareto_bm) {
+                for (dataset::ID id : range_ds)
+                    bm_list.push_back({bm_fn, id});
+            }
+            if (part != "all") continue;
+            continue;
+        }
         if (part == "range" || part == "all") {
             for (const bm::BMtype& bm_fn : range_size_bm) {
+                for (dataset::ID id : range_ds)
+                    bm_list.push_back({bm_fn, id});
+            }
+            if (part != "all") continue;
+            continue;
+        }
+        if (part == "range80_20" || part == "all") {
+            for (const bm::BMtype& bm_fn : range_size_pareto_bm) {
                 for (dataset::ID id : range_ds)
                     bm_list.push_back({bm_fn, id});
             }
@@ -265,6 +289,22 @@ int main(int argc, char* argv[]) {
         dilate_probe_list<MWHC>(probe_bm,id);
 
     }
+    // ---------------- probe PARETO --------------- //
+    std::vector<bm::BM> probe_pareto_bm = {};
+    dilate_probe_list<RMIHash_10>(probe_pareto_bm,dataset::ID::GAP_10,bm::ProbeType::PARETO_80_20);
+    dilate_probe_list<RMIHash_100>(probe_pareto_bm,dataset::ID::NORMAL,bm::ProbeType::PARETO_80_20);
+    dilate_probe_list<RMIHash_1k>(probe_pareto_bm,dataset::ID::WIKI,bm::ProbeType::PARETO_80_20);
+    dilate_probe_list<RMIHash_10M>(probe_pareto_bm,dataset::ID::FB,bm::ProbeType::PARETO_80_20);
+    dilate_probe_list<RMIHash_10M>(probe_pareto_bm,dataset::ID::OSM,bm::ProbeType::PARETO_80_20);
+    // for each dataset
+    for (dataset::ID id : probe_insert_ds) {
+        dilate_probe_list<RadixSplineHash_128>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
+        dilate_probe_list<PGMHash_100>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
+        dilate_probe_list<MURMUR>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
+        dilate_probe_list<MultPrime64>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
+        dilate_probe_list<MWHC>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
+
+    }
     // ---------------- build time --------------- //
     std::vector<bm::BMtype> build_bm = {};
     size_t build_size = sizeof(build_entries)/sizeof(build_entries[0]);
@@ -282,18 +322,28 @@ int main(int argc, char* argv[]) {
     dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RMIMonotone,ChainedRange<RMIMonotone>>, point_queries_perc, point_size);
     dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, point_queries_perc, point_size);
     dilate_function_list(point_vs_range_bm, &bm::point_vs_range<RMIMonotone,RMISortRange<RMIMonotone>>, point_queries_perc, point_size);
+    // ---------------- point-vs-range PARETO --------------- //
+    std::vector<bm::BMtype> point_vs_range_pareto_bm = {};
+    dilate_function_list(point_vs_range_pareto_bm, &bm::point_vs_range_pareto<RMIMonotone,ChainedRange<RMIMonotone>>, point_queries_perc, point_size);
+    dilate_function_list(point_vs_range_pareto_bm, &bm::point_vs_range_pareto<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, point_queries_perc, point_size);
+    dilate_function_list(point_vs_range_pareto_bm, &bm::point_vs_range_pareto<RMIMonotone,RMISortRange<RMIMonotone>>, point_queries_perc, point_size);
     // ---------------- range-size --------------- //
     std::vector<bm::BMtype> range_len_bm = {};
     size_t range_size = sizeof(range_len)/sizeof(range_len[0]);
     dilate_function_list(range_len_bm, &bm::range_throughput<RMIMonotone,ChainedRange<RMIMonotone>>, range_len, range_size);
     dilate_function_list(range_len_bm, &bm::range_throughput<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, range_len, range_size);
     dilate_function_list(range_len_bm, &bm::range_throughput<RMIMonotone,RMISortRange<RMIMonotone>>, range_len, range_size);
+    // ---------------- range-size PARETO --------------- //
+    std::vector<bm::BMtype> range_len_pareto_bm = {};
+    dilate_function_list(range_len_pareto_bm, &bm::range_throughput_pareto<RMIMonotone,ChainedRange<RMIMonotone>>, range_len, range_size);
+    dilate_function_list(range_len_pareto_bm, &bm::range_throughput_pareto<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, range_len, range_size);
+    dilate_function_list(range_len_pareto_bm, &bm::range_throughput_pareto<RMIMonotone,RMISortRange<RMIMonotone>>, range_len, range_size);
     
 
-    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, build_bm, collisions_vs_gaps_bm, point_vs_range_bm, range_len_bm);
+    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, probe_pareto_bm, build_bm, collisions_vs_gaps_bm, point_vs_range_bm, point_vs_range_pareto_bm, range_len_bm, range_len_pareto_bm);
 
     if (bm_list.size()==0) {
-        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: collisions,gaps,probe,build,distribution,point,range,all." << std::endl;   // TODO - add more
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all." << std::endl;   // TODO - add more
         return 1;
     }
 

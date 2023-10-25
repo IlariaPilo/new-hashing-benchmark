@@ -57,23 +57,26 @@ cd "$(dirname "$0")"
 functions=("rmi" "mult" "mwhc")
 tables=("chain" "linear" "cuckoo")
 datasets=("gap10" "fb")
+probe=("uniform" "80-20")
 
-# define the filename (TODO)
+# define the filename
 current_datetime=$(date +%Y-%m-%d_%H-%M)
 output_file="${output_dir}/perf_${current_datetime}.csv"
 
 # plot the header
-echo "function,table,dataset,cycles,kcycles,instructions,L1-misses,LLC-misses,branch-misses,task-clock,scale,IPC,CPUs,GHz" > $output_file
+echo "function,table,dataset,probe,cycles,kcycles,instructions,L1-misses,LLC-misses,branch-misses,task-clock,scale,IPC,CPUs,GHz" > $output_file
 
 for ds in "${datasets[@]}"; do
     for tab in "${tables[@]}"; do
         for fun in "${functions[@]}"; do
-            echo -n "$fun,$tab,$ds," >> $output_file
-            cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds > tmp.out
-            # print some info
-            sed -n 1p tmp.out
-            # get interesting values
-            sed -n 3p tmp.out | tr -d ' \t' >> $output_file
+            for prb in "${probe[@]}"; do
+                echo -n "$fun,$tab,$ds,$prb," >> $output_file
+                cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds -p $prb > tmp.out
+                # print some info
+                sed -n 1p tmp.out
+                # get interesting values
+                sed -n 3p tmp.out | tr -d ' \t' >> $output_file
+            done
         done
     done
 done

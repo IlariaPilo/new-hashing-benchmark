@@ -9,7 +9,6 @@
 #include "include/benchmark_logic.hpp"
 #include "include/configs.hpp"
 #include "include/datasets.hpp"
-#include "thirdparty/perfevent/PerfEvent.hpp"
 
 #define LOAD_PERC 80
 
@@ -18,6 +17,7 @@
     std::string output_dir = "";
     std::string h_fun_name = "";
     std::string table_name = "";
+    std::string probe_distr = "uniform";
     std::string ds_name = "";
 /* ========================= */
 
@@ -25,12 +25,13 @@
 void show_usage() {
     std::cout << "\n\033[1;96m./perf_bm [ARGS]\033[0m" << std::endl;
     std::cout << "Arguments:" << std::endl;
-    std::cout << "  -i, --input INPUT_DIR     Directory storing the datasets" << std::endl;
-    std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
-    std::cout << "  -d, --dataset DATASET     Dataset that will be used. Options = gap10,fb" << std::endl;
-    std::cout << "  -f, --function HASH_FN    Function to use. Options = rmi,mult,mwhc" << std::endl;
-    std::cout << "  -t, --table TABLE         Table to use. Options = chain,linear,cuckoo" << std::endl;
-    std::cout << "  -h, --help                Display this help message\n" << std::endl;
+    std::cout << "  -i, --input INPUT_DIR      Directory storing the datasets" << std::endl;
+    std::cout << "  -o, --output OUTPUT_DIR    Directory that will store the output" << std::endl;
+    std::cout << "  -d, --dataset DATASET      Dataset that will be used. Options = gap10,fb" << std::endl;
+    std::cout << "  -f, --function HASH_FN     Function to use. Options = rmi,mult,mwhc" << std::endl;
+    std::cout << "  -t, --table TABLE          Table to use. Options = chain,linear,cuckoo" << std::endl;
+    std::cout << "  -p, --probe DISTRIBUTION   Distribution used to probe. Options = uniform,80-20 (default: uniform)" << std::endl;
+    std::cout << "  -h, --help                 Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
     for (int i = 1; i < argc; ++i) {
@@ -101,6 +102,20 @@ int pars_args(const int& argc, char* const* const& argv) {
                 return 2;
             }
         }
+        if (arg == "--probe" || arg == "-p") {
+            if (i + 1 < argc) {
+                probe_distr = argv[i + 1];
+                if (probe_distr != "uniform" && probe_distr != "80-20") {
+                    std::cerr << "Error: Unknown option for --probe -> " << ds_name << std::endl;
+                    return 2;
+                }
+                i++; // Skip the next argument
+                continue;
+            } else {
+                std::cerr << "Error: --probe requires an argument." << std::endl;
+                return 2;
+            }
+        }
         // if we are here, then the argument is unknown 
         std::cerr << "Error: Unknown argument " << arg << std::endl;
         show_usage();
@@ -128,76 +143,58 @@ int main(int argc, char* argv[]) {
     else ds_id = dataset::ID::FB;
     dataset::Dataset<Data> ds(ds_id, static_cast<size_t>(MAX_DS_SIZE), input_dir);
 
+    // Choose the probe distribution
+    bm::ProbeType probe_type;
+    if (probe_distr == "uniform")
+        probe_type = bm::ProbeType::UNIFORM;
+    else if (probe_distr == "80-20")
+        probe_type = bm::ProbeType::PARETO_80_20;
+
     // Create a JsonWriter instance (for the output file)
     JsonOutput writer(output_dir, argv[0], "perf-" + h_fun_name + "-" + table_name + "-" + ds_name);
 
-    PerfEvent e;
+    // init benchmarks values
+    bm::init(true);
+
     // Call the right function
     if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "chain") {
-        e.startCounters();
-        bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "chain") {
-        e.startCounters();
-        bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (h_fun_name == "mult" && table_name == "chain") {
-        e.startCounters();
-        bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (h_fun_name == "mwhc" && table_name == "chain") {
-        e.startCounters();
-        bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "linear") {
-        e.startCounters();
-        bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "linear") {
-        e.startCounters();
-        bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (h_fun_name == "mult" && table_name == "linear") {
-        e.startCounters();
-        bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (h_fun_name == "mwhc" && table_name == "linear") {
-        e.startCounters();
-        bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
 
     else if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "cuckoo") {
-        e.startCounters();
-        bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (ds_name == "fb" && h_fun_name == "rmi" && table_name == "cuckoo") {
-        e.startCounters();
-        bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (h_fun_name == "mult" && table_name == "cuckoo") {
-        e.startCounters();
-        bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
     else if (h_fun_name == "mwhc" && table_name == "cuckoo") {
-        e.startCounters();
-        bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC));
-        e.stopCounters();
+        bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
-    // print results
-    // we use the size of the dataset as a normalizing factor
-    e.printReport(std::cout, ds.get_size());
-    
+
     return 0;
 }
