@@ -165,7 +165,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "distribution" || part == "all") {
             how_many = dataset::ID_ALL_COUNT;
@@ -174,7 +173,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "point" || part == "all") {
             for (const bm::BMtype& bm_fn : point_vs_range_bm) {
@@ -182,7 +180,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "point80_20" || part == "all") {
             for (const bm::BMtype& bm_fn : point_vs_range_pareto_bm) {
@@ -198,7 +195,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "range80_20" || part == "all") {
             for (const bm::BMtype& bm_fn : range_size_pareto_bm) {
@@ -206,13 +202,13 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "join" || part == "all") {
             for (const bm::BM& bm_struct : join_bm) {
                 bm_list.push_back(bm_struct);
             }
             // if (part != "all") continue;
+            continue;
         }
         // if we are here, the filter is unknown
         std::cout << "\033[1;93m [warning]\033[0m filter " << part << " is unknown." << std::endl;
