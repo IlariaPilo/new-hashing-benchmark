@@ -52,6 +52,12 @@ constexpr size_t build_entries[] = {MAX_DS_SIZE/100, MAX_DS_SIZE/20, MAX_DS_SIZE
 // datasets
 constexpr dataset::ID build_time_ds[] = {dataset::ID::UNIFORM};
 
+// ---- Join Experiments ---- //
+// load factor
+#define JOIN_LOAD_PERC 80
+// datasets
+constexpr dataset::ID join_ds[] = {dataset::ID::WIKI,dataset::ID::FB};
+
 // ---- Everything Else ---- //
 // datasets for remaining experiments
 constexpr dataset::ID collisions_ds[] = {dataset::ID::GAP_10,dataset::ID::UNIFORM,dataset::ID::NORMAL,dataset::ID::WIKI,dataset::ID::FB};

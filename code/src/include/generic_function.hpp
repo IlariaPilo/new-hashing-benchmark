@@ -72,6 +72,16 @@ namespace _generic_ {
                     fn.construct(sample_begin, sample_end);
                 }
             }
+            inline static bool needs_sorted_samples() {
+                // LEARNED FN
+                if constexpr (has_train_method<HashFn>::value) {
+                    return true;
+                }
+                // // PERFECT FN
+                // else if constexpr (has_construct_method<HashFn>::value) { 
+                // }
+                return false;
+            }
 
         private:
             size_t max_value;

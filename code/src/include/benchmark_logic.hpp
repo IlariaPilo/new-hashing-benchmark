@@ -6,6 +6,7 @@
 #include <random>
 
 #include "generic_function.hpp"
+#include "npj.hpp"
 #include "output_json.hpp"
 #include "datasets.hpp"
 #include "configs.hpp"
@@ -564,4 +565,102 @@ namespace bm {
         writer.add_data(benchmark);
     }
 
+    // join throughput helper
+    template <class HashFn, class HashTable>
+    void join_throughput(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Key>& ds = ds_obj.get_ds();
+
+        const std::string label = "Join:" + HashTable::name() + ":" + HashFn::name() + ":" + dataset_name;
+
+        // do 10M and 25M variants
+        std::vector<Key> keys_10M;
+        std::vector<Key> keys_25M;
+        std::vector<Key> keys_25M_dup;
+        std::vector<Payload> payloads_10M;
+        std::vector<Payload> payloads_25M;
+
+        keys_10M.reserve(10000000);
+        keys_25M.reserve(25000000);
+        keys_25M_dup.reserve(25000000);
+        payloads_10M.reserve(10000000);
+        payloads_25M.reserve(25000000);
+
+        // not-duplicated ones
+        size_t i, idx;
+        for (i=0, idx=0; i<10000000 && idx < N; idx++) {
+            if (order_insert[idx] < (int)dataset_size) {
+                keys_10M[i] = ds[order_insert[idx]];
+                payloads_10M[i] = idx;
+                i++;
+            }
+        }
+        for (i=0; i<25000000 && idx < N; idx++) {
+            if (order_insert[idx] < (int)dataset_size) {
+                keys_25M[i] = ds[order_insert[idx]];
+                payloads_25M[i] = idx;
+                i++;
+            }
+        }
+        // duplicated one
+        for (i=0, idx=0; i<25000000 && idx < N; idx++) {
+            if (order_probe_uniform[idx] < (int)dataset_size) {
+                keys_25M_dup[i] = ds[order_probe_uniform[idx]];
+                i++;
+            }
+        }
+        // prepare output arrays
+        std::vector<Key> keys_out;
+        std::vector<std::pair<Payload,Payload>> payloads_out;
+        
+        // ******************** 10x25 ******************** //
+        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_25M_dup, payloads_25M, keys_out, payloads_out);
+        if (time_10_25.has_value() && keys_out.size()==0) {
+            std::cout << "\033[1;93m [warning]\033[0m join result is empty!\n";
+            std::cout << "           While this is not impossible, it is *really* improbable. Try to double-check the code.\n";
+        }
+        json benchmark_10_25;
+        benchmark_10_25["join_size"] = "(10Mx25M)";
+        benchmark_10_25["dataset_name"] = dataset_name;
+        benchmark_10_25["function_name"] = HashFn::name();
+        benchmark_10_25["label"] = label;
+        if (!time_10_25.has_value()) {
+            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\t[ 10M x 25M ]\n";
+            benchmark_10_25["has_failed"] = true;
+        }
+        else {
+            std::cout << label + "\t[ 10M x 25M ]\n";
+            benchmark_10_25["has_failed"] = false;
+            benchmark_10_25["tot_time_build_s"] = time_10_25.value().first.count();
+            benchmark_10_25["tot_time_join_s"] = time_10_25.value().second.count();
+        }
+        writer.add_data(benchmark_10_25);
+
+        // ******************** 25x25 ******************** //
+        keys_out.clear();
+        payloads_out.clear();
+        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_25M, payloads_25M, keys_25M_dup, payloads_25M, keys_out, payloads_out);
+        if (time_25_25.has_value() && keys_out.size()==0) {
+            std::cout << "\033[1;93m [warning]\033[0m join result is empty!\n";
+            std::cout << "           While this is not impossible, it is *really* improbable. Try to double-check the code.\n";
+        }
+        json benchmark_25_25;
+        benchmark_25_25["join_size"] = "(10Mx25M)";
+        benchmark_25_25["dataset_name"] = dataset_name;
+        benchmark_25_25["function_name"] = HashFn::name();
+        benchmark_25_25["label"] = label;
+        if (!time_25_25.has_value()) {
+            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\t[ 25M x 25M ]\n";
+            benchmark_25_25["has_failed"] = true;
+        }
+        else {
+            std::cout << label + "\t[ 25M x 25M ]\n";
+            benchmark_25_25["has_failed"] = false;
+            benchmark_25_25["tot_time_build_s"] = time_25_25.value().first.count();
+            benchmark_25_25["tot_time_join_s"] = time_25_25.value().second.count();
+        }
+        writer.add_data(benchmark_25_25);
+    }
 }
