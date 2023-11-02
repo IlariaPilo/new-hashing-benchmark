@@ -647,7 +647,7 @@ namespace bm {
             std::cout << "           While this is not impossible, it is *really* improbable. Try to double-check the code.\n";
         }
         json benchmark_25_25;
-        benchmark_25_25["join_size"] = "(10Mx25M)";
+        benchmark_25_25["join_size"] = "(25Mx25M)";
         benchmark_25_25["dataset_name"] = dataset_name;
         benchmark_25_25["function_name"] = HashFn::name();
         benchmark_25_25["label"] = label;
