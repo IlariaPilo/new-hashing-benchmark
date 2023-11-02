@@ -56,7 +56,7 @@ namespace join {
             try {
                 table.insert(small_keys[i], small_payloads[i]);
             } catch(std::runtime_error& e) {
-                // if we are here, we failed the insertion TODO
+                // if we are here, we failed the insertion
                 return std::nullopt;
             }
         }

@@ -582,22 +582,22 @@ namespace bm {
         std::vector<Payload> payloads_10M;
         std::vector<Payload> payloads_25M;
 
-        keys_10M.reserve(10000000);
-        keys_25M.reserve(25000000);
-        keys_25M_dup.reserve(25000000);
-        payloads_10M.reserve(10000000);
-        payloads_25M.reserve(25000000);
+        keys_10M.resize(10000000);
+        keys_25M.resize(25000000);
+        keys_25M_dup.resize(25000000);
+        payloads_10M.resize(10000000);
+        payloads_25M.resize(25000000);
 
         // not-duplicated ones
         size_t i, idx;
-        for (i=0, idx=0; i<10000000 && idx < N; idx++) {
+        for (i=0, idx=0; i<10000000 && idx<N; idx++) {
             if (order_insert[idx] < (int)dataset_size) {
                 keys_10M[i] = ds[order_insert[idx]];
                 payloads_10M[i] = idx;
                 i++;
             }
         }
-        for (i=0; i<25000000 && idx < N; idx++) {
+        for (i=0; i<25000000 && idx<N; idx++) {
             if (order_insert[idx] < (int)dataset_size) {
                 keys_25M[i] = ds[order_insert[idx]];
                 payloads_25M[i] = idx;
@@ -605,7 +605,7 @@ namespace bm {
             }
         }
         // duplicated one
-        for (i=0, idx=0; i<25000000 && idx < N; idx++) {
+        for (i=0, idx=0; i<25000000 && idx<N; idx++) {
             if (order_probe_uniform[idx] < (int)dataset_size) {
                 keys_25M_dup[i] = ds[order_probe_uniform[idx]];
                 i++;
