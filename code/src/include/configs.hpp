@@ -129,3 +129,7 @@ template <class HashFn>
 using ChainedRange = hashtable::Chained<Key, Payload, RANGE_BUCKETS /*BucketSize*/, HashFn, FastModulo>;
 template <class HashFn>
 using RMISortRange = hashtable::RMISort<Key, Payload, HashFn>;
+
+// ********************* MACROS ********************* //
+#define M(n)    \
+    n##000000

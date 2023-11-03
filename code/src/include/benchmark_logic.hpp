@@ -578,48 +578,54 @@ namespace bm {
         // do 10M and 25M variants
         std::vector<Key> keys_10M;
         std::vector<Key> keys_25M;
+        std::vector<Key> keys_10M_dup;
         std::vector<Key> keys_25M_dup;
         std::vector<Payload> payloads_10M;
         std::vector<Payload> payloads_25M;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> dist_10M(0, M(10)-1);
+        std::uniform_int_distribution<int> dist_25M(0, M(25)-1);
 
-        keys_10M.resize(10000000);
-        keys_25M.resize(25000000);
-        keys_25M_dup.resize(25000000);
-        payloads_10M.resize(10000000);
-        payloads_25M.resize(25000000);
+        keys_10M.resize(M(10));
+        keys_25M.resize(M(25));
+        keys_10M_dup.resize(M(25));
+        keys_25M_dup.resize(M(25));
+        payloads_10M.resize(M(10));
+        payloads_25M.resize(M(25));
 
         // not-duplicated ones
         size_t i, idx;
-        for (i=0, idx=0; i<10000000 && idx<N; idx++) {
+        for (i=0, idx=0; i<M(10) && idx<N; idx++) {
             if (order_insert[idx] < (int)dataset_size) {
                 keys_10M[i] = ds[order_insert[idx]];
                 payloads_10M[i] = idx;
                 i++;
             }
         }
-        for (i=0; i<25000000 && idx<N; idx++) {
+        for (i=0; i<M(25) && idx<N; idx++) {
             if (order_insert[idx] < (int)dataset_size) {
                 keys_25M[i] = ds[order_insert[idx]];
                 payloads_25M[i] = idx;
                 i++;
             }
         }
-        // duplicated one
-        for (i=0, idx=0; i<25000000 && idx<N; idx++) {
-            if (order_probe_uniform[idx] < (int)dataset_size) {
-                keys_25M_dup[i] = ds[order_probe_uniform[idx]];
-                i++;
-            }
+        // duplicated ones
+        for (i=0; i<M(25); i++) {
+            int rand_idx_10M = dist_10M(gen);
+            int rand_idx_25M = dist_25M(gen);
+            keys_10M_dup.push_back(keys_10M[rand_idx_10M]);
+            keys_25M_dup.push_back(keys_25M[rand_idx_25M]);
         }
+
         // prepare output arrays
         std::vector<Key> keys_out;
         std::vector<std::pair<Payload,Payload>> payloads_out;
         
         // ******************** 10x25 ******************** //
-        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_25M_dup, payloads_25M, keys_out, payloads_out);
-        if (time_10_25.has_value() && keys_out.size()==0) {
-            std::cout << "\033[1;93m [warning]\033[0m join result is empty!\n";
-            std::cout << "           While this is not impossible, it is *really* improbable. Try to double-check the code.\n";
+        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_10M_dup, payloads_25M, keys_out, payloads_out);
+        if (time_10_25.has_value() && keys_out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
         }
         json benchmark_10_25;
         benchmark_10_25["join_size"] = "(10Mx25M)";
@@ -642,9 +648,8 @@ namespace bm {
         keys_out.clear();
         payloads_out.clear();
         auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_25M, payloads_25M, keys_25M_dup, payloads_25M, keys_out, payloads_out);
-        if (time_25_25.has_value() && keys_out.size()==0) {
-            std::cout << "\033[1;93m [warning]\033[0m join result is empty!\n";
-            std::cout << "           While this is not impossible, it is *really* improbable. Try to double-check the code.\n";
+        if (time_25_25.has_value() && keys_out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
         }
         json benchmark_25_25;
         benchmark_25_25["join_size"] = "(25Mx25M)";
