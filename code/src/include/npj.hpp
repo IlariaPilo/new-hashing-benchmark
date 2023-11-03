@@ -4,6 +4,7 @@
 #include <chrono>
 #include <utility>
 #include <optional>
+#include <tuple>
 
 #include "generic_function.hpp"
 #include "sort_indices.hpp"
@@ -20,11 +21,11 @@ namespace join {
      * @param big_payloads payloads of the bigger table
      * @param output_keys the keys resulting from the join
      * @param output_payloads the payloads resulting from the join
-     * @return an optional storing the build time and the join time. 
+     * @return an optional storing the sort time, build time and the join time. 
      * If the optional is empty, the insertion in the hash table failed.
     */
     template <class Key, class Payload, class HashFn, class HashTable, size_t LoadPerc>
-    std::optional<std::pair<std::chrono::duration<double>,std::chrono::duration<double>>>
+    std::optional<std::tuple<std::chrono::duration<double>,std::chrono::duration<double>,std::chrono::duration<double>>>
         npj_hash(
             std::vector<Key>& small_keys, std::vector<Payload>& small_payloads, /* table 1 */
             std::vector<Key>& big_keys, std::vector<Payload>& big_payloads,     /* table 2 */ 
@@ -36,18 +37,21 @@ namespace join {
 
         // ==================== time counters ==================== //
         std::chrono::high_resolution_clock::time_point start, end;
-        std::chrono::duration<double> tot_build(0), tot_join(0);
+        std::chrono::duration<double> tot_build(0), tot_join(0), tot_sort(0);
         // ======================================================= //
 
         // build the table for the smaller relation
         const size_t capacity = small_keys.size()*100/LoadPerc;
 
-        start = std::chrono::high_resolution_clock::now();
         if (_generic_::GenericFn<HashFn>::needs_sorted_samples()) {
             // sort samples
+            start = std::chrono::high_resolution_clock::now();
             sort_indices(small_keys, small_payloads);
+            end = std::chrono::high_resolution_clock::now();
+            tot_sort = end-start;
         }
 
+        start = std::chrono::high_resolution_clock::now();
         HashFn fn;
         _generic_::GenericFn<HashFn>::init_fn(fn,small_keys.begin(),small_keys.end(),capacity);
         HashTable table(capacity, fn);
@@ -78,7 +82,7 @@ namespace join {
         output_keys.shrink_to_fit();
         output_payloads.shrink_to_fit();
 
-        return std::make_optional(std::make_pair(tot_build, tot_join));
+        return std::make_optional(std::make_tuple(tot_sort, tot_build, tot_join));
     }
     
 }   // namespace join  

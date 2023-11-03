@@ -639,8 +639,9 @@ namespace bm {
         else {
             std::cout << label + "\t[ 10M x 25M ]\n";
             benchmark_10_25["has_failed"] = false;
-            benchmark_10_25["tot_time_build_s"] = time_10_25.value().first.count();
-            benchmark_10_25["tot_time_join_s"] = time_10_25.value().second.count();
+            benchmark_10_25["tot_time_build_s"] = std::get<1>(time_10_25.value()).count();
+            benchmark_10_25["tot_time_join_s"] = std::get<2>(time_10_25.value()).count();
+            benchmark_10_25["tot_time_sort_s"] = std::get<0>(time_10_25.value()).count();
         }
         writer.add_data(benchmark_10_25);
 
@@ -663,8 +664,9 @@ namespace bm {
         else {
             std::cout << label + "\t[ 25M x 25M ]\n";
             benchmark_25_25["has_failed"] = false;
-            benchmark_25_25["tot_time_build_s"] = time_25_25.value().first.count();
-            benchmark_25_25["tot_time_join_s"] = time_25_25.value().second.count();
+            benchmark_10_25["tot_time_build_s"] = std::get<1>(time_25_25.value()).count();
+            benchmark_10_25["tot_time_join_s"] = std::get<2>(time_25_25.value()).count();
+            benchmark_10_25["tot_time_sort_s"] = std::get<0>(time_25_25.value()).count();
         }
         writer.add_data(benchmark_25_25);
     }
