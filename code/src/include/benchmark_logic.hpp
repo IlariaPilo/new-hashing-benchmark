@@ -614,8 +614,8 @@ namespace bm {
         for (i=0; i<M(25); i++) {
             int rand_idx_10M = dist_10M(gen);
             int rand_idx_25M = dist_25M(gen);
-            keys_10M_dup.push_back(keys_10M[rand_idx_10M]);
-            keys_25M_dup.push_back(keys_25M[rand_idx_25M]);
+            keys_10M_dup[i] = keys_10M[rand_idx_10M];
+            keys_25M_dup[i] = keys_25M[rand_idx_25M];
         }
 
         // prepare output arrays

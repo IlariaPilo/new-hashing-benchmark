@@ -28,7 +28,7 @@ namespace join {
         npj_hash(
             std::vector<Key>& small_keys, std::vector<Payload>& small_payloads, /* table 1 */
             std::vector<Key>& big_keys, std::vector<Payload>& big_payloads,     /* table 2 */ 
-            std::vector<Key>& output_keys, std::vector<std::pair<Payload,Payload>> output_payloads) {
+            std::vector<Key>& output_keys, std::vector<std::pair<Payload,Payload>>& output_payloads) {
 
         // reserve space for output arrays
         output_keys.reserve(big_keys.size());
@@ -69,7 +69,7 @@ namespace join {
             std::optional<Payload> small_payload = table.lookup(big_keys[i]);
             if (small_payload.has_value()) {
                 output_keys.push_back(big_keys[i]);
-                output_payloads.push_back({small_payload.value(), big_payloads[i]});
+                output_payloads.push_back(std::make_pair(small_payload.value(), big_payloads[i]));
             }
         }
         end = std::chrono::high_resolution_clock::now();
