@@ -170,6 +170,9 @@ int main(int argc, char* argv[]) {
     // init benchmarks
     bm::init(threads, true);
 
+    // init benchmarks values
+    bm::init(true);
+
     // Call the right function
     if (ds_name == "gap10" && h_fun_name == "rmi" && table_name == "chain") {
         bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
@@ -209,6 +212,6 @@ int main(int argc, char* argv[]) {
     else if (h_fun_name == "mwhc" && table_name == "cuckoo") {
         bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, static_cast<size_t>(LOAD_PERC), probe_type);
     }
-    
+
     return 0;
 }
