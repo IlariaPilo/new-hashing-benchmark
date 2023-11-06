@@ -118,6 +118,15 @@ def get_table_type(label):
     if 'cuckoo' in label:
         return 'cuckoo'
     
+def get_table_label(function, table):
+    if function == 'MultiplyPrime':
+        function = 'mult'
+    if table == 'linear':
+        table = 'lp'
+    if table == 'chained':
+        table = 'chain'
+    return f'{function}-{table}'
+
 def get_struct_type(label):
     label = label.lower()
     if 'sort' in label:
@@ -695,6 +704,81 @@ def point_range(df, pareto=False):
     name = prefix + '_range' + ('_pareto.png' if pareto else '.png')
     fig.savefig(name, bbox_extra_artists=(lgd,lg1,lg3,), bbox_inches='tight')
 
+# -------- join -------- #
+def join(df):
+    JOIN_10_25 = 0
+    JOIN_25_25 = 1
+
+    datasets = ('wiki','fb')
+    df = df[df["label"].str.lower().str.contains("join")].copy(deep=True)
+    if df.empty:
+        return
+    # remove failed experiments
+    df = df[df["has_failed"]==False]
+
+    # Group by
+    df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
+    df['table_label'] = df.apply(lambda x : get_table_label(x['function'],x['table_type']).upper(), axis=1)
+    df = groupby_helper(df, ['dataset_name','table_label','function','join_size'], ['tot_time_sort_s', 'tot_time_build_s', 'tot_time_join_s'])
+    df = df.sort_values(by='table_label')
+
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+    fig, axes = plt.subplots(num_subplots, 2, figsize=(9, 5))  # Adjust figsize as needed
+    
+    # Create a single legend for all subplots
+    legend_labels = ['Sort', 'Build', 'Probe']
+    handles = []
+    
+    i = 0
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
+        ax = axes[:,i]
+        i += 1
+        
+        # 10x25
+        join_10_25 = group_ds[group_ds['join_size'] == '(10Mx25M)']
+        # Create the upper part of the bar
+        h3 = ax[JOIN_10_25].bar(range(len(join_10_25['table_label'])), join_10_25['tot_time_sort_s'], color='tab:green', label='Sort')
+        h1 = ax[JOIN_10_25].bar(range(len(join_10_25['table_label'])), join_10_25['tot_time_build_s'], color='tab:blue', bottom=join_10_25['tot_time_sort_s'], label='Build')
+        # Create the lower part of the bar, starting from the top of the upper part
+        h2 = ax[JOIN_10_25].bar(range(len(join_10_25['table_label'])), join_10_25['tot_time_join_s'], color='tab:orange', bottom=join_10_25['tot_time_build_s']+join_10_25['tot_time_sort_s'], label='Probe')
+
+        # 25x25
+        join_25_25 = group_ds[group_ds['join_size'] == '(25Mx25M)']
+        ax[JOIN_25_25].bar(range(len(join_25_25['table_label'])), join_25_25['tot_time_sort_s'], color='tab:green', label='Sort')
+        ax[JOIN_25_25].bar(range(len(join_25_25['table_label'])), join_25_25['tot_time_build_s'], color='tab:blue', bottom=join_25_25['tot_time_sort_s'], label='Build')
+        ax[JOIN_25_25].bar(range(len(join_25_25['table_label'])), join_25_25['tot_time_join_s'], color='tab:orange', bottom=join_25_25['tot_time_build_s']+join_25_25['tot_time_sort_s'], label='Probe')
+
+        # Customize the plot
+        ax[JOIN_10_25].set_title(f'{name_ds} (10Mx25M)')
+        ax[JOIN_25_25].set_title(f'{name_ds} (25Mx25M)')
+
+        if i == 1:
+            handles.append(h3)
+            handles.append(h1)
+            handles.append(h2)
+            
+        ax[JOIN_10_25].set_xticks(range(len(join_10_25['table_label'])), join_10_25['table_label'], rotation=35, ha='right', va='top')
+        ax[JOIN_25_25].set_xticks(range(len(join_25_25['table_label'])), join_25_25['table_label'], rotation=35, ha='right', va='top')
+
+        # Format the y-axis to display only two digits after the decimal point
+        # ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
+
+        ax[JOIN_10_25].grid(True)
+        ax[JOIN_25_25].grid(True)
+
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.07))
+
+    # Set a common label for x and y axes
+    laby = fig.supylabel('Running Time (s)')
+
+    #plt.show()
+    name = prefix + '_join.png'
+    fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
+
+
 # =============================== MAINS =============================== #l
 
 def main_json():
@@ -716,6 +800,7 @@ def main_json():
         build(df)
         point_range(df)
         point_range(df, pareto=True)
+        join(df)
 
 def main_csv():
     df = pd.read_csv(file_path)

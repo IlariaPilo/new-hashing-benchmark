@@ -6,6 +6,7 @@
 #include <random>
 
 #include "generic_function.hpp"
+#include "npj.hpp"
 #include "output_json.hpp"
 #include "datasets.hpp"
 #include "configs.hpp"
@@ -67,16 +68,16 @@ namespace bm {
         std::uniform_real_distribution<double> access_percent_dist(0.0, 1.0);
         
         // First,create a weighted distribution
-        std::vector<double> weights(N);
+        std::vector<int> weights(N);
         for (size_t i = 0; i < N; ++i) {
             // get the access percent
             double access_perc = access_percent_dist(gen);
             if (access_perc >= 0.8)
                 // 80% weight with 20% of probability
-                weights[i] = 0.8;
+                weights[i] = 16;
             else
                 // 20% weight with 80% of probability
-                weights[i] = 0.2;
+                weights[i] = 1;
         }
         std::discrete_distribution<int> distribution(weights.begin(), weights.end());
         for (size_t i = 0; i < N; ++i) {
@@ -576,4 +577,107 @@ namespace bm {
         writer.add_data(benchmark);
     }
 
+    // join throughput helper
+    template <class HashFn, class HashTable>
+    void join_throughput(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Key>& ds = ds_obj.get_ds();
+
+        const std::string label = "Join:" + HashTable::name() + ":" + HashFn::name() + ":" + dataset_name;
+
+        // do 10M and 25M variants
+        std::vector<Key> keys_10M;
+        std::vector<Key> keys_25M;
+        std::vector<Key> keys_10M_dup;
+        std::vector<Key> keys_25M_dup;
+        std::vector<Payload> payloads_10M;
+        std::vector<Payload> payloads_25M;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> dist_10M(0, M(10)-1);
+        std::uniform_int_distribution<int> dist_25M(0, M(25)-1);
+
+        keys_10M.resize(M(10));
+        keys_25M.resize(M(25));
+        keys_10M_dup.resize(M(25));
+        keys_25M_dup.resize(M(25));
+        payloads_10M.resize(M(10));
+        payloads_25M.resize(M(25));
+
+        // not-duplicated ones
+        size_t i, idx;
+        for (i=0, idx=0; i<M(10) && idx<N; idx++) {
+            if (order_insert[idx] < (int)dataset_size) {
+                keys_10M[i] = ds[order_insert[idx]];
+                payloads_10M[i] = idx;
+                i++;
+            }
+        }
+        for (i=0; i<M(25) && idx<N; idx++) {
+            if (order_insert[idx] < (int)dataset_size) {
+                keys_25M[i] = ds[order_insert[idx]];
+                payloads_25M[i] = idx;
+                i++;
+            }
+        }
+        // duplicated ones
+        for (i=0; i<M(25); i++) {
+            int rand_idx_10M = dist_10M(gen);
+            int rand_idx_25M = dist_25M(gen);
+            keys_10M_dup[i] = keys_10M[rand_idx_10M];
+            keys_25M_dup[i] = keys_25M[rand_idx_25M];
+        }
+
+        // prepare output arrays
+        std::vector<std::pair<Key,std::pair<Payload,Payload>>> out;
+        
+        // ******************** 10x25 ******************** //
+        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_10M_dup, payloads_25M, out, THREADS);
+        if (time_10_25.has_value() && out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [out.size()] " + std::to_string(out.size()) + "\n");
+        }
+        json benchmark_10_25;
+        benchmark_10_25["join_size"] = "(10Mx25M)";
+        benchmark_10_25["dataset_name"] = dataset_name;
+        benchmark_10_25["function_name"] = HashFn::name();
+        benchmark_10_25["label"] = label;
+        if (!time_10_25.has_value()) {
+            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\t[ 10M x 25M ]\n";
+            benchmark_10_25["has_failed"] = true;
+        }
+        else {
+            std::cout << label + "\t[ 10M x 25M ]\n";
+            benchmark_10_25["has_failed"] = false;
+            benchmark_10_25["tot_time_build_s"] = std::get<1>(time_10_25.value()).count();
+            benchmark_10_25["tot_time_join_s"] = std::get<2>(time_10_25.value()).count();
+            benchmark_10_25["tot_time_sort_s"] = std::get<0>(time_10_25.value()).count();
+        }
+        writer.add_data(benchmark_10_25);
+
+        // ******************** 25x25 ******************** //
+        out.clear();
+        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_25M, payloads_25M, keys_25M_dup, payloads_25M, out, THREADS);
+        if (time_25_25.has_value() && out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [out.size()] " + std::to_string(out.size()) + "\n");
+        }
+        json benchmark_25_25;
+        benchmark_25_25["join_size"] = "(25Mx25M)";
+        benchmark_25_25["dataset_name"] = dataset_name;
+        benchmark_25_25["function_name"] = HashFn::name();
+        benchmark_25_25["label"] = label;
+        if (!time_25_25.has_value()) {
+            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\t[ 25M x 25M ]\n";
+            benchmark_25_25["has_failed"] = true;
+        }
+        else {
+            std::cout << label + "\t[ 25M x 25M ]\n";
+            benchmark_25_25["has_failed"] = false;
+            benchmark_25_25["tot_time_build_s"] = std::get<1>(time_25_25.value()).count();
+            benchmark_25_25["tot_time_join_s"] = std::get<2>(time_25_25.value()).count();
+            benchmark_25_25["tot_time_sort_s"] = std::get<0>(time_25_25.value()).count();
+        }
+        writer.add_data(benchmark_25_25);
+    }
 }

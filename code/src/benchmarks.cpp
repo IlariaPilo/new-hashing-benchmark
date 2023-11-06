@@ -25,7 +25,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],join,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -125,7 +125,8 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
         const std::vector<bm::BMtype>& build_bm,
         const std::vector<bm::BMtype>& collisions_vs_gaps_bm,
         const std::vector<bm::BMtype>& point_vs_range_bm, const std::vector<bm::BMtype>& point_vs_range_pareto_bm,
-        const std::vector<bm::BMtype>& range_size_bm, const std::vector<bm::BMtype>& range_size_pareto_bm
+        const std::vector<bm::BMtype>& range_size_bm, const std::vector<bm::BMtype>& range_size_pareto_bm,
+        const std::vector<bm::BM>& join_bm
     /*TODO - add more*/) {
     std::string part;
     size_t start;
@@ -163,7 +164,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "distribution" || part == "all") {
             how_many = dataset::ID_ALL_COUNT;
@@ -172,7 +172,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "point" || part == "all") {
             for (const bm::BMtype& bm_fn : point_vs_range_bm) {
@@ -180,7 +179,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "point80_20" || part == "all") {
             for (const bm::BMtype& bm_fn : point_vs_range_pareto_bm) {
@@ -196,14 +194,19 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "range80_20" || part == "all") {
             for (const bm::BMtype& bm_fn : range_size_pareto_bm) {
                 for (dataset::ID id : range_ds)
                     bm_list.push_back({bm_fn, id});
             }
-            //if (part != "all") continue;
+            if (part != "all") continue;
+        }
+        if (part == "join" || part == "all") {
+            for (const bm::BM& bm_struct : join_bm) {
+                bm_list.push_back(bm_struct);
+            }
+            // if (part != "all") continue;
             continue;
         }
         // if we are here, the filter is unknown
@@ -338,11 +341,30 @@ int main(int argc, char* argv[]) {
     dilate_function_list(range_len_pareto_bm, &bm::range_throughput_pareto<RadixSplineHash_1k,ChainedRange<RadixSplineHash_1k>>, range_len, range_size);
     dilate_function_list(range_len_pareto_bm, &bm::range_throughput_pareto<RMIMonotone,RMISortRange<RMIMonotone>>, range_len, range_size);
     
+    // ---------------- join --------------- //
+    std::vector<bm::BM> join_bm = {};
+    // RMI, wiki
+    join_bm.push_back({&bm::join_throughput<RMIHash_1k, ChainedTable<RMIHash_1k>>, dataset::ID::WIKI});
+    join_bm.push_back({&bm::join_throughput<RMIHash_1k, LinearTable<RMIHash_1k>>, dataset::ID::WIKI});
+    join_bm.push_back({&bm::join_throughput<RMIHash_1k, CuckooTable<RMIHash_1k>>, dataset::ID::WIKI});
+    // RMI, fb
+    join_bm.push_back({&bm::join_throughput<RMIHash_1M, ChainedTable<RMIHash_1M>>, dataset::ID::FB});
+    join_bm.push_back({&bm::join_throughput<RMIHash_1M, LinearTable<RMIHash_1M>>, dataset::ID::FB});
+    join_bm.push_back({&bm::join_throughput<RMIHash_1M, CuckooTable<RMIHash_1M>>, dataset::ID::FB});
+    // the other 2
+    for (dataset::ID id : join_ds) {    
+        join_bm.push_back({&bm::join_throughput<MultPrime64, ChainedTable<MultPrime64>>, id});
+        join_bm.push_back({&bm::join_throughput<MultPrime64, LinearTable<MultPrime64>>, id});
+        join_bm.push_back({&bm::join_throughput<MultPrime64, CuckooTable<MultPrime64>>, id});
+        join_bm.push_back({&bm::join_throughput<MWHC, ChainedTable<MWHC>>, id});
+        join_bm.push_back({&bm::join_throughput<MWHC, LinearTable<MWHC>>, id});
+        join_bm.push_back({&bm::join_throughput<MWHC, CuckooTable<MWHC>>, id});
+    }
 
-    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, probe_pareto_bm, build_bm, collisions_vs_gaps_bm, point_vs_range_bm, point_vs_range_pareto_bm, range_len_bm, range_len_pareto_bm);
+    load_bm_list(bm_list, collision_bm, gap_bm, probe_bm, probe_pareto_bm, build_bm, collisions_vs_gaps_bm, point_vs_range_bm, point_vs_range_pareto_bm, range_len_bm, range_len_pareto_bm, join_bm);
 
     if (bm_list.size()==0) {
-        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all." << std::endl;   // TODO - add more
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],join,all." << std::endl;   // TODO - add more
         return 1;
     }
 
