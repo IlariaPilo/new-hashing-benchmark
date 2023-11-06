@@ -78,8 +78,7 @@ Notice that the numbers in the parenthesis refer to the experiment number in the
 - _point80\_20_ : the _point_ experiment using the 80-20 distribution to simulate real-world data access [new]
 - _range_ : a range query experiment, comparing the performance of different tables undergoing range queries fo various sizes [7.5-range query size]
 - _range80\_20_ : the _range_ experiment using the 80-20 distribution to simulate real-world data access [new]
-<!-- TODO add more -->
-
+- _join_ : compute the running time for the Non Partitioned Join using three types of tables and different hash functions [7.6]
 ### 📟 `perf`
 `perf` benchmarks are more delicate, and they can be run by using a separate script.
 ```sh
