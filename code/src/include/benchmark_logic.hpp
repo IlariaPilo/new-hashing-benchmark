@@ -68,16 +68,16 @@ namespace bm {
         std::uniform_real_distribution<double> access_percent_dist(0.0, 1.0);
         
         // First,create a weighted distribution
-        std::vector<double> weights(N);
+        std::vector<int> weights(N);
         for (size_t i = 0; i < N; ++i) {
             // get the access percent
             double access_perc = access_percent_dist(gen);
             if (access_perc >= 0.8)
                 // 80% weight with 20% of probability
-                weights[i] = 0.8;
+                weights[i] = 16;
             else
                 // 20% weight with 80% of probability
-                weights[i] = 0.2;
+                weights[i] = 1;
         }
         std::discrete_distribution<int> distribution(weights.begin(), weights.end());
         for (size_t i = 0; i < N; ++i) {
