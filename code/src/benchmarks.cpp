@@ -187,7 +187,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "range" || part == "all") {
             for (const bm::BMtype& bm_fn : range_size_bm) {
