@@ -631,13 +631,12 @@ namespace bm {
         }
 
         // prepare output arrays
-        std::vector<Key> keys_out;
-        std::vector<std::pair<Payload,Payload>> payloads_out;
+        std::vector<std::pair<Key,std::pair<Payload,Payload>>> out;
         
         // ******************** 10x25 ******************** //
-        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_10M_dup, payloads_25M, keys_out, payloads_out);
-        if (time_10_25.has_value() && keys_out.size()!=M(25)) {
-            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
+        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_10M_dup, payloads_25M, out, THREADS);
+        if (time_10_25.has_value() && out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [out.size()] " + std::to_string(out.size()) + "\n");
         }
         json benchmark_10_25;
         benchmark_10_25["join_size"] = "(10Mx25M)";
@@ -658,11 +657,10 @@ namespace bm {
         writer.add_data(benchmark_10_25);
 
         // ******************** 25x25 ******************** //
-        keys_out.clear();
-        payloads_out.clear();
-        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_25M, payloads_25M, keys_25M_dup, payloads_25M, keys_out, payloads_out);
-        if (time_25_25.has_value() && keys_out.size()!=M(25)) {
-            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
+        out.clear();
+        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_25M, payloads_25M, keys_25M_dup, payloads_25M, out, THREADS);
+        if (time_25_25.has_value() && out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [out.size()] " + std::to_string(out.size()) + "\n");
         }
         json benchmark_25_25;
         benchmark_25_25["join_size"] = "(25Mx25M)";

@@ -2,7 +2,7 @@
 
 A repository based on the same components of [hashing-benchmark](https://github.com/DominikHorn/hashing-benchmark), with the aim of reproducing results of the [Can Learned Models Replace Hash Functions?](https://dl.acm.org/doi/10.14778/3570690.3570702) article.
 
-⚠️ This is the _parallel_ version of the repository, meaning that the _probe_, _point_ and _range_ experiments build and query the table in a parallel fashion. For the _serial_ version, take a look at the [singleT](https://github.com/IlariaPilo/new-hashing-benchmark) branch.
+⚠️ This is the _parallel_ version of the repository, meaning that the _probe_, _point_, _range_ and _join_ experiments build and query the table in a parallel fashion. For the _serial_ version, take a look at the [singleT](https://github.com/IlariaPilo/new-hashing-benchmark) branch.
 
 ## 0 | Clone the repository
 The repository can be cloned by running: 
@@ -76,6 +76,7 @@ Notice that the numbers in the parenthesis refer to the experiment number in the
 - _point80\_20_ : the _point_ experiment using the 80-20 distribution to simulate real-world data access [new]
 - _range_ : a range query experiment, comparing the performance of different tables undergoing range queries fo various sizes [7.5-range query size]
 - _range80\_20_ : the _range_ experiment using the 80-20 distribution to simulate real-world data access [new]
+- _join_ : compute the running time for the Non Partitioned Join using three types of tables and different hash functions [7.6]
 <!-- TODO add more -->
 
 ### 📟 `perf`
