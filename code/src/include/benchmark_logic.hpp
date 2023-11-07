@@ -648,8 +648,8 @@ namespace bm {
             keys_10M, payloads_10M, keys_10M_dup, payloads_25M, out, THREADS,
             /* perf things */ is_perf, "10x25"+perf_config, perf_out
         );
-        if (time_10_25.has_value() && keys_out.size()!=M(25)) {
-            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
+        if (time_10_25.has_value() && out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [out.size()] " + std::to_string(out.size()) + "\n");
         }
         json benchmark_10_25;
         benchmark_10_25["join_size"] = "(10Mx25M)";
@@ -675,8 +675,8 @@ namespace bm {
             keys_25M, payloads_25M, keys_25M_dup, payloads_25M, out, THREADS,
             /* perf things */ is_perf, "10x25"+perf_config, perf_out    
         );
-        if (time_25_25.has_value() && keys_out.size()!=M(25)) {
-            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
+        if (time_25_25.has_value() && out.size()!=M(25)) {
+            throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [out.size()] " + std::to_string(out.size()) + "\n");
         }
         json benchmark_25_25;
         benchmark_25_25["join_size"] = "(25Mx25M)";
