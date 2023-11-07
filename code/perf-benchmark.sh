@@ -5,4 +5,4 @@
 # go in the directory that contains this script
 cd "$(dirname "$0")"
 # run the benchmarks
-cmake-build-release/src/perf-bm -i ../data -o ../output $@
+cmake-build-release/src/perf_bm -i ../data -o ../output $@
