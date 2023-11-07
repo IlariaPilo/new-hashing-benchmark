@@ -22,6 +22,28 @@ using json = nlohmann::json;
 class JsonOutput {
 public:
     JsonOutput(const std::string& file_directory, const std::string& arg0, std::string filter = "", size_t thread_num = 1) {
+        init(file_directory, arg0, filter, thread_num);
+    }
+    JsonOutput() = default;
+
+    ~JsonOutput() {
+        // Close the JSON object and the file
+        if (output_file.is_open()) {
+            output_file << std::setw(4) << json_output << std::endl;
+            output_file.close();
+        }
+    }
+
+    void add_data(const json& obj) {
+        // Add a JSON object to the array
+        #pragma omp critical
+        {
+            json_output["benchmarks"].push_back(obj);            
+        }
+
+    }
+
+    void init(const std::string& file_directory, const std::string& arg0, std::string filter = "", size_t thread_num = 1) {
         // first, get current time
         std::time_t current_time = std::time(nullptr);
         std::tm* local_time = std::localtime(&current_time);
@@ -43,23 +65,6 @@ public:
             // Then, we create the benchmark array
             json_output["benchmarks"] = json::array();
         }
-    }
-
-    ~JsonOutput() {
-        // Close the JSON object and the file
-        if (output_file.is_open()) {
-            output_file << std::setw(4) << json_output << std::endl;
-            output_file.close();
-        }
-    }
-
-    void add_data(const json& obj) {
-        // Add a JSON object to the array
-        #pragma omp critical
-        {
-            json_output["benchmarks"].push_back(obj);            
-        }
-
     }
 
 private:
@@ -88,4 +93,5 @@ private:
         //context["mhz_per_cpu"] = TODO, maybe;
         return context;
     }
+
 };
