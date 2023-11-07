@@ -27,8 +27,7 @@ namespace bm {
 
     // ----------------- utility things ----------------- //
     size_t N;
-    bool is_perf;
-    PerfEvent e;
+    bool is_perf, is_first;
     std::vector<int> order_insert;          // will store all values from 0 to N-1
     std::vector<int> order_probe_uniform;   // will store uniformly sampled values from 0 to N-1
     std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
@@ -102,6 +101,7 @@ namespace bm {
     */
     void init(bool perf = false) {
         is_perf = perf;
+        is_first = true;
         N = MAX_DS_SIZE;
         generate_insert_order(N);
         generate_probe_order_uniform(N);
@@ -271,7 +271,8 @@ namespace bm {
 
     // probe throughput helper
     template <class HashFn, class HashTable>
-    void probe_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type) {
+    void probe_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type, 
+            /* perf stuff */ std::string perf_config = "", std::ostream& perf_out = std::cout) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
@@ -306,6 +307,7 @@ namespace bm {
         size_t probe_count = 0;
         std::string fail_what = "";
         bool insert_fail = false;
+        PerfEvent e;
         // ================================================================ //
 
         // Build the table
@@ -377,10 +379,17 @@ namespace bm {
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
         else std::cout << label + "\n";
         writer.add_data(benchmark);
-        if (is_perf)
-            // print results
-            // we use the size of the dataset as a normalizing factor
-            e.printReport(std::cout, dataset_size);
+        if (is_perf) {
+            if (is_first) {
+                // print the header
+                perf_out << "function,dataset,probe,table,";
+                e.printReport(std::cout, dataset_size, /*printHeader*/ true, /*printData*/ false);
+                is_first = false;
+            }
+            // print data
+            perf_out << perf_config;
+            e.printReport(perf_out, dataset_size, /*printHeader*/ false, /*printData*/ true);
+        }
     }
 
     template <class HashFn, class HashTable>
