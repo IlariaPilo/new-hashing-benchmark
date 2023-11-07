@@ -92,8 +92,12 @@ void run_fn(const dataset::Dataset<Data>& ds_obj, bm::ProbeType probe_type, std:
         bm::probe_throughput<HashFn, CuckooTable<HashFn>>(ds_obj, writer, static_cast<size_t>(LOAD_PERC),
             probe_type, perf_config+"cuckoo,", output_file);
     } else {
-        std::cout << "TODO\n";
-        return;
+        // chain
+        bm::join_helper<HashFn, ChainedTable<HashFn>>(ds_obj, writer, perf_config+"chain,", output_file);
+        // linear
+        bm::join_helper<HashFn, LinearTable<HashFn>>(ds_obj, writer, perf_config+"linear,", output_file);
+        // cuckoo
+        bm::join_helper<HashFn, CuckooTable<HashFn>>(ds_obj, writer, perf_config+"cuckoo,", output_file);
     }
 }
 
@@ -171,6 +175,8 @@ int main(int argc, char* argv[]) {
             run_fn<MultPrime64>(*(datasets[ds]), probe_types[probe], "mult,"+config_core);
             // mwhc
             run_fn<MWHC>(*(datasets[ds]), probe_types[probe], "mwhc,"+config_core);
+            if (bm_name == "join")
+                break;
         }
     }
 

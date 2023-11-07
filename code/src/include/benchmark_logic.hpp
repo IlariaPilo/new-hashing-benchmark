@@ -383,7 +383,7 @@ namespace bm {
             if (is_first) {
                 // print the header
                 perf_out << "function,dataset,probe,table,";
-                e.printReport(std::cout, dataset_size, /*printHeader*/ true, /*printData*/ false);
+                e.printReport(perf_out, dataset_size, /*printHeader*/ true, /*printData*/ false);
                 is_first = false;
             }
             // print data
@@ -576,7 +576,8 @@ namespace bm {
 
     // join throughput helper
     template <class HashFn, class HashTable>
-    void join_throughput(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer) {
+    void join_helper(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer,
+            /* perf stuff */ std::string perf_config = "", std::ostream& perf_out = std::cout) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
@@ -632,7 +633,10 @@ namespace bm {
         std::vector<std::pair<Payload,Payload>> payloads_out;
         
         // ******************** 10x25 ******************** //
-        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_10M_dup, payloads_25M, keys_out, payloads_out);
+        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(
+            keys_10M, payloads_10M, keys_10M_dup, payloads_25M, keys_out, payloads_out,
+            /* perf things */ is_perf, "10x25"+perf_config, perf_out
+        );
         if (time_10_25.has_value() && keys_out.size()!=M(25)) {
             throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
         }
@@ -657,7 +661,10 @@ namespace bm {
         // ******************** 25x25 ******************** //
         keys_out.clear();
         payloads_out.clear();
-        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_25M, payloads_25M, keys_25M_dup, payloads_25M, keys_out, payloads_out);
+        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(
+            keys_25M, payloads_25M, keys_25M_dup, payloads_25M, keys_out, payloads_out,
+            /* perf things */ is_perf, "10x25"+perf_config, perf_out    
+        );
         if (time_25_25.has_value() && keys_out.size()!=M(25)) {
             throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
         }
@@ -679,4 +686,10 @@ namespace bm {
         }
         writer.add_data(benchmark_25_25);
     }
+    // join throughput
+    template <class HashFn, class HashTable>
+    inline void join_throughput(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer) { 
+        join_helper<HashFn,HashTable>(ds_obj, writer);
+    }
+    
 }
