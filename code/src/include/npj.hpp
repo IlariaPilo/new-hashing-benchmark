@@ -42,7 +42,7 @@ namespace join {
         // ==================== time counters ==================== //
         std::chrono::high_resolution_clock::time_point start, end;
         std::chrono::duration<double> tot_build(0), tot_join(0), tot_sort(0);
-        PerfEvent e_sort, e_insert, e_probe;
+        PerfEvent e_sort(!is_perf), e_insert(!is_perf), e_probe(!is_perf);
         // ======================================================= //
 
         // build the table for the smaller relation

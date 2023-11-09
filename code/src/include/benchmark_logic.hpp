@@ -307,7 +307,7 @@ namespace bm {
         size_t probe_count = 0;
         std::string fail_what = "";
         bool insert_fail = false;
-        PerfEvent e;
+        PerfEvent e(!is_perf);      /* silence errors if it's not perf */
         // ================================================================ //
 
         // Build the table
