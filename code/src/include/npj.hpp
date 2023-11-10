@@ -119,11 +119,11 @@ namespace join {
                 is_first = false;
             }
             // print data
-            perf_out << THREADS << "sort," + perf_config;
+            perf_out << THREADS << ",sort," + perf_config;
             e_sort.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << THREADS << "insert," + perf_config;
+            perf_out << THREADS << ",insert," + perf_config;
             e_insert.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << THREADS << "join," + perf_config;
+            perf_out << THREADS << ",join," + perf_config;
             e_probe.printReport(perf_out, big_keys.size(), /*printHeader*/ false, /*printData*/ true);
         }
 
