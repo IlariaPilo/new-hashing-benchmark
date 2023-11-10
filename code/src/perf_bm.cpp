@@ -180,10 +180,17 @@ int main(int argc, char* argv[]) {
                     run_fn<RMIHash_10>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
                     break;
                 case dataset::ID::FB:
-                    run_fn<RMIHash_10M>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
+                    if (bm_name == "probe")
+                        run_fn<RMIHash_10M>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
+                    else
+                        run_fn<RMIHash_1M>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
+                    break;
+                case dataset::ID::WIKI:
+                    run_fn<RMIHash_1k>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
                     break;
                 default:
-                    std::cout << "TODO!\n";
+                    std::cout << "Not supported yet!\n";
+                    return 1;
             }
             // mult
             run_fn<MultPrime64>(*(datasets[ds]), probe_types[probe], "mult,"+config_core);

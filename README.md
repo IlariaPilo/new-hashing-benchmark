@@ -59,7 +59,7 @@ Arguments:
   -o, --output OUTPUT_DIR   Directory that will store the output
   -t, --threads THREADS     Number of threads to use (default: all)
   -f, --filter FILTER       Type of benchmark to execute, *comma-separated*
-                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all (default: all) 
+                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],join,all (default: all) 
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `<filter>_<timestamp>.json`.
@@ -83,18 +83,20 @@ Notice that the numbers in the parenthesis refer to the experiment number in the
 `perf` benchmarks are more delicate, and they can be run by using a separate script.
 ```sh
 cd code
-bash perf-benchmarks.sh [ARGS]
+./cmake-build-release/src/benchmarks [ARGS]
 ```
 This script can be used as follows:
 ```
-./perf-benchmarks.sh [ARGS]
+./perf_bm [ARGS]
 Arguments:
-  -i, --input  INPUT_DIR    Directory storing the datasets
+  -i, --input INPUT_DIR     Directory storing the datasets
   -o, --output OUTPUT_DIR   Directory that will store the output
+  -f, --filter FILTER       Type of benchmark to execute.
+                            Options = probe,join
   -t, --threads THREADS     The number of threads to be used (default: all)
   -h, --help                Display this help message
 ```
-Results are saved in the specified output directory, in a file called `perf_<timestamp>.csv`.
+Results are saved in the specified output directory, in a file called `perf-<filter>_<timestamp>.csv`.
 
 #### 🚨 DON'T PANIC [perf troubleshooting]
 If the `perf` benchmark script returns "Error opening counter cycles", try the following steps.
@@ -130,7 +132,7 @@ This script can be particularly useful to leverage the average capability of `pr
 
 1. [`benchmarks.sh`](./code/benchmarks.sh) : a shortcut to run the benchmark program using the default folders `data/` and `output/` as input and output folders, respectively.
 2. [`build.sh`](./code/build.sh), to build the project.
-3. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh), to run the `perf` experiments.
+3. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh) : a shortcut to run the `perf` program using the default folders `data/` and `output/` as input and output folders, respectively.
 
 [`docker/`](./docker/) : contains all the needed files to build and run the Docker container of the project.
 
