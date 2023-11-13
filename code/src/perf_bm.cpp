@@ -29,7 +29,7 @@ void show_usage() {
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute." << std::endl;
     std::cout << "                            Options = probe,join" << std::endl;    // TODO - add more
-    std::cout << "  -n, --n_threads THREADS    The number of threads to be used (default: all)" << std::endl;
+    std::cout << "  -t, --threads THREADS     The number of threads to be used (default: all)" << std::endl;
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -59,13 +59,13 @@ int pars_args(const int& argc, char* const* const& argv) {
                 return 2;
             }
         }
-        if (arg == "--n_threads" || arg == "-n") {
+        if (arg == "--threads" || arg == "-t") {
             if (i + 1 < argc) {
                 threads = std::stoi(argv[i + 1]);
                 i++; // Skip the next argument
                 continue;
             } else {
-                std::cerr << "Error: --n_threads requires an argument." << std::endl;
+                std::cerr << "Error: --threads requires an argument." << std::endl;
                 return 2;
             }
         }
@@ -129,6 +129,7 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl << "\033[1;96m================== \033[0m" << std::endl;
     std::cout << "\033[1;96m= perf-benchmark = \033[0m" << std::endl;
     std::cout << "\033[1;96m================== \033[0m" << std::endl;
+    std::cout << "Running on " << threads << " thread" << (threads>1? "s.":".") << std::endl << std::endl;
 
     // Create a JsonWriter instance -- useless --
     writer.init(output_dir, argv[0], "perf-" + bm_name, threads);
