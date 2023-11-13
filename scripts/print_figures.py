@@ -649,17 +649,18 @@ def perf_join(df):
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
+        
+    # Create a single legend for all subplots
+    legend_labels = ['Sort', 'Build', 'Probe']
 
     for c_i, c in enumerate(counters):
         fig, axes = plt.subplots(num_subplots, 2, figsize=(9, 5))  # Adjust figsize as needed
         
-        # Create a single legend for all subplots
-        legend_labels = ['Sort', 'Build', 'Probe']
         handles = []
-        
         i = 0
         for name_ds in datasets:
             group_ds = df_join[df_join['dataset']==name_ds]
+            
             ax = axes[:,i]
             i += 1
             
@@ -704,6 +705,40 @@ def perf_join(df):
         #plt.show()
         name = prefix + '_' + c + '.png'
         fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
+
+    # do avg plot
+    fig, axes = plt.subplots(len(counters), 2, figsize=(9, 5))  # Adjust figsize as needed
+    handles = []
+    i = 0
+    for name_ds in datasets:
+        group_ds = df_join[df_join['dataset']==name_ds]
+        df_merge = groupby_helper(group_ds, ['dataset','label'], [f'{c}-sort' for c in counters] + [f'{c}-build' for c in counters] + [f'{c}-probe' for c in counters])
+        ax = axes[:,i]
+        ax[0].set_title(name_ds)
+        i += 1
+        for c_i, c in enumerate(counters):
+            # Create the upper part of the bar
+            h3 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-sort'], color='tab:green', alpha=0.8, label='Sort')
+            h1 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-build'], color='tab:blue', alpha=0.8, bottom=df_merge[c+'-sort'], label='Build')
+            # Create the lower part of the bar, starting from the top of the upper part
+            h2 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-probe'], color='tab:orange', alpha=0.8, bottom=df_merge[c+'-sort']+df_merge[c+'-build'], label='Probe')
+
+            if i == 1:
+                ax[c_i].set_ylabel(counters_label[c_i])
+                handles.append(h3)
+                handles.append(h1)
+                handles.append(h2)
+                
+            ax[c_i].set_xticks(range(len(df_merge['label'])), df_merge['label'], rotation=35, ha='right', va='top')
+            ax[c_i].grid(True)
+
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.07))
+
+    #plt.show()
+    name = prefix + '_' + 'size-avg.png'
+    fig.savefig(name, bbox_extra_artists=(lgd,), bbox_inches='tight')    
+
 
 # -------- point+range -------- # 
 def point_range(df, pareto=False):
