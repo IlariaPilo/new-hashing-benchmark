@@ -18,12 +18,14 @@ BASE_DIR = os.path.abspath(f'{script_directory}/..')+'/'
 FILE_1 = BASE_DIR + 'output/bonette/join_1.json'
 FILE_2 = BASE_DIR + 'output/bonette/join_2.json'
 FILE_4 = BASE_DIR + 'output/bonette/join_4.json'
+FILE_5 = BASE_DIR + 'output/bonette/join_5.json'
+FILE_6 = BASE_DIR + 'output/bonette/join_6.json'
 FILE_8 = BASE_DIR + 'output/bonette/join_8.json'
 FILE_16 = BASE_DIR + 'output/bonette/join_16.json'
 FILE_24 = BASE_DIR + 'output/bonette/join_24.json'
 
-t_numbers = [1,2,4,8,16,24]
-f_names = [FILE_1, FILE_2, FILE_4, FILE_8, FILE_16, FILE_24]
+t_numbers = [1,2,4,5,6,8,16,24]
+f_names = [FILE_1, FILE_2, FILE_4, FILE_5, FILE_6, FILE_8, FILE_16, FILE_24]
 bm_dict = {}
 
 prefix = BASE_DIR + 'figs/join_cmp'
