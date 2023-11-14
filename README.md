@@ -139,11 +139,12 @@ This script can be particularly useful to leverage the average capability of `pr
 
 [`output/`](./output/) : stores experimental results run on the research group's server. Such results were used to generate the available plots.
 
-[`scripts/`](./scripts/) : contains three utility scripts.
+[`scripts/`](./scripts/) : contains four utility scripts.
 
 1. [`merge_results.py`](./scripts/merge_results.py) : allows to merge two or more .json files containing benchmark results.  
 2. [`print_figures.py`](./scripts/merge_results.py) : generates plots starting from a .json or .csv result file.
-3. [`setup_datasets.sh`](./scripts/setup_datasets.sh) : downloads SOSD datasets required to run the benchmarks. 
+3. [`setup_datasets.sh`](./scripts/setup_datasets.sh) : downloads SOSD datasets required to run the benchmarks.
+4. [`thread_plot.py`](./scripts/thread_plot.py) : generates the [`join_cmp.png`](./figs/join_cmp.png) plot.
 
 ## 🧩 Third party components
 This repository is based on the following components:

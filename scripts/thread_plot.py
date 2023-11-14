@@ -30,23 +30,17 @@ prefix = BASE_DIR + 'figs/join_cmp'
 
 # ============================= UTILITIES ============================= #
 
-SHAPES_FN = {
-    'RMI': 's',
-    'PGM': 's',
-    'Murmur': 'D',
-    'BitMWHC': 'o',
-    'RadixSpline': 's',
-    'MWHC': 'o',
-    'RecSplit': 'o',
-    'AquaHash': 'D',
-    'XXHash': 'D',
-    'MultiplyPrime': 'D',
-    'FibonacciPrime': 'D'
+SHAPES_TAB = {
+    'linear': 'h',
+    'chained': '>',
+    'cuckoo': 'P'
 }
+COLORS = {}
+
 ALPHA_FN = {
-    'RMI': 0.65,
-    'MWHC': 0.65,
-    'MultiplyPrime': 0.65
+    'RMI': 0.8,
+    'MWHC': 0.8,
+    'MultiplyPrime': 0.8
 }
 COLOR_TAB = {
     'linear': 'tab:red',
@@ -56,13 +50,13 @@ COLOR_TAB = {
 F_MAP = {
     'Ideal Trend': -1,
     'RMI-CHAIN': 0,
-    'MULT-CHAIN': 1,
-    'MWHC-CHAIN': 2,
-    'RMI-LP': 3,
+    'MULT-CHAIN': 3,
+    'MWHC-CHAIN': 6,
+    'RMI-LP': 1,
     'MULT-LP': 4,
-    'MWHC-LP': 5,
-    'RMI-CUCKOO': 6,
-    'MULT-CUCKOO': 7,
+    'MWHC-LP': 7,
+    'RMI-CUCKOO': 2,
+    'MULT-CUCKOO': 5,
     'MWHC-CUCKOO': 8
 }
 def get_map(x):
@@ -121,6 +115,24 @@ def sort_labels(labels, handles):
     pairs = list(zip(labels, handles))
     sorted_pairs = sorted(pairs, key=lambda pair: F_MAP[pair[0]])
     return zip(*sorted_pairs)
+
+def prepare_fn_colormap():
+    functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit'][::-1]
+    cmap = plt.get_cmap('coolwarm')
+    # Create a dictionary of unique colors based on the number of labels
+    col_dict = {functions[f_i]: cmap(col_i) for f_i, col_i in enumerate(np.linspace(0, 1, len(functions)))}
+    ret_dict = {
+        'RMI-CHAIN': col_dict[functions[-1]],
+        'MULT-CHAIN': col_dict[functions[-5]],
+        'MWHC-CHAIN': col_dict[functions[-9]],
+        'RMI-LP': col_dict[functions[-2]],
+        'MULT-LP': col_dict[functions[-6]],
+        'MWHC-LP': col_dict[functions[-10]],
+        'RMI-CUCKOO': col_dict[functions[-3]],
+        'MULT-CUCKOO': col_dict[functions[-7]],
+        'MWHC-CUCKOO': col_dict[functions[-11]]
+    }
+    return ret_dict
 
 def load():
     # Load benchmarks from the file
@@ -184,8 +196,8 @@ def print_ratio_img():
                 df['threads'] = key
                 ratios = pd.concat([ratios, df], ignore_index=True)
 
-            h, = ax[BUILD].plot(ratios['threads'], ratios['ratio_build'], color=COLOR_TAB[ratios['table_type'][0]], marker=SHAPES_FN[ratios['function'][0]], label=l, alpha=ALPHA_FN[ratios['function'][0]])
-            ax[PROBE].plot(ratios['threads'], ratios['ratio_probe'], color=COLOR_TAB[ratios['table_type'][0]], marker=SHAPES_FN[ratios['function'][0]], label=l, alpha=ALPHA_FN[ratios['function'][0]])
+            h, = ax[BUILD].plot(ratios['threads'], ratios['ratio_build'], color=COLORS[l], marker=SHAPES_TAB[ratios['table_type'][0]], label=l)
+            ax[PROBE].plot(ratios['threads'], ratios['ratio_probe'], color=COLORS[l], marker=SHAPES_TAB[ratios['table_type'][0]], label=l)
     
             if i == 0:
                 handles.append(h)
@@ -218,6 +230,7 @@ def print_ratio_img():
     fig.savefig(name, bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
 if __name__ == '__main__':
+    COLORS = prepare_fn_colormap()
     bm_dict = load()
     print_ratio_img()
 
