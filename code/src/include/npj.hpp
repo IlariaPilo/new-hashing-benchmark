@@ -42,7 +42,7 @@ namespace join {
                     omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end()))
     
         // reserve space for output arrays
-        output.reserve(big_keys.size());
+        output.reserve(big_keys.size()/THREADS);
 
         bool insert_fail = false;
 
