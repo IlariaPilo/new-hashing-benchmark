@@ -215,8 +215,8 @@ def print_ratio_img():
     axes[0,BUILD].set_title('Build')
     axes[0,PROBE].set_title('Probe')
 
-    axes[0,0].set_ylabel('(10Mx25M)', rotation=90, ha='center', va="center")
-    axes[1,0].set_ylabel('(25Mx25M)', rotation=90, ha='center', va="center")
+    axes[0,0].set_ylabel('(10Mx25M)')
+    axes[1,0].set_ylabel('(25Mx25M)')
 
     labels.insert(0, 'Ideal Trend')
     lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(labels)//2+len(labels)%2, bbox_to_anchor=(0.5, 1.12))
