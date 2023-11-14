@@ -91,7 +91,7 @@ for ds in "${datasets[@]}"; do
         for fun in "${functions[@]}"; do
             for prb in "${probe[@]}"; do
                 echo -n "$threads,$fun,$tab,$ds,$prb," >> $output_file
-                cmake-build-release/src/perf_bm -i $input_dir -o $output_file -F $fun -T $tab -D $ds -p $prb -t $threads -f $filter
+                cmake-build-release/src/perf_bm -i $input_dir -o $output_file -F $fun -T $tab -D $ds -P $prb -t $threads -f $filter
                 if [ "$filter" == "join" ]; then
                     break
                 fi
