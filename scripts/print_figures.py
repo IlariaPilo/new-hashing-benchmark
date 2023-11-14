@@ -76,6 +76,17 @@ F_MAP = {
     'BitMWHC': 9,
     'RecSplit': 10
 }
+LAB_MAP = {
+    'RMI-CHAIN': 0,
+    'MULT-CHAIN': 3,
+    'MWHC-CHAIN': 6,
+    'RMI-LINEAR': 1,
+    'MULT-LINEAR': 4,
+    'MWHC-LINEAR': 7,
+    'RMI-CUCKOO': 2,
+    'MULT-CUCKOO': 5,
+    'MWHC-CUCKOO': 8
+}
     
 COLORS = {}
 COLORS_STRUCT = {}
@@ -153,9 +164,9 @@ def prepare_fn_colormap():
 def groupby_helper(df, static_cols, variable_cols):
     return df.groupby(static_cols)[variable_cols].mean().reset_index()
 
-def sort_labels(labels, handles):
+def sort_labels(labels, handles, map = F_MAP):
     pairs = list(zip(labels, handles))
-    sorted_pairs = sorted(pairs, key=lambda pair: F_MAP[pair[0]])
+    sorted_pairs = sorted(pairs, key=lambda pair: map[pair[0]])
     return zip(*sorted_pairs)
 
 # ===================================================================== #
@@ -551,13 +562,18 @@ def perf_probe(df, no_mwhc=False, pareto=False):
 
     df = df.copy(deep=True)
     df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
-    df = df.sort_values(by='label')
+    
+    def get_map(x):
+        if isinstance(x, pd.Series):
+            return x.apply(lambda i : LAB_MAP[i])
+        return LAB_MAP[x]
+    df = df.sort_values(by='label', key=lambda l: get_map(l))
 
     # Prepare the colors
     labels = df['label'].unique()
     cmap = plt.get_cmap('coolwarm')
     # Create a dictionary of unique colors based on the number of labels
-    colors = {labels[lab_i]: cmap(col_i) for lab_i, col_i in enumerate(np.linspace(0, 1, len(labels)))}
+    colors = {labels[-(lab_i+1)]: cmap(col_i) for lab_i, col_i in enumerate(np.linspace(0, 1, len(labels)))}
 
     if no_mwhc:
         df = df[df['function']!='mwhc']
@@ -581,9 +597,9 @@ def perf_probe(df, no_mwhc=False, pareto=False):
     legend_labels = []
     handles = []
 
-    g_lab = df.groupby('label')
     # For each label
-    for name_lab, group_lab in g_lab:
+    for name_lab in labels:
+        group_lab = df[df['label']==name_lab]
         legend_labels.append(name_lab)
         gap10 = group_lab[group_lab['dataset']=='gap10']
         fb = group_lab[group_lab['dataset']=='fb']
