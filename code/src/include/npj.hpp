@@ -14,8 +14,6 @@
 // A simple wrapper to implement the Non Partitioned Hash Join (NPJ)
 
 namespace join {
-    // perf
-    bool is_first = true;
     /**
      * Computes a classic inner join between a small table and a big one. 
      * To use our table implementations, we assume the small table does not have duplicates.
@@ -112,18 +110,12 @@ namespace join {
         output.shrink_to_fit();
 
         if (is_perf) {
-            if (is_first) {
-                // print the header
-                perf_out << "threads,phase,sizes,function,dataset,probe,table,";
-                e_sort.printReport(perf_out, small_keys.size(), /*printHeader*/ true, /*printData*/ false);
-                is_first = false;
-            }
             // print data
-            perf_out << THREADS << ",sort," + perf_config;
+            perf_out << "sort," + perf_config + ",";
             e_sort.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << THREADS << ",insert," + perf_config;
+            perf_out << "insert," + perf_config + ",";
             e_insert.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << THREADS << ",join," + perf_config;
+            perf_out << "join," + perf_config + ",";
             e_probe.printReport(perf_out, big_keys.size(), /*printHeader*/ false, /*printData*/ true);
         }
 
