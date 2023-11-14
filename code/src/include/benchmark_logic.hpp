@@ -388,12 +388,12 @@ namespace bm {
         if (is_perf) {
             if (is_first) {
                 // print the header
-                perf_out << "function,dataset,probe,table,";
+                perf_out << "threads,function,dataset,probe,table,";
                 e.printReport(perf_out, dataset_size, /*printHeader*/ true, /*printData*/ false);
                 is_first = false;
             }
             // print data
-            perf_out << perf_config;
+            perf_out << THREADS << "," << perf_config;
             e.printReport(perf_out, dataset_size, /*printHeader*/ false, /*printData*/ true);
         }
     }
