@@ -83,7 +83,7 @@ output_file="${output_dir}/perf-${filter}_${current_datetime}.csv"
 echo -n "threads,function,table,dataset,probe," > $output_file
 if [ "$filter" == "join" ]; then
     echo -n "phase,sizes," >> $output_file
-done
+fi
 echo "cycles,kcycles,instructions,L1-misses,LLC-misses,branch-misses,task-clock,scale,IPC,CPUs,GHz" >> $output_file
 
 for ds in "${datasets[@]}"; do
@@ -94,6 +94,7 @@ for ds in "${datasets[@]}"; do
                 cmake-build-release/src/perf_bm -i $input_dir -o $output_file -F $fun -T $tab -D $ds -p $prb -t $threads -f $filter
                 if [ "$filter" == "join" ]; then
                     break
+                fi
             done
         done
     done
