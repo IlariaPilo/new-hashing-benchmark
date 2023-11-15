@@ -14,21 +14,27 @@
 
 /* ======== options ======== */
     std::string input_dir = "";
-    std::string output_dir = "";
-    std::string bm_name = "";
+    std::string filename = "";
     std::ofstream output_file;
-    JsonOutput writer;
+    std::string h_fun_name = "";
+    std::string table_name = "";
+    std::string probe_distr = "uniform";
+    std::string filter = "";
+    std::string ds_name = "";
 /* ========================= */
 
 // Function to print the usage information
 void show_usage() {
     std::cout << "\n\033[1;96m./perf_bm [ARGS]\033[0m" << std::endl;
     std::cout << "Arguments:" << std::endl;
-    std::cout << "  -i, --input INPUT_DIR     Directory storing the datasets" << std::endl;
-    std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
-    std::cout << "  -f, --filter FILTER       Type of benchmark to execute." << std::endl;
-    std::cout << "                            Options = probe,join" << std::endl;    // TODO - add more
-    std::cout << "  -h, --help                Display this help message\n" << std::endl;
+    std::cout << "  -i, --input INPUT_DIR      Directory storing the datasets" << std::endl;
+    std::cout << "  -o, --output OUTPUT_FILE   File that will store the output" << std::endl;
+    std::cout << "  -f, --filter FILTER        The type of benchmark we want to execute. Options = probe,join" << std::endl;
+    std::cout << "  -D, --dataset DATASET      Dataset that will be used. Options = gap10,fb" << std::endl;
+    std::cout << "  -F, --function HASH_FN     Function to use. Options = rmi,mult,mwhc" << std::endl;
+    std::cout << "  -T, --table TABLE          Table to use. Options = chain,linear,cuckoo" << std::endl;
+    std::cout << "  -D, --probe DISTRIBUTION   Distribution used to probe. Options = uniform,80-20 (default: uniform)" << std::endl;
+    std::cout << "  -h, --help                 Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
     for (int i = 1; i < argc; ++i) {
@@ -49,7 +55,7 @@ int pars_args(const int& argc, char* const* const& argv) {
         }
         if (arg == "--output" || arg == "-o") {
             if (i + 1 < argc) {
-                output_dir = argv[i + 1];
+                filename = argv[i + 1];
                 i++; // Skip the next argument
                 continue;
             } else {
@@ -59,15 +65,71 @@ int pars_args(const int& argc, char* const* const& argv) {
         }
         if (arg == "--filter" || arg == "-f") {
             if (i + 1 < argc) {
-                bm_name = argv[i + 1];
-                if (bm_name != "probe" && bm_name != "join") {
-                    std::cerr << "Error: Unknown option for --filter -> " << bm_name << std::endl;
+                filter = argv[i + 1];
+                if (filter != "probe" && filter != "join") {
+                    std::cerr << "Error: Unknown option for --filter -> " << h_fun_name << std::endl;
                     return 2;
                 }
                 i++; // Skip the next argument
                 continue;
             } else {
                 std::cerr << "Error: --filter requires an argument." << std::endl;
+                return 2;
+            }
+        }
+        if (arg == "--function" || arg == "-F") {
+            if (i + 1 < argc) {
+                h_fun_name = argv[i + 1];
+                if (h_fun_name != "rmi" && h_fun_name != "mult" && h_fun_name != "mwhc") {
+                    std::cerr << "Error: Unknown option for --function -> " << h_fun_name << std::endl;
+                    return 2;
+                }
+                i++; // Skip the next argument
+                continue;
+            } else {
+                std::cerr << "Error: --function requires an argument." << std::endl;
+                return 2;
+            }
+        }
+        if (arg == "--table_name" || arg == "-T") {
+            if (i + 1 < argc) {
+                table_name = argv[i + 1];
+                if (table_name != "chain" && table_name != "linear" && table_name != "cuckoo") {
+                    std::cerr << "Error: Unknown option for --table_name -> " << table_name << std::endl;
+                    return 2;
+                }
+                i++; // Skip the next argument
+                continue;
+            } else {
+                std::cerr << "Error: --table_name requires an argument." << std::endl;
+                return 2;
+            }
+        }
+        if (arg == "--dataset" || arg == "-D") {
+            if (i + 1 < argc) {
+                ds_name = argv[i + 1];
+                if (ds_name != "gap10" && ds_name != "wiki" && ds_name != "first" && ds_name != "fb") {
+                    std::cerr << "Error: Unknown option for --dataset -> " << ds_name << std::endl;
+                    return 2;
+                }
+                i++; // Skip the next argument
+                continue;
+            } else {
+                std::cerr << "Error: --dataset requires an argument." << std::endl;
+                return 2;
+            }
+        }
+        if (arg == "--probe" || arg == "-P") {
+            if (i + 1 < argc) {
+                probe_distr = argv[i + 1];
+                if (probe_distr != "uniform" && probe_distr != "80-20") {
+                    std::cerr << "Error: Unknown option for --probe -> " << ds_name << std::endl;
+                    return 2;
+                }
+                i++; // Skip the next argument
+                continue;
+            } else {
+                std::cerr << "Error: --probe requires an argument." << std::endl;
                 return 2;
             }
         }
@@ -78,28 +140,6 @@ int pars_args(const int& argc, char* const* const& argv) {
     }
     return 0;
 }
-// choose the function
-template<class HashFn>
-void run_fn(const dataset::Dataset<Data>& ds_obj, bm::ProbeType probe_type, std::string perf_config){
-    if (bm_name == "probe") {
-        // chain
-        bm::probe_throughput<HashFn, ChainedTable<HashFn>>(ds_obj, writer, static_cast<size_t>(LOAD_PERC),
-            probe_type, perf_config+"chain,", output_file);
-        // linear
-        bm::probe_throughput<HashFn, LinearTable<HashFn>>(ds_obj, writer, static_cast<size_t>(LOAD_PERC),
-            probe_type, perf_config+"linear,", output_file);
-        // cuckoo
-        bm::probe_throughput<HashFn, CuckooTable<HashFn>>(ds_obj, writer, static_cast<size_t>(LOAD_PERC),
-            probe_type, perf_config+"cuckoo,", output_file);
-    } else {
-        // chain
-        bm::join_helper<HashFn, ChainedTable<HashFn>>(ds_obj, writer, perf_config+"chain,", output_file);
-        // linear
-        bm::join_helper<HashFn, LinearTable<HashFn>>(ds_obj, writer, perf_config+"linear,", output_file);
-        // cuckoo
-        bm::join_helper<HashFn, CuckooTable<HashFn>>(ds_obj, writer, perf_config+"cuckoo,", output_file);
-    }
-}
 
 int main(int argc, char* argv[]) {
     // Parse command-line arguments
@@ -107,85 +147,128 @@ int main(int argc, char* argv[]) {
     if (do_exit)
         return do_exit-1;
     // Check if mandatory options are provided
-    if (input_dir == "" || output_dir == "" || bm_name == "") {
+    if (input_dir == "" || filename == "" || ds_name == "" || h_fun_name=="" || table_name=="" || filter=="") {
         std::cerr << "Error: all arguments must be provided." << std::endl;
         show_usage();
         return 1;
     }
-    std::cout << std::endl << "\033[1;96m================== \033[0m" << std::endl;
-    std::cout << "\033[1;96m= perf-benchmark = \033[0m" << std::endl;
-    std::cout << "\033[1;96m================== \033[0m" << std::endl;
-
-    // Create a JsonWriter instance -- useless --
-    writer.init(output_dir, argv[0], "perf-" + bm_name);
     
-    // first, get current time
-    std::time_t current_time = std::time(nullptr);
-    std::tm* local_time = std::localtime(&current_time);
-    // Format the date and time as "YYYY-MM-DD-HH-MM"
-    std::stringstream ss;
-    ss << std::put_time(local_time, "_%Y-%m-%d-%H-%M");
-    // define filename
-    std::string filename = output_dir + "/" + "perf-" + bm_name + ss.str() + ".csv";
-    output_file.open(filename);
+    // Load the dataset
+    dataset::ID ds_id;
+    if (ds_name == "gap10" || (ds_name == "first" && filter == "probe")) {
+        ds_id = dataset::ID::GAP_10;
+        ds_name = "gap10";
+    }
+    else if (ds_name == "wiki" || (ds_name == "first" && filter == "join")) {
+        ds_id = dataset::ID::WIKI;
+        ds_name = "wiki";
+    }
+    else ds_id = dataset::ID::FB;
+    dataset::Dataset<Data> ds(ds_id, static_cast<size_t>(MAX_DS_SIZE), input_dir);
+
+    // Choose the probe distribution
+    bm::ProbeType probe_type;
+    if (probe_distr == "uniform")
+        probe_type = bm::ProbeType::UNIFORM;
+    else if (probe_distr == "80-20")
+        probe_type = bm::ProbeType::PARETO_80_20;
+
+    // Create a JsonWriter instance (for the output file)
+    JsonOutput writer(".", argv[0], "tmp");
+    // Open the output file in append mode
+    output_file.open(filename, std::ios_base::app);
     if (!output_file.is_open()) {
-        throw std::runtime_error("Error opening output file.\n           [Hint!] Check that directory " + output_dir + " exists.\n");
+        throw std::runtime_error("Error opening output file.\n");
     }
-    
-    // Load the datasets
-    dataset::ID ds1_id;
-    std::string ds1_name;
-    if (bm_name == "probe") {
-        ds1_id = dataset::ID::GAP_10;
-        ds1_name = "gap10";
-    } else {
-        ds1_id = dataset::ID::WIKI;
-        ds1_name = "wiki";
-    }
-    const dataset::Dataset<Data> ds1(ds1_id, static_cast<size_t>(MAX_DS_SIZE), input_dir);
-    // the second one is fb
-    const dataset::Dataset<Data> ds_fb(dataset::ID::FB, static_cast<size_t>(MAX_DS_SIZE), input_dir);
+    // init benchmarks
+    bm::init(true, probe_type);
 
-    // do arrays
-    const std::vector<const dataset::Dataset<Data>*> datasets = {&ds1, &ds_fb};
-    const std::vector<std::string> ds_names = {ds1_name, "fb"};
-    const std::vector<dataset::ID> ds_ids = {ds1_id, dataset::ID::FB};
-    const std::vector<bm::ProbeType> probe_types = {bm::ProbeType::UNIFORM, bm::ProbeType::PARETO_80_20};
-    const std::vector<std::string> probe_names = {"uniform", "80-20"};
+    // make perf_config
+    // function,table,dataset,probe,
+    std::string perf_config = h_fun_name + "," + table_name + "," + ds_name + "," + probe_distr + ",";
 
-    // init benchmarks values
-    bm::init(true);
+    // Call the right function
 
-    // run benchmarks
-    for (int ds = 0; ds < datasets.size(); ds++) {
-        for (int probe = 0; probe < probe_types.size(); probe++) {
-            std::string config_core = ds_names[ds] + "," + probe_names[probe] + ",";
-            // rmi
-            switch(ds_ids[ds]) {
-                case dataset::ID::GAP_10:
-                    run_fn<RMIHash_10>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
-                    break;
-                case dataset::ID::FB:
-                    if (bm_name == "probe")
-                        run_fn<RMIHash_10M>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
-                    else
-                        run_fn<RMIHash_1M>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
-                    break;
-                case dataset::ID::WIKI:
-                    run_fn<RMIHash_1k>(*(datasets[ds]), probe_types[probe], "rmi,"+config_core);
-                    break;
-                default:
-                    std::cout << "Not supported yet!\n";
-                    return 1;
+    // ------------- probe ------------- //
+    if (filter == "probe") {
+        // RMI
+        if (h_fun_name == "rmi") {
+            if (ds_name == "gap10") {
+                if (table_name == "chain")
+                    bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+                if (table_name == "linear")
+                    bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+                if (table_name == "cuckoo")
+                    bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
             }
-            // mult
-            run_fn<MultPrime64>(*(datasets[ds]), probe_types[probe], "mult,"+config_core);
-            // mwhc
-            run_fn<MWHC>(*(datasets[ds]), probe_types[probe], "mwhc,"+config_core);
-            if (bm_name == "join")
-                break;
+            if (ds_name == "fb") {
+                if (table_name == "chain")
+                    bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+                if (table_name == "linear")
+                    bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+                if (table_name == "cuckoo")
+                    bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+            }
+        }
+        // MultiPrime
+        if (h_fun_name == "mult") {
+            if (table_name == "chain")
+                bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+            if (table_name == "linear")
+                bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+            if (table_name == "cuckoo")
+                bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+        }
+        // MWHC
+        if (h_fun_name == "mwhc") {
+            if (table_name == "chain")
+                bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+            if (table_name == "linear")
+                bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
+            if (table_name == "cuckoo")
+                bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
         }
     }
-
+    
+    // ------------- join ------------- //
+    if (filter == "join") {
+        // RMI
+        if (h_fun_name == "rmi") {
+            if (ds_name == "wiki") {
+                if (table_name == "chain")
+                    bm::join_helper<RMIHash_1k, ChainedTable<RMIHash_1k>>(ds, writer, perf_config, output_file);
+                if (table_name == "linear")
+                    bm::join_helper<RMIHash_1k, LinearTable<RMIHash_1k>>(ds, writer, perf_config, output_file);
+                if (table_name == "cuckoo")
+                    bm::join_helper<RMIHash_1k, CuckooTable<RMIHash_1k>>(ds, writer, perf_config, output_file);
+            }
+            if (ds_name == "fb") {
+                if (table_name == "chain")
+                    bm::join_helper<RMIHash_1M, ChainedTable<RMIHash_1M>>(ds, writer, perf_config, output_file);
+                if (table_name == "linear")
+                    bm::join_helper<RMIHash_1M, LinearTable<RMIHash_1M>>(ds, writer, perf_config, output_file);
+                if (table_name == "cuckoo")
+                    bm::join_helper<RMIHash_1M, CuckooTable<RMIHash_1M>>(ds, writer, perf_config, output_file);
+            }
+        }
+        // MultiPrime
+        if (h_fun_name == "mult") {
+            if (table_name == "chain")
+                bm::join_helper<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, perf_config, output_file);
+            if (table_name == "linear")
+                bm::join_helper<MultPrime64, LinearTable<MultPrime64>>(ds, writer, perf_config, output_file);
+            if (table_name == "cuckoo")
+                bm::join_helper<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, perf_config, output_file);
+        }
+        // MWHC
+        if (h_fun_name == "mwhc") {
+            if (table_name == "chain")
+                bm::join_helper<MWHC, ChainedTable<MWHC>>(ds, writer, perf_config, output_file);
+            if (table_name == "linear")
+                bm::join_helper<MWHC, LinearTable<MWHC>>(ds, writer, perf_config, output_file);
+            if (table_name == "cuckoo")
+                bm::join_helper<MWHC, CuckooTable<MWHC>>(ds, writer, perf_config, output_file);
+        }
+    }
     return 0;
 }

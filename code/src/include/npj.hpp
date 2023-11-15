@@ -100,18 +100,12 @@ namespace join {
         output_payloads.shrink_to_fit();
 
         if (is_perf) {
-            if (is_first) {
-                // print the header
-                perf_out << "phase,sizes,function,dataset,probe,table,";
-                e_sort.printReport(perf_out, small_keys.size(), /*printHeader*/ true, /*printData*/ false);
-                is_first = false;
-            }
             // print data
-            perf_out << "sort," + perf_config;
+            perf_out << perf_config+ "sort,";
             e_sort.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << "insert," + perf_config;
+            perf_out << perf_config + "insert,";
             e_insert.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << "join," + perf_config;
+            perf_out << perf_config + "join,";
             e_probe.printReport(perf_out, big_keys.size(), /*printHeader*/ false, /*printData*/ true);
         }
 
