@@ -70,10 +70,16 @@ output_dir=$(realpath $output_dir)
 # go in the directory that contains this script
 cd "$(dirname "$0")"
 
+# setup first dataset
+first="gap10"
+if [ "$filter" == "join" ]; then
+    first="wiki"
+fi 
+
 # define the arrays
 functions=("rmi" "mult" "mwhc")
 tables=("chain" "linear" "cuckoo")
-datasets=("first" "fb")
+datasets=("$first" "fb")
 probe=("uniform" "80-20")
 
 # define the filename
