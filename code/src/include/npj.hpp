@@ -111,11 +111,11 @@ namespace join {
 
         if (is_perf) {
             // print data
-            perf_out << "sort," + perf_config + ",";
+            perf_out << perf_config + "sort,";
             e_sort.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << "insert," + perf_config + ",";
+            perf_out << perf_config + "insert,";
             e_insert.printReport(perf_out, small_keys.size(), /*printHeader*/ false, /*printData*/ true);
-            perf_out << "join," + perf_config + ",";
+            perf_out << perf_config + "join,";
             e_probe.printReport(perf_out, big_keys.size(), /*printHeader*/ false, /*printData*/ true);
         }
 

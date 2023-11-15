@@ -197,6 +197,10 @@ int main(int argc, char* argv[]) {
     // init benchmarks
     bm::init(threads, true, probe_type);
 
+    // make perf_config
+    // threads,function,table,dataset,probe,
+    std::string perf_config = std::to_string(threads) + "," + h_fun_name + "," + table_name + "," + ds_name + "," + probe_distr + ",";
+
     // Call the right function
 
     // ------------- probe ------------- //
@@ -205,38 +209,38 @@ int main(int argc, char* argv[]) {
         if (h_fun_name == "rmi") {
             if (ds_name == "gap10") {
                 if (table_name == "chain")
-                    bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                    bm::probe_throughput<RMIHash_10, ChainedTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
                 if (table_name == "linear")
-                    bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                    bm::probe_throughput<RMIHash_10, LinearTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
                 if (table_name == "cuckoo")
-                    bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                    bm::probe_throughput<RMIHash_10, CuckooTable<RMIHash_10>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
             }
             if (ds_name == "fb") {
                 if (table_name == "chain")
-                    bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                    bm::probe_throughput<RMIHash_10M, ChainedTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
                 if (table_name == "linear")
-                    bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                    bm::probe_throughput<RMIHash_10M, LinearTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
                 if (table_name == "cuckoo")
-                    bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                    bm::probe_throughput<RMIHash_10M, CuckooTable<RMIHash_10M>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
             }
         }
         // MultiPrime
         if (h_fun_name == "mult") {
             if (table_name == "chain")
-                bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                bm::probe_throughput<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
             if (table_name == "linear")
-                bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                bm::probe_throughput<MultPrime64, LinearTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
             if (table_name == "cuckoo")
-                bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                bm::probe_throughput<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
         }
         // MWHC
         if (h_fun_name == "mwhc") {
             if (table_name == "chain")
-                bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                bm::probe_throughput<MWHC, ChainedTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
             if (table_name == "linear")
-                bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                bm::probe_throughput<MWHC, LinearTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
             if (table_name == "cuckoo")
-                bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, output_file);
+                bm::probe_throughput<MWHC, CuckooTable<MWHC>>(ds, writer, LOAD_PERC, probe_type, perf_config, output_file);
         }
     }
     
@@ -246,38 +250,38 @@ int main(int argc, char* argv[]) {
         if (h_fun_name == "rmi") {
             if (ds_name == "wiki") {
                 if (table_name == "chain")
-                    bm::join_helper<RMIHash_1k, ChainedTable<RMIHash_1k>>(ds, writer, output_file);
+                    bm::join_helper<RMIHash_1k, ChainedTable<RMIHash_1k>>(ds, writer, perf_config, output_file);
                 if (table_name == "linear")
-                    bm::join_helper<RMIHash_1k, LinearTable<RMIHash_1k>>(ds, writer, output_file);
+                    bm::join_helper<RMIHash_1k, LinearTable<RMIHash_1k>>(ds, writer, perf_config, output_file);
                 if (table_name == "cuckoo")
-                    bm::join_helper<RMIHash_1k, CuckooTable<RMIHash_1k>>(ds, writer, output_file);
+                    bm::join_helper<RMIHash_1k, CuckooTable<RMIHash_1k>>(ds, writer, perf_config, output_file);
             }
             if (ds_name == "fb") {
                 if (table_name == "chain")
-                    bm::join_helper<RMIHash_1M, ChainedTable<RMIHash_1M>>(ds, writer, output_file);
+                    bm::join_helper<RMIHash_1M, ChainedTable<RMIHash_1M>>(ds, writer, perf_config, output_file);
                 if (table_name == "linear")
-                    bm::join_helper<RMIHash_1M, LinearTable<RMIHash_1M>>(ds, writer, output_file);
+                    bm::join_helper<RMIHash_1M, LinearTable<RMIHash_1M>>(ds, writer, perf_config, output_file);
                 if (table_name == "cuckoo")
-                    bm::join_helper<RMIHash_1M, CuckooTable<RMIHash_1M>>(ds, writer, output_file);
+                    bm::join_helper<RMIHash_1M, CuckooTable<RMIHash_1M>>(ds, writer, perf_config, output_file);
             }
         }
         // MultiPrime
         if (h_fun_name == "mult") {
             if (table_name == "chain")
-                bm::join_helper<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, output_file);
+                bm::join_helper<MultPrime64, ChainedTable<MultPrime64>>(ds, writer, perf_config, output_file);
             if (table_name == "linear")
-                bm::join_helper<MultPrime64, LinearTable<MultPrime64>>(ds, writer, output_file);
+                bm::join_helper<MultPrime64, LinearTable<MultPrime64>>(ds, writer, perf_config, output_file);
             if (table_name == "cuckoo")
-                bm::join_helper<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, output_file);
+                bm::join_helper<MultPrime64, CuckooTable<MultPrime64>>(ds, writer, perf_config, output_file);
         }
         // MWHC
         if (h_fun_name == "mwhc") {
             if (table_name == "chain")
-                bm::join_helper<MWHC, ChainedTable<MWHC>>(ds, writer, output_file);
+                bm::join_helper<MWHC, ChainedTable<MWHC>>(ds, writer, perf_config, output_file);
             if (table_name == "linear")
-                bm::join_helper<MWHC, LinearTable<MWHC>>(ds, writer, output_file);
+                bm::join_helper<MWHC, LinearTable<MWHC>>(ds, writer, perf_config, output_file);
             if (table_name == "cuckoo")
-                bm::join_helper<MWHC, CuckooTable<MWHC>>(ds, writer, output_file);
+                bm::join_helper<MWHC, CuckooTable<MWHC>>(ds, writer, perf_config, output_file);
         }
     }
     return 0;
