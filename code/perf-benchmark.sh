@@ -102,5 +102,5 @@ for ds in "${datasets[@]}"; do
 done
 
 # remove temporary files
-rm tmp.json
+rm tmp*.json
 
