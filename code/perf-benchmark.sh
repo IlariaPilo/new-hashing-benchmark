@@ -62,7 +62,7 @@ fi
 echo -e "\n\033[1;95m================== \033[0m"
 echo -e "\033[1;95m= perf-benchmark = \033[0m"
 echo -e "\033[1;95m================== \033[0m"
-echo -e "Running on $filter threads.\n"
+echo -e "Running <$filter> on $threads threads.\n"
 
 input_dir=$(realpath $input_dir)
 output_dir=$(realpath $output_dir)
