@@ -626,7 +626,7 @@ def perf_probe(df, no_mwhc=False, pareto=False):
     axes[FB,0].set_ylabel('fb', rotation=0, ha='right', va="center")
 
     # Set a common label for y ax
-    laby = fig.supylabel('Performance Counter Ratio')
+    laby = fig.supylabel('Normalized Performance Counter')
 
     #plt.show()
     name = prefix + ('_no_mwhc' if no_mwhc else '') + ('_pareto' if pareto else '') + '.png'
@@ -752,7 +752,7 @@ def perf_join(df):
     lgd = fig.legend(handles=handles, loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.07))
 
     #plt.show()
-    laby = fig.supylabel('Performance Counter Ratio')
+    laby = fig.supylabel('Normalized Performance Counter')
     name = prefix + '_' + 'size-avg.png'
     fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')    
 
