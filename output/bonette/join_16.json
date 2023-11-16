@@ -6,8 +6,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MWHC:fb",
-            "tot_time_build_s": 5.010828669,
-            "tot_time_join_s": 1.306361805,
+            "tot_time_build_s": 5.019033665,
+            "tot_time_join_s": 0.48717074,
             "tot_time_sort_s": 0.0
         },
         {
@@ -16,8 +16,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MWHC:fb",
-            "tot_time_build_s": 13.282806552,
-            "tot_time_join_s": 1.151532638,
+            "tot_time_build_s": 13.263096398,
+            "tot_time_join_s": 0.524027207,
             "tot_time_sort_s": 0.0
         },
         {
@@ -26,8 +26,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:linear_probing:MWHC:fb",
-            "tot_time_build_s": 4.57678089,
-            "tot_time_join_s": 1.223929739,
+            "tot_time_build_s": 4.532095085,
+            "tot_time_join_s": 0.417877682,
             "tot_time_sort_s": 0.0
         },
         {
@@ -36,8 +36,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:linear_probing:MWHC:fb",
-            "tot_time_build_s": 11.955042521,
-            "tot_time_join_s": 1.035492879,
+            "tot_time_build_s": 12.04468711,
+            "tot_time_join_s": 0.448887729,
             "tot_time_sort_s": 0.0
         },
         {
@@ -46,9 +46,9 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:chained_rmi_hash_1000000_fast_modulo64_1:rmi_hash_1000000:fb",
-            "tot_time_build_s": 0.202241693,
-            "tot_time_join_s": 1.096767078,
-            "tot_time_sort_s": 0.906662115
+            "tot_time_build_s": 0.222745871,
+            "tot_time_join_s": 0.270880915,
+            "tot_time_sort_s": 0.778884954
         },
         {
             "dataset_name": "fb",
@@ -56,9 +56,9 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:chained_rmi_hash_1000000_fast_modulo64_1:rmi_hash_1000000:fb",
-            "tot_time_build_s": 0.432629593,
-            "tot_time_join_s": 0.980081697,
-            "tot_time_sort_s": 2.18739946
+            "tot_time_build_s": 0.450359137,
+            "tot_time_join_s": 0.330566132,
+            "tot_time_sort_s": 2.363045904
         },
         {
             "dataset_name": "fb",
@@ -66,9 +66,9 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:linear_probing:rmi_hash_1000000:fb",
-            "tot_time_build_s": 0.261728255,
-            "tot_time_join_s": 1.303468503,
-            "tot_time_sort_s": 0.927605108
+            "tot_time_build_s": 0.251356278,
+            "tot_time_join_s": 0.458959403,
+            "tot_time_sort_s": 0.777936573
         },
         {
             "dataset_name": "fb",
@@ -76,9 +76,9 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:linear_probing:rmi_hash_1000000:fb",
-            "tot_time_build_s": 0.734236087,
-            "tot_time_join_s": 1.269527874,
-            "tot_time_sort_s": 2.144454627
+            "tot_time_build_s": 0.714592069,
+            "tot_time_join_s": 0.652802302,
+            "tot_time_sort_s": 2.339027315
         },
         {
             "dataset_name": "fb",
@@ -86,9 +86,9 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:rmi_hash_1000000:fb",
-            "tot_time_build_s": 1.178030105,
-            "tot_time_join_s": 1.110516144,
-            "tot_time_sort_s": 0.924509939
+            "tot_time_build_s": 1.304816002,
+            "tot_time_join_s": 0.262080522,
+            "tot_time_sort_s": 0.811689463
         },
         {
             "dataset_name": "fb",
@@ -96,9 +96,9 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:rmi_hash_1000000:fb",
-            "tot_time_build_s": 3.592206115,
-            "tot_time_join_s": 0.885338411,
-            "tot_time_sort_s": 2.154409899
+            "tot_time_build_s": 4.140721991,
+            "tot_time_join_s": 0.273719105,
+            "tot_time_sort_s": 2.376190312
         },
         {
             "dataset_name": "fb",
@@ -106,8 +106,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:chained_MWHC_fast_modulo64_1:MWHC:fb",
-            "tot_time_build_s": 4.526008897,
-            "tot_time_join_s": 1.217449716,
+            "tot_time_build_s": 4.467424535,
+            "tot_time_join_s": 0.417281698,
             "tot_time_sort_s": 0.0
         },
         {
@@ -116,8 +116,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:chained_MWHC_fast_modulo64_1:MWHC:fb",
-            "tot_time_build_s": 11.880202398,
-            "tot_time_join_s": 1.050006411,
+            "tot_time_build_s": 11.903465104,
+            "tot_time_join_s": 0.44702509,
             "tot_time_sort_s": 0.0
         },
         {
@@ -126,8 +126,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MultHash64:fb",
-            "tot_time_build_s": 0.738313848,
-            "tot_time_join_s": 1.018783268,
+            "tot_time_build_s": 0.895130596,
+            "tot_time_join_s": 0.189014717,
             "tot_time_sort_s": 0.0
         },
         {
@@ -136,8 +136,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MultHash64:fb",
-            "tot_time_build_s": 1.904762571,
-            "tot_time_join_s": 0.832106135,
+            "tot_time_build_s": 2.241330073,
+            "tot_time_join_s": 0.208700274,
             "tot_time_sort_s": 0.0
         },
         {
@@ -146,8 +146,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:linear_probing:MultHash64:fb",
-            "tot_time_build_s": 0.245402454,
-            "tot_time_join_s": 1.001375197,
+            "tot_time_build_s": 0.242160537,
+            "tot_time_join_s": 0.171361584,
             "tot_time_sort_s": 0.0
         },
         {
@@ -156,8 +156,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:linear_probing:MultHash64:fb",
-            "tot_time_build_s": 0.666110647,
-            "tot_time_join_s": 0.774873533,
+            "tot_time_build_s": 0.644771163,
+            "tot_time_join_s": 0.178354134,
             "tot_time_sort_s": 0.0
         },
         {
@@ -166,8 +166,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:chained_MultHash64_fast_modulo64_1:MultHash64:fb",
-            "tot_time_build_s": 0.191394637,
-            "tot_time_join_s": 0.978672145,
+            "tot_time_build_s": 0.189306017,
+            "tot_time_join_s": 0.128215669,
             "tot_time_sort_s": 0.0
         },
         {
@@ -176,8 +176,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:chained_MultHash64_fast_modulo64_1:MultHash64:fb",
-            "tot_time_build_s": 0.535557131,
-            "tot_time_join_s": 0.778211334,
+            "tot_time_build_s": 0.519561603,
+            "tot_time_join_s": 0.142669891,
             "tot_time_sort_s": 0.0
         },
         {
@@ -186,8 +186,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:chained_MWHC_fast_modulo64_1:MWHC:wiki",
-            "tot_time_build_s": 4.526792089,
-            "tot_time_join_s": 1.31359673,
+            "tot_time_build_s": 4.457287304,
+            "tot_time_join_s": 0.41762499,
             "tot_time_sort_s": 0.0
         },
         {
@@ -196,8 +196,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:chained_MWHC_fast_modulo64_1:MWHC:wiki",
-            "tot_time_build_s": 11.96045458,
-            "tot_time_join_s": 1.04676196,
+            "tot_time_build_s": 11.885174497,
+            "tot_time_join_s": 0.447560375,
             "tot_time_sort_s": 0.0
         },
         {
@@ -206,8 +206,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MWHC:wiki",
-            "tot_time_build_s": 4.979001686,
-            "tot_time_join_s": 1.295585531,
+            "tot_time_build_s": 4.990495018,
+            "tot_time_join_s": 0.486501162,
             "tot_time_sort_s": 0.0
         },
         {
@@ -216,8 +216,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MWHC:wiki",
-            "tot_time_build_s": 13.24894562,
-            "tot_time_join_s": 1.114748128,
+            "tot_time_build_s": 13.208033923,
+            "tot_time_join_s": 0.525414858,
             "tot_time_sort_s": 0.0
         },
         {
@@ -226,8 +226,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:linear_probing:MWHC:wiki",
-            "tot_time_build_s": 4.524954317,
-            "tot_time_join_s": 1.216868616,
+            "tot_time_build_s": 4.520804634,
+            "tot_time_join_s": 0.416419877,
             "tot_time_sort_s": 0.0
         },
         {
@@ -236,8 +236,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:linear_probing:MWHC:wiki",
-            "tot_time_build_s": 11.958410265,
-            "tot_time_join_s": 1.032030179,
+            "tot_time_build_s": 12.014645183,
+            "tot_time_join_s": 0.446736891,
             "tot_time_sort_s": 0.0
         },
         {
@@ -246,9 +246,9 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:chained_rmi_hash_1000_fast_modulo64_1:rmi_hash_1000:wiki",
-            "tot_time_build_s": 0.15742458,
-            "tot_time_join_s": 0.95972228,
-            "tot_time_sort_s": 0.78407253
+            "tot_time_build_s": 0.1857207,
+            "tot_time_join_s": 0.175839753,
+            "tot_time_sort_s": 0.82783982
         },
         {
             "dataset_name": "wiki",
@@ -256,9 +256,9 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:chained_rmi_hash_1000_fast_modulo64_1:rmi_hash_1000:wiki",
-            "tot_time_build_s": 0.363553305,
-            "tot_time_join_s": 0.77778618,
-            "tot_time_sort_s": 1.87630432
+            "tot_time_build_s": 0.429525226,
+            "tot_time_join_s": 0.174285046,
+            "tot_time_sort_s": 2.00858098
         },
         {
             "dataset_name": "wiki",
@@ -266,8 +266,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MultHash64:wiki",
-            "tot_time_build_s": 0.732790902,
-            "tot_time_join_s": 0.995644627,
+            "tot_time_build_s": 0.881029861,
+            "tot_time_join_s": 0.18939161,
             "tot_time_sort_s": 0.0
         },
         {
@@ -276,8 +276,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:MultHash64:wiki",
-            "tot_time_build_s": 1.9059655,
-            "tot_time_join_s": 0.809028819,
+            "tot_time_build_s": 2.278332676,
+            "tot_time_join_s": 0.209628379,
             "tot_time_sort_s": 0.0
         },
         {
@@ -286,8 +286,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:linear_probing:MultHash64:wiki",
-            "tot_time_build_s": 0.24116901,
-            "tot_time_join_s": 0.980371022,
+            "tot_time_build_s": 0.239490032,
+            "tot_time_join_s": 0.1660184,
             "tot_time_sort_s": 0.0
         },
         {
@@ -296,8 +296,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:linear_probing:MultHash64:wiki",
-            "tot_time_build_s": 0.645749778,
-            "tot_time_join_s": 0.778056299,
+            "tot_time_build_s": 0.63151516,
+            "tot_time_join_s": 0.16571013,
             "tot_time_sort_s": 0.0
         },
         {
@@ -306,8 +306,8 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:chained_MultHash64_fast_modulo64_1:MultHash64:wiki",
-            "tot_time_build_s": 0.188370835,
-            "tot_time_join_s": 0.944102897,
+            "tot_time_build_s": 0.203781341,
+            "tot_time_join_s": 0.126727004,
             "tot_time_sort_s": 0.0
         },
         {
@@ -316,8 +316,8 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:chained_MultHash64_fast_modulo64_1:MultHash64:wiki",
-            "tot_time_build_s": 0.51645875,
-            "tot_time_join_s": 0.739096474,
+            "tot_time_build_s": 0.530747555,
+            "tot_time_join_s": 0.134823279,
             "tot_time_sort_s": 0.0
         },
         {
@@ -326,9 +326,9 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:rmi_hash_1000:wiki",
-            "tot_time_build_s": 0.870007966,
-            "tot_time_join_s": 1.107306637,
-            "tot_time_sort_s": 0.774889792
+            "tot_time_build_s": 0.775311504,
+            "tot_time_join_s": 0.228869244,
+            "tot_time_sort_s": 0.823557852
         },
         {
             "dataset_name": "wiki",
@@ -336,9 +336,9 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:cuckoo_4_biased_kicking_5:rmi_hash_1000:wiki",
-            "tot_time_build_s": 2.116104197,
-            "tot_time_join_s": 0.833911167,
-            "tot_time_sort_s": 1.85999504
+            "tot_time_build_s": 1.858269495,
+            "tot_time_join_s": 0.251211869,
+            "tot_time_sort_s": 1.988670181
         },
         {
             "dataset_name": "wiki",
@@ -346,9 +346,9 @@
             "has_failed": false,
             "join_size": "(10Mx25M)",
             "label": "Join:linear_probing:rmi_hash_1000:wiki",
-            "tot_time_build_s": 0.365723259,
-            "tot_time_join_s": 1.089564522,
-            "tot_time_sort_s": 0.771096336
+            "tot_time_build_s": 0.309587969,
+            "tot_time_join_s": 0.287475829,
+            "tot_time_sort_s": 0.824581799
         },
         {
             "dataset_name": "wiki",
@@ -356,15 +356,15 @@
             "has_failed": false,
             "join_size": "(25Mx25M)",
             "label": "Join:linear_probing:rmi_hash_1000:wiki",
-            "tot_time_build_s": 1.15498636,
-            "tot_time_join_s": 0.92371179,
-            "tot_time_sort_s": 1.916888591
+            "tot_time_build_s": 1.121709708,
+            "tot_time_join_s": 0.325735837,
+            "tot_time_sort_s": 1.965104656
         }
     ],
     "context": {
-        "date": "2023-11-13T09:43:52+00:00",
+        "date": "2023-11-16T16:47:43+00:00",
         "executable": "cmake-build-release/src/benchmarks",
-        "host_name": "e139d16ae246",
+        "host_name": "071b5d16e1c4",
         "num_cpus": 24,
         "num_threads": 16
     }
