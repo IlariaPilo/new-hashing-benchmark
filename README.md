@@ -63,9 +63,6 @@ Arguments:
 ```
 Results are saved in the specified output directory, in a file called `<filter>_<timestamp>.json`.
 
-<!--⚠️ *__Warning :__* the thread option is currently ignored due to a concurrency bug. Hopefully it will come back soon! -->
-<!-- TODO hopefully remove -->
-
 ### 📌 Benchmark types
 Notice that the numbers in the parenthesis refer to the experiment number in the article.
 - _collisions_ : compute the throughput/collisions tradeoff for different hash functions on different datasets [7.2]
@@ -83,16 +80,15 @@ Notice that the numbers in the parenthesis refer to the experiment number in the
 `perf` benchmarks are more delicate, and they can be run by using a separate script.
 ```sh
 cd code
-./cmake-build-release/src/benchmarks [ARGS]
+bash perf-benchmarks.sh [ARGS]
 ```
 This script can be used as follows:
 ```
-./perf_bm [ARGS]
+./perf-benchmarks.sh [ARGS]
 Arguments:
   -i, --input INPUT_DIR     Directory storing the datasets
   -o, --output OUTPUT_DIR   Directory that will store the output
-  -f, --filter FILTER       Type of benchmark to execute.
-                            Options = probe,join
+  -f, --filter FILTER       Type of benchmark to execute. Options = probe,join
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `perf-<filter>_<timestamp>.csv`.
@@ -131,7 +127,7 @@ This script can be particularly useful to leverage the average capability of `pr
 
 1. [`benchmarks.sh`](./code/benchmarks.sh) : a shortcut to run the benchmark program using the default folders `data/` and `output/` as input and output folders, respectively.
 2. [`build.sh`](./code/build.sh), to build the project.
-3. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh) : a shortcut to run the `perf` program using the default folders `data/` and `output/` as input and output folders, respectively.
+3. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh), to run the `perf` experiments.
 
 [`docker/`](./docker/) : contains all the needed files to build and run the Docker container of the project.
 
