@@ -83,6 +83,9 @@ LAB_MAP = {
     'RMI-LINEAR': 1,
     'MULT-LINEAR': 4,
     'MWHC-LINEAR': 7,
+    'RMI-LP': 1,
+    'MULT-LP': 4,
+    'MWHC-LP': 7,
     'RMI-CUCKOO': 2,
     'MULT-CUCKOO': 5,
     'MWHC-CUCKOO': 8
@@ -643,7 +646,6 @@ def perf_join(df):
 
     df = df.copy(deep=True)
     df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
-    df = df.sort_values(by='label')
 
     # prepare the datasets
     def rename_cols(suffix):
@@ -662,6 +664,11 @@ def perf_join(df):
     dfs = [df_sort, df_build, df_probe]
     # join!
     df_join = ft.reduce(lambda left, right: pd.merge(left, right, on=['sizes', 'dataset', 'label']), dfs)
+    def get_map(x):
+        if isinstance(x, pd.Series):
+            return x.apply(lambda i : LAB_MAP[i])
+        return LAB_MAP[x]
+    df_join = df_join.sort_values(by='label', key=lambda l: get_map(l))
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -729,6 +736,7 @@ def perf_join(df):
     for name_ds in datasets:
         group_ds = df_join[df_join['dataset']==name_ds]
         df_merge = groupby_helper(group_ds, ['dataset','label'], [f'{c}-sort' for c in counters] + [f'{c}-build' for c in counters] + [f'{c}-probe' for c in counters])
+        df_merge = df_merge.sort_values(by='label', key=lambda l: get_map(l))
         ax = axes[i]
         ax[0].set_ylabel(name_ds, rotation=0, ha='right', va="center")
         i += 1
@@ -862,7 +870,11 @@ def join(df):
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df['table_label'] = df.apply(lambda x : get_table_label(x['function'],x['table_type']).upper(), axis=1)
     df = groupby_helper(df, ['dataset_name','table_label','function','join_size'], ['tot_time_sort_s', 'tot_time_build_s', 'tot_time_join_s'])
-    df = df.sort_values(by='table_label')
+    def get_map(x):
+        if isinstance(x, pd.Series):
+            return x.apply(lambda i : LAB_MAP[i])
+        return LAB_MAP[x]
+    df = df.sort_values(by='table_label', key=lambda l: get_map(l))
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
