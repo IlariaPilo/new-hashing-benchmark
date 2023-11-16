@@ -28,7 +28,6 @@ namespace bm {
     // ----------------- utility things ----------------- //
     size_t N;
     bool is_perf;
-    PerfEvent e;
     std::vector<int> order_insert;          // will store all values from 0 to N-1
     std::vector<int> order_probe_uniform;   // will store uniformly sampled values from 0 to N-1
     std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
@@ -100,13 +99,13 @@ namespace bm {
      * Init all global variable to support benchmarks
      * @param the number of threads that will be used in the parallel build & probe
     */
-    void init(bool perf = false) {
-        is_perf = perf;
-        N = MAX_DS_SIZE;
-        generate_insert_order(N);
-        generate_probe_order_uniform(N);
-        generate_probe_order_80_20(N);
-        fill_ranges(N);
+    void init(bool perf = false, ProbeType probe = ProbeType::UNIFORM) {
+            is_perf = perf;
+            N = MAX_DS_SIZE;
+            generate_insert_order(N);
+            if (!perf || probe == ProbeType::UNIFORM) generate_probe_order_uniform(N);
+            if (!perf || probe == ProbeType::PARETO_80_20) generate_probe_order_80_20(N);
+            if (!perf) fill_ranges(N);
     }
 
     /**
@@ -271,7 +270,8 @@ namespace bm {
 
     // probe throughput helper
     template <class HashFn, class HashTable>
-    void probe_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type) {
+    void probe_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type, 
+            /* perf stuff */ std::string perf_config = "", std::ostream& perf_out = std::cout) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
@@ -306,6 +306,7 @@ namespace bm {
         size_t probe_count = 0;
         std::string fail_what = "";
         bool insert_fail = false;
+        PerfEvent e(!is_perf);      /* silence errors if it's not perf */
         // ================================================================ //
 
         // Build the table
@@ -377,10 +378,11 @@ namespace bm {
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
         else std::cout << label + "\n";
         writer.add_data(benchmark);
-        if (is_perf)
-            // print results
-            // we use the size of the dataset as a normalizing factor
-            e.printReport(std::cout, dataset_size);
+        if (is_perf) {
+            // print data
+            perf_out << perf_config;
+            e.printReport(perf_out, dataset_size, /*printHeader*/ false, /*printData*/ true);
+        }
     }
 
     template <class HashFn, class HashTable>
@@ -567,7 +569,8 @@ namespace bm {
 
     // join throughput helper
     template <class HashFn, class HashTable>
-    void join_throughput(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer) {
+    void join_helper(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer,
+            /* perf stuff */ std::string perf_config = "", std::ostream& perf_out = std::cout) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
@@ -623,7 +626,10 @@ namespace bm {
         std::vector<std::pair<Payload,Payload>> payloads_out;
         
         // ******************** 10x25 ******************** //
-        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_10M, payloads_10M, keys_10M_dup, payloads_25M, keys_out, payloads_out);
+        auto time_10_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(
+            keys_10M, payloads_10M, keys_10M_dup, payloads_25M, keys_out, payloads_out,
+            /* perf things */ is_perf, perf_config+"10Mx25M,", perf_out
+        );
         if (time_10_25.has_value() && keys_out.size()!=M(25)) {
             throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (10Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
         }
@@ -648,7 +654,10 @@ namespace bm {
         // ******************** 25x25 ******************** //
         keys_out.clear();
         payloads_out.clear();
-        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(keys_25M, payloads_25M, keys_25M_dup, payloads_25M, keys_out, payloads_out);
+        auto time_25_25 = join::npj_hash<Key,Payload,HashFn,HashTable,JOIN_LOAD_PERC>(
+            keys_25M, payloads_25M, keys_25M_dup, payloads_25M, keys_out, payloads_out,
+            /* perf things */ is_perf, perf_config+"25Mx25M,", perf_out    
+        );
         if (time_25_25.has_value() && keys_out.size()!=M(25)) {
             throw std::runtime_error("\033[1;91mError!\033[0m join operation didn't find all pairs\n           In --> " + label + " (25Mx25M)\n           [keys_out.size()] " + std::to_string(keys_out.size()) + "\n");
         }
@@ -670,4 +679,10 @@ namespace bm {
         }
         writer.add_data(benchmark_25_25);
     }
+    // join throughput
+    template <class HashFn, class HashTable>
+    inline void join_throughput(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer) { 
+        join_helper<HashFn,HashTable>(ds_obj, writer);
+    }
+    
 }
