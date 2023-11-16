@@ -186,7 +186,6 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
                     bm_list.push_back({bm_fn, id});
             }
             if (part != "all") continue;
-            continue;
         }
         if (part == "range" || part == "all") {
             for (const bm::BMtype& bm_fn : range_size_bm) {
@@ -228,9 +227,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    std::cout << std::endl << "\033[1;96m===================== \033[0m" << std::endl;
-    std::cout << "\033[1;96m= hashing-benchmark = \033[0m" << std::endl;
-    std::cout << "\033[1;96m===================== \033[0m" << std::endl;
+    std::cout << std::endl << "\033[1;95m===================== \033[0m" << std::endl;
+    std::cout << "\033[1;95m= hashing-benchmark = \033[0m" << std::endl;
+    std::cout << "\033[1;95m===================== \033[0m" << std::endl;
     std::cout << "Running on " << threads << " thread" << (threads>1? "s.":".") << std::endl << std::endl;
 
     // Create a JsonWriter instance (for the output file)

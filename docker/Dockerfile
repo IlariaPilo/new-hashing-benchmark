@@ -7,12 +7,8 @@ ARG GROUP_ID
 
 # Install some stuff
 RUN apt-get update && \
-    apt-get install -y vim clang cmake sudo git
-RUN apt-get install -y llvm libomp-dev
-# to check for memory leaks
-# RUN apt-get update && apt-get install -y valgrind
-# Perf!
-RUN apt-get -y install linux-tools-generic
+    apt-get install -y vim clang cmake sudo git llvm libomp-dev linux-tools-generic && \
+    rm -rf /var/lib/apt/lists/*
 
 # # Create a new user called "aligner" (the default user)
 # # Add it to the sudo group

@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import re
+import functools as ft
 from math import log10
 
 plt.rcParams['figure.constrained_layout.use'] = True
@@ -74,6 +75,17 @@ F_MAP = {
     'MWHC': 8,
     'BitMWHC': 9,
     'RecSplit': 10
+}
+LAB_MAP = {
+    'RMI-CHAIN': 0,
+    'MULT-CHAIN': 3,
+    'MWHC-CHAIN': 6,
+    'RMI-LINEAR': 1,
+    'MULT-LINEAR': 4,
+    'MWHC-LINEAR': 7,
+    'RMI-CUCKOO': 2,
+    'MULT-CUCKOO': 5,
+    'MWHC-CUCKOO': 8
 }
     
 COLORS = {}
@@ -152,9 +164,9 @@ def prepare_fn_colormap():
 def groupby_helper(df, static_cols, variable_cols):
     return df.groupby(static_cols)[variable_cols].mean().reset_index()
 
-def sort_labels(labels, handles):
+def sort_labels(labels, handles, map = F_MAP):
     pairs = list(zip(labels, handles))
-    sorted_pairs = sorted(pairs, key=lambda pair: F_MAP[pair[0]])
+    sorted_pairs = sorted(pairs, key=lambda pair: map[pair[0]])
     return zip(*sorted_pairs)
 
 # ===================================================================== #
@@ -540,23 +552,28 @@ def distribution(df):
     plt.xticks(xticks,xticks_lab) 
     fig.savefig(f'{prefix}_distribution.png', bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
-# -------- perf -------- # 
-def perf(df, no_mwhc=False, pareto=False):
+# -------- perf probe -------- # 
+def perf_probe(df, no_mwhc=False, pareto=False):
     # Some definitions
     GAP10 = 0
     FB = 1
-    counters = ['cycles', 'L1-misses', 'LLC-misses', 'branch-misses']
-    counters_label = ['Cycles', 'L1 misses', 'LLC misses', 'Branch misses']
+    counters = ['L1-misses', 'LLC-misses']
+    counters_label = ['L1 misses', 'LLC misses']
 
     df = df.copy(deep=True)
     df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
-    df = df.sort_values(by='label')
+    
+    def get_map(x):
+        if isinstance(x, pd.Series):
+            return x.apply(lambda i : LAB_MAP[i])
+        return LAB_MAP[x]
+    df = df.sort_values(by='label', key=lambda l: get_map(l))
 
     # Prepare the colors
     labels = df['label'].unique()
     cmap = plt.get_cmap('coolwarm')
     # Create a dictionary of unique colors based on the number of labels
-    colors = {labels[lab_i]: cmap(col_i) for lab_i, col_i in enumerate(np.linspace(0, 1, len(labels)))}
+    colors = {labels[-(lab_i+1)]: cmap(col_i) for lab_i, col_i in enumerate(np.linspace(0, 1, len(labels)))}
 
     if no_mwhc:
         df = df[df['function']!='mwhc']
@@ -574,15 +591,15 @@ def perf(df, no_mwhc=False, pareto=False):
     df = groupby_helper(df, ['function','table','dataset','label'], ['cycles','kcycles','instructions','L1-misses','LLC-misses','branch-misses','task-clock','scale','IPC','CPUs','GHz'])
     # Create a single figure with multiple subplots in a row
     num_subplots = len(counters)
-    fig, axes = plt.subplots(2, num_subplots, figsize=(9, 5))  # Adjust figsize as needed
+    fig, axes = plt.subplots(2, num_subplots, figsize=(5, 5))  # Adjust figsize as needed
     
     # Create a single legend for all subplots
     legend_labels = []
     handles = []
 
-    g_lab = df.groupby('label')
     # For each label
-    for name_lab, group_lab in g_lab:
+    for name_lab in labels:
+        group_lab = df[df['label']==name_lab]
         legend_labels.append(name_lab)
         gap10 = group_lab[group_lab['dataset']=='gap10']
         fb = group_lab[group_lab['dataset']=='fb']
@@ -603,17 +620,142 @@ def perf(df, no_mwhc=False, pareto=False):
             ax[FB].grid(True)
         
     # Add a single legend to the entire figure with labels on the same line
-    lgd = fig.legend(handles=handles, loc='lower center', labels=legend_labels, ncol=len(legend_labels)//2+len(legend_labels)%2, bbox_to_anchor=(0.5, 1))
+    lgd = fig.legend(handles=handles, loc='lower center', labels=legend_labels, ncol=len(legend_labels)//3, bbox_to_anchor=(0.5, 1))
 
     axes[GAP10,0].set_ylabel('gap_10', rotation=0, ha='right', va="center")
     axes[FB,0].set_ylabel('fb', rotation=0, ha='right', va="center")
 
     # Set a common label for y ax
-    laby = fig.supylabel('Performance Counter Ratio')
+    laby = fig.supylabel('Normalized Performance Counter')
 
     #plt.show()
     name = prefix + ('_no_mwhc' if no_mwhc else '') + ('_pareto' if pareto else '') + '.png'
     fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
+
+# -------- perf join -------- # 
+def perf_join(df):
+    JOIN_10_25 = 0
+    JOIN_25_25 = 1
+
+    datasets = ('wiki','fb')
+    counters = ['L1-misses', 'LLC-misses']
+    counters_label = ['L1 misses', 'LLC misses']
+
+    df = df.copy(deep=True)
+    df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
+    df = df.sort_values(by='label')
+
+    # prepare the datasets
+    def rename_cols(suffix):
+        def _rename_cols_(col):
+            if col in ['sizes', 'dataset', 'label']:
+                return col
+            else:
+                return col + '-' + suffix 
+        return _rename_cols_
+
+    proj_col = ['sizes', 'dataset', 'label'] + counters
+    # select, project and rename
+    df_sort = df[df['phase']=='sort'][proj_col].rename(columns=rename_cols('sort'))
+    df_build = df[df['phase']=='insert'][proj_col].rename(columns=rename_cols('build'))
+    df_probe = df[df['phase']=='join'][proj_col].rename(columns=rename_cols('probe'))
+    dfs = [df_sort, df_build, df_probe]
+    # join!
+    df_join = ft.reduce(lambda left, right: pd.merge(left, right, on=['sizes', 'dataset', 'label']), dfs)
+
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+        
+    # Create a single legend for all subplots
+    legend_labels = ['Sort', 'Build', 'Probe']
+
+    for c_i, c in enumerate(counters):
+        fig, axes = plt.subplots(num_subplots, 2, figsize=(9, 5))  # Adjust figsize as needed
+        
+        handles = []
+        i = 0
+        for name_ds in datasets:
+            group_ds = df_join[df_join['dataset']==name_ds]
+            
+            ax = axes[i,:]
+            i += 1
+            
+            # 10x25
+            join_10_25 = group_ds[group_ds['sizes'] == '10Mx25M']
+            # Create the upper part of the bar
+            h3 = ax[JOIN_10_25].bar(range(len(join_10_25['label'])), join_10_25[c+'-sort'], color='tab:green', alpha=0.8, label='Sort')
+            h1 = ax[JOIN_10_25].bar(range(len(join_10_25['label'])), join_10_25[c+'-build'], color='tab:blue', alpha=0.8, bottom=join_10_25[c+'-sort'], label='Build')
+            # Create the lower part of the bar, starting from the top of the upper part
+            h2 = ax[JOIN_10_25].bar(range(len(join_10_25['label'])), join_10_25[c+'-probe'], color='tab:orange', alpha=0.8, bottom=join_10_25[c+'-sort']+join_10_25[c+'-build'], label='Probe')
+
+            # 25x25
+            join_25_25 = group_ds[group_ds['sizes'] == '25Mx25M']
+            ax[JOIN_25_25].bar(range(len(join_25_25['label'])), join_10_25[c+'-sort'], color='tab:green', alpha=0.8, label='Sort')
+            ax[JOIN_25_25].bar(range(len(join_25_25['label'])), join_10_25[c+'-build'], color='tab:blue', alpha=0.8, bottom=join_10_25[c+'-sort'], label='Build')
+            ax[JOIN_25_25].bar(range(len(join_25_25['label'])), join_10_25[c+'-probe'], color='tab:orange', alpha=0.8, bottom=join_10_25[c+'-sort']+join_10_25[c+'-build'], label='Probe')
+
+            # Customize the plot
+            ax[JOIN_10_25].set_title(f'{name_ds} (10Mx25M)')
+            ax[JOIN_25_25].set_title(f'{name_ds} (25Mx25M)')
+
+            if i == 1:
+                handles.append(h3)
+                handles.append(h1)
+                handles.append(h2)
+                
+            ax[JOIN_10_25].set_xticks(range(len(join_10_25['label'])), join_10_25['label'], rotation=35, ha='right', va='top')
+            ax[JOIN_25_25].set_xticks(range(len(join_25_25['label'])), join_25_25['label'], rotation=35, ha='right', va='top')
+
+            # Format the y-axis to display only two digits after the decimal point
+            # ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
+
+            ax[JOIN_10_25].grid(True)
+            ax[JOIN_25_25].grid(True)
+
+        # Add a single legend to the entire figure with labels on the same line
+        lgd = fig.legend(handles=handles, loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.07))
+
+        # Set a common label for x and y axes
+        laby = fig.supylabel(f'Normalized {counters_label[c_i]}')
+
+        #plt.show()
+        name = prefix + '_' + c + '.png'
+        fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
+
+    # do avg plot
+    fig, axes = plt.subplots(len(counters), 2, figsize=(9, 5))  # Adjust figsize as needed
+    handles = []
+    i = 0
+    for name_ds in datasets:
+        group_ds = df_join[df_join['dataset']==name_ds]
+        df_merge = groupby_helper(group_ds, ['dataset','label'], [f'{c}-sort' for c in counters] + [f'{c}-build' for c in counters] + [f'{c}-probe' for c in counters])
+        ax = axes[i]
+        ax[0].set_ylabel(name_ds, rotation=0, ha='right', va="center")
+        i += 1
+        for c_i, c in enumerate(counters):
+            # Create the upper part of the bar
+            h3 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-sort'], color='tab:green', alpha=0.8, label='Sort')
+            h1 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-build'], color='tab:blue', alpha=0.8, bottom=df_merge[c+'-sort'], label='Build')
+            # Create the lower part of the bar, starting from the top of the upper part
+            h2 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-probe'], color='tab:orange', alpha=0.8, bottom=df_merge[c+'-sort']+df_merge[c+'-build'], label='Probe')
+
+            if i == 1:
+                ax[c_i].set_title(counters_label[c_i])
+                handles.append(h3)
+                handles.append(h1)
+                handles.append(h2)
+                
+            ax[c_i].set_xticks(range(len(df_merge['label'])), df_merge['label'], rotation=35, ha='right', va='top')
+            ax[c_i].grid(True)
+
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=legend_labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.07))
+
+    #plt.show()
+    laby = fig.supylabel('Normalized Performance Counter')
+    name = prefix + '_' + 'size-avg.png'
+    fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')    
+
 
 # -------- point+range -------- # 
 def point_range(df, pareto=False):
@@ -733,7 +875,7 @@ def join(df):
     i = 0
     for name_ds in datasets:
         group_ds = df[df['dataset_name']==name_ds]
-        ax = axes[:,i]
+        ax = axes[i]
         i += 1
         
         # 10x25
@@ -804,8 +946,13 @@ def main_json():
 
 def main_csv():
     df = pd.read_csv(file_path)
-    perf(df)
-    perf(df, pareto=True)
+    if 'phase' in df.columns:
+        # put 0 instead of NaN
+        df = df.fillna(0)
+        perf_join(df)
+    else:
+        perf_probe(df)
+        perf_probe(df, pareto=True)
 
 #----------------------------#
 COLORS, COLORS_STRUCT = prepare_fn_colormap()

@@ -59,7 +59,7 @@ Arguments:
   -o, --output OUTPUT_DIR   Directory that will store the output
   -t, --threads THREADS     Number of threads to use (default: all)
   -f, --filter FILTER       Type of benchmark to execute, *comma-separated*
-                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],all (default: all) 
+                            Options = collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],join,all (default: all) 
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `<filter>_<timestamp>.json`.
@@ -89,12 +89,13 @@ This script can be used as follows:
 ```
 ./perf-benchmarks.sh [ARGS]
 Arguments:
-  -i, --input  INPUT_DIR    Directory storing the datasets
+  -i, --input INPUT_DIR     Directory storing the datasets
   -o, --output OUTPUT_DIR   Directory that will store the output
+  -f, --filter FILTER       Type of benchmark to execute. Options = probe,join
   -t, --threads THREADS     The number of threads to be used (default: all)
   -h, --help                Display this help message
 ```
-Results are saved in the specified output directory, in a file called `perf_<timestamp>.csv`.
+Results are saved in the specified output directory, in a file called `perf-<filter>_<timestamp>.csv`.
 
 #### 🚨 DON'T PANIC [perf troubleshooting]
 If the `perf` benchmark script returns "Error opening counter cycles", try the following steps.
@@ -138,11 +139,12 @@ This script can be particularly useful to leverage the average capability of `pr
 
 [`output/`](./output/) : stores experimental results run on the research group's server. Such results were used to generate the available plots.
 
-[`scripts/`](./scripts/) : contains three utility scripts.
+[`scripts/`](./scripts/) : contains four utility scripts.
 
 1. [`merge_results.py`](./scripts/merge_results.py) : allows to merge two or more .json files containing benchmark results.  
 2. [`print_figures.py`](./scripts/merge_results.py) : generates plots starting from a .json or .csv result file.
-3. [`setup_datasets.sh`](./scripts/setup_datasets.sh) : downloads SOSD datasets required to run the benchmarks. 
+3. [`setup_datasets.sh`](./scripts/setup_datasets.sh) : downloads SOSD datasets required to run the benchmarks.
+4. [`thread_plot.py`](./scripts/thread_plot.py) : generates the [`join_cmp.png`](./figs/join_cmp.png) plot.
 
 ## 🧩 Third party components
 This repository is based on the following components:

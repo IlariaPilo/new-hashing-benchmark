@@ -3,14 +3,16 @@
 # Default values for input and output directories
 input_dir=""
 output_dir=""
+filter=""
 threads=$(nproc --all)
 
 # Function to display usage instructions
 usage() {
-    echo -e "\n\033[1;96m./perf-benchmarks.sh [ARGS]\033[0m"
+    echo -e "\n\033[1;95m./perf-benchmarks.sh [ARGS]\033[0m"
     echo "Arguments:"
     echo "  -i, --input  INPUT_DIR    Directory storing the datasets"
     echo "  -o, --output OUTPUT_DIR   Directory that will store the output"
+    echo "  -f, --filter FILTER       The type of benchmark we want to execute. Options = probe,join"
     echo "  -t, --threads THREADS     The number of threads to be used (default: all)"
     echo -e "  -h, --help                Display this help message\n"
     exit 1
@@ -33,6 +35,10 @@ while [[ $# -gt 0 ]]; do
             threads="$2"
             shift 2
             ;;
+        -f|--filter)
+            filter="$2"
+            shift 2
+            ;;
         -h|--help)
             usage
             ;;
@@ -48,10 +54,15 @@ if [ -z "$input_dir" ] || [ -z "$output_dir" ]; then
     echo "Error: Both input and output directories are required."
     usage
 fi
+if [ -z "$filter" ]; then
+    echo "Error: Please specify the type of benchmark."
+    usage
+fi
 
-echo -e "\n\033[1;96m================== \033[0m"
-echo -e "\033[1;96m= perf-benchmark = \033[0m"
-echo -e "\033[1;96m================== \033[0m\n"
+echo -e "\n\033[1;95m================== \033[0m"
+echo -e "\033[1;95m= perf-benchmark = \033[0m"
+echo -e "\033[1;95m================== \033[0m"
+echo -e "Running <$filter> on $threads threads.\n"
 
 input_dir=$(realpath $input_dir)
 output_dir=$(realpath $output_dir)
@@ -62,31 +73,34 @@ cd "$(dirname "$0")"
 # define the arrays
 functions=("rmi" "mult" "mwhc")
 tables=("chain" "linear" "cuckoo")
-datasets=("gap10" "fb")
+datasets=("first" "fb")
 probe=("uniform" "80-20")
 
 # define the filename
 current_datetime=$(date +%Y-%m-%d_%H-%M)
-output_file="${output_dir}/perf_${current_datetime}.csv"
+output_file="${output_dir}/perf-${filter}_${current_datetime}.csv"
 
 # plot the header
-echo "function,table,dataset,probe,cycles,kcycles,instructions,L1-misses,LLC-misses,branch-misses,task-clock,scale,IPC,CPUs,GHz" > $output_file
+echo -n "threads,function,table,dataset,probe," > $output_file
+if [ "$filter" == "join" ]; then
+    echo -n "sizes,phase," >> $output_file
+fi
+echo "cycles,kcycles,instructions,L1-misses,LLC-misses,branch-misses,task-clock,scale,IPC,CPUs,GHz" >> $output_file
 
 for ds in "${datasets[@]}"; do
     for tab in "${tables[@]}"; do
         for fun in "${functions[@]}"; do
             for prb in "${probe[@]}"; do
-                echo -n "$fun,$tab,$ds,$prb," >> $output_file
-                cmake-build-release/src/perf_bm -i $input_dir -o $output_dir -f $fun -t $tab -d $ds -p $prb -n $threads > tmp.out
-                # print some info
-                sed -n 1p tmp.out
-                # get interesting values
-                sed -n 3p tmp.out | tr -d ' \t' >> $output_file
+                # echo -n "$threads,$fun,$tab,$ds,$prb," >> $output_file
+                cmake-build-release/src/perf_bm -i $input_dir -o $output_file -F $fun -T $tab -D $ds -P $prb -t $threads -f $filter
+                if [ "$filter" == "join" ]; then
+                    break
+                fi
             done
         done
     done
 done
 
 # remove temporary files
-rm tmp.out
-rm ${output_dir}/perf*.json
+rm tmp*.json
+
