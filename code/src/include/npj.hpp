@@ -34,13 +34,9 @@ namespace join {
             /* parallel */ size_t THREADS = 1,
             /* perf things */ bool is_perf = false, std::string perf_config = "", std::ostream& perf_out = std::cout
             ) {
-
-        // custom merge reduction
-        #pragma omp declare reduction (merge : std::vector<std::pair<Key,std::pair<Payload,Payload>>> : \
-                    omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end()))
     
         // reserve space for output arrays
-        output.reserve(big_keys.size()/THREADS);
+        output.resize(big_keys.size());
 
         bool insert_fail = false;
 
@@ -94,20 +90,18 @@ namespace join {
         if (is_perf)
             e_probe.startCounters();
         start = std::chrono::high_resolution_clock::now();
-        #pragma omp parallel for reduction(merge: output) num_threads(THREADS)
+        #pragma omp parallel for num_threads(THREADS)
         for (size_t i=0; i<big_keys.size(); i++) {
             // look for the element
             std::optional<Payload> small_payload = table.lookup(big_keys[i]);
             if (small_payload.has_value()) {
-                output.push_back(std::make_pair(big_keys[i],std::make_pair(small_payload.value(), big_payloads[i])));
+                output[i] = std::make_pair(big_keys[i],std::make_pair(small_payload.value(), big_payloads[i]));
             }
         }
         end = std::chrono::high_resolution_clock::now();
         if (is_perf)
             e_probe.stopCounters();
         tot_join = end - start;
-
-        output.shrink_to_fit();
 
         if (is_perf) {
             // print data
