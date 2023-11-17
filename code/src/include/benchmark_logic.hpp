@@ -721,6 +721,10 @@ namespace bm {
                 probe_label = "80-20";
         }
 
+        const std::string label = "CoroProbe:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
+        // TODO remove
+        std::cout << "BEGIN " + label + "\n";
+
         // Compute capacity given the laod% and the dataset_size
         // --> must be a power of 2! (but it is done automatically)
         size_t capacity = dataset_size*100/load_perc;
@@ -729,8 +733,7 @@ namespace bm {
         HashFn fn;
         _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
         ChainedTableCoro<HashFn> table(capacity, fn);
-        const std::string label = "CoroProbe:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
-
+        
         // ====================== throughput counters ====================== //
         /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
         /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_for_insert(0), tot_for_probe(0);
@@ -764,6 +767,8 @@ namespace bm {
         if (table.count() != dataset_size) {
             throw std::runtime_error("\033[1;91mAssertion failed\033[0m table.count()==dataset_size\n           In --> " + label + "\n           [table.count()] " + std::to_string(table.count()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
+        // TODO remove
+        std::cout << "Everything is fine!!\n";
 
         // prepare output array   
         std::vector<ResultType<HashFn>> results{};
