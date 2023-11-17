@@ -10,6 +10,8 @@
 #include "rmi_sort.hpp"
 // Datasets
 #include "datasets.hpp"
+// Coroutines
+#include "bucket_hash_coroutines/map.hpp"
 
 // ********************* CONFIGS ********************* //
 
@@ -110,6 +112,11 @@ using MWHC = exotic_hashing::MWHC<Data>;
 using BitMWHC = exotic_hashing::BitMWHC<Data>;
 using RecSplit = exotic_hashing::RecSplit<Data>;
 
+// ********************* COROUTINES ********************* //
+template <class HashFn>
+using ChainedTableCoro = Map<Key, Payload, HashFn>;
+template <class HashFn>
+using ResultType = typename Map<Key, Payload, HashFn>::LookupResultType; 
 
 // ********************* HASH TABLES ********************* //
 using FastModulo = hashing::reduction::FastModulo<Key>;

@@ -12,6 +12,9 @@
 #include "configs.hpp"
 #include "thirdparty/perfevent/PerfEvent.hpp"
 
+#include "bucket_hash_coroutines/cppcoro/coroutine.hpp"
+#include "bucket_hash_coroutines/cppcoro/generator.hpp"
+
 // For a detailed description of the benchmarks, please consult the README of the project
 
 namespace bm {
@@ -684,5 +687,127 @@ namespace bm {
     inline void join_throughput(const dataset::Dataset<Key>& ds_obj, JsonOutput& writer) { 
         join_helper<HashFn,HashTable>(ds_obj, writer);
     }
-    
+
+    // ********************** COROUTINES ********************** //
+
+    static coro::generator<int> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const &order_probe) {
+        size_t dataset_size = ds.size();
+        for (int idx : order_probe) {
+            if (idx < (int)dataset_size)
+                co_yield static_cast<int>(ds[idx]);
+        }
+    }
+
+    // probe coroutines
+    template <class HashFn>
+    void probe_coroutines(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type,
+            /* coroutines stuff */ size_t n_coro, 
+            /* perf stuff */ std::string perf_config = "", std::ostream& perf_out = std::cout) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
+
+        // Choose probe distribution
+        std::vector<int>* order_probe = nullptr;
+        std::string probe_label;
+        switch(probe_type) {
+            case ProbeType::UNIFORM:
+                order_probe = &order_probe_uniform;
+                probe_label = "uniform";
+                break;
+            case ProbeType::PARETO_80_20:
+                order_probe = &order_probe_80_20;
+                probe_label = "80-20";
+        }
+
+        // Compute capacity given the laod% and the dataset_size
+        // --> must be a power of 2! (but it is done automatically)
+        size_t capacity = dataset_size*100/load_perc;
+        
+        // now, create the table
+        HashFn fn;
+        _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
+        ChainedTableCoro<HashFn> table(capacity, fn);
+        const std::string label = "CoroProbe:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
+
+        // ====================== throughput counters ====================== //
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
+        /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_for_insert(0), tot_for_probe(0);
+        size_t insert_count = 0;
+        size_t probe_count = 0;
+        std::string fail_what = "";
+        bool insert_fail = false;
+        PerfEvent e(!is_perf);      /* silence errors if it's not perf */
+        // ================================================================ //
+
+        // Build the table
+        Payload count = 0;
+        start_for = std::chrono::high_resolution_clock::now();
+        for (int i : order_insert) {
+            // check if the index exists
+            if (i < (int)dataset_size) {
+                // get the data
+                Data data = ds[i];
+                _start_ = std::chrono::high_resolution_clock::now();
+                table.insert(data, count);
+                _end_ = std::chrono::high_resolution_clock::now();
+                count++;
+                insert_count++;
+                tot_time_insert += _end_ - _start_;
+            }
+        }
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_for_insert = end_for - start_for;
+
+        // check if everything went well!
+        if (table.count() != dataset_size) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m table.count()==dataset_size\n           In --> " + label + "\n           [table.count()] " + std::to_string(table.count()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+        }
+
+        // prepare output array   
+        std::vector<ResultType<HashFn>> results{};
+        results.reserve(dataset_size);
+
+        auto lookup = make_lookup_vector(ds, *order_probe);
+
+        if (is_perf)
+            e.startCounters();
+        start_for = std::chrono::high_resolution_clock::now();
+        table.interleaved_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results), n_coro);
+        end_for = std::chrono::high_resolution_clock::now();
+        if (is_perf)
+            e.stopCounters();
+        tot_for_probe = end_for - start_for;
+
+        // check if everything went well!
+        if (results.size() != dataset_size) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==dataset_size\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+        }
+
+        json benchmark;
+        benchmark["dataset_size"] = dataset_size;
+        benchmark["probe_elem_count"] = probe_count;
+        benchmark["insert_elem_count"] = insert_count;
+        benchmark["tot_time_insert_s"] = tot_time_insert.count();
+        benchmark["tot_for_time_probe_s"] = tot_for_probe.count();
+        benchmark["tot_for_time_insert_s"] = tot_for_insert.count();
+        benchmark["load_factor_%"] = load_perc;
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["function_name"] = HashFn::name();
+        benchmark["insert_fail_message"] = fail_what;
+        benchmark["label"] = label;
+        benchmark["probe_type"] = probe_label;
+
+        if (insert_fail)
+            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
+        else std::cout << label + "\n";
+        writer.add_data(benchmark);
+        if (is_perf) {
+            // print data
+            perf_out << perf_config;
+            e.printReport(perf_out, dataset_size, /*printHeader*/ false, /*printData*/ true);
+        }
+    }
+
 }
