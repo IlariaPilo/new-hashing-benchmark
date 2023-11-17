@@ -420,7 +420,7 @@ Map<KeyT, ValueT, Hasher>::Map(
     }
 
     // ensure the initial capacity is a power of 2
-    auto const init_capacity = next_power_of_2(max_capacity_) >> 1;
+    auto const init_capacity = next_power_of_2(max_capacity_);
 
     capacity = init_capacity;
     buckets  = new Bucket[init_capacity];
@@ -812,8 +812,7 @@ static std::size_t next_power_of_2(std::size_t n)
     n |= n >> 4;
     n |= n >> 8;
     n |= n >> 16;
-    if constexpr (8 == sizeof(n))
-    {
+    if constexpr (8 == sizeof(n)) {
         n |= n >> 32;
     }
 
