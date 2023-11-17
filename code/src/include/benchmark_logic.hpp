@@ -690,7 +690,7 @@ namespace bm {
 
     // ********************** COROUTINES ********************** //
 
-    static coro::generator<int> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const &order_probe) {
+    inline static coro::generator<int> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const &order_probe) {
         size_t dataset_size = ds.size();
         for (int idx : order_probe) {
             if (idx < (int)dataset_size)
@@ -727,7 +727,7 @@ namespace bm {
 
         // Compute capacity given the laod% and the dataset_size
         // --> must be a power of 2! (but it is done automatically)
-        size_t capacity = dataset_size*100/load_perc;
+        std::size_t capacity = dataset_size*100/load_perc;
         
         // now, create the table
         HashFn fn;
