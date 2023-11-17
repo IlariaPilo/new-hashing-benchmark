@@ -721,13 +721,13 @@ namespace bm {
                 probe_label = "80-20";
         }
 
-        const std::string label = "CoroProbe:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
+        const std::string label = "Coro:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
         // TODO remove
         std::cout << "BEGIN " + label + "\n";
 
         // Compute capacity given the laod% and the dataset_size
         // --> must be a power of 2! (but it is done automatically)
-        std::size_t capacity = dataset_size*100/load_perc;
+        std::size_t capacity = next_power_of_2(dataset_size*100/load_perc);
         
         // now, create the table
         HashFn fn;
@@ -797,7 +797,7 @@ namespace bm {
         benchmark["tot_time_insert_s"] = tot_time_insert.count();
         benchmark["tot_for_time_probe_s"] = tot_for_probe.count();
         benchmark["tot_for_time_insert_s"] = tot_for_insert.count();
-        benchmark["load_factor_%"] = load_perc;
+        benchmark["capacity"] = capacity;
         benchmark["dataset_name"] = dataset_name;
         benchmark["function_name"] = HashFn::name();
         benchmark["insert_fail_message"] = fail_what;

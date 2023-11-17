@@ -113,6 +113,8 @@ using BitMWHC = exotic_hashing::BitMWHC<Data>;
 using RecSplit = exotic_hashing::RecSplit<Data>;
 
 // ********************* COROUTINES ********************* //
+constexpr size_t coro_lf[] = {25,50,75,200};
+
 template <class HashFn>
 using ChainedTableCoro = Map<Key, Payload, HashFn>;
 template <class HashFn>
