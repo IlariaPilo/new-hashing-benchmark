@@ -51,13 +51,8 @@ class Map
     // The current number of items in the map.
     std::size_t n_items;
 
-    // The current number of buckets in the table.
+    // The number of buckets in the table.
     std::size_t capacity;
-
-    // The maximum number of buckets beyond which further
-    // inserations will no longer trigger a resize.
-    // (same as capacity)
-    std::size_t const max_capacity;
     
     // the array of buckets that composes the table
     Bucket* buckets;
@@ -394,9 +389,6 @@ struct Map<KeyT, ValueT, Hasher>::StatsResult
     // The current capacity of the map (number of buckets).
     std::size_t capacity;
 
-    // The maximum capacity of the map (number of buckets).
-    std::size_t max_capacity; 
-
     // The current map load factor.
     double  load_factor;
 
@@ -420,9 +412,9 @@ template <
 Map<KeyT, ValueT, Hasher>::Map(
     std::size_t const max_capacity_, const Hasher hashfn)
     : n_items{0}
-    , buckets{nullptr} {
+    , buckets{nullptr}
+    , hasher{hashfn} {
 
-    hasher = hashfn;
     if (0 == max_capacity_) {
         throw std::runtime_error{"maximum capacity must be nonzero"};
     }
@@ -431,7 +423,6 @@ Map<KeyT, ValueT, Hasher>::Map(
     auto const init_capacity = next_power_of_2(max_capacity_) >> 1;
 
     capacity = init_capacity;
-    max_capacity = init_capacity;
     buckets  = new Bucket[init_capacity];
 
     // TODO remove
@@ -697,7 +688,6 @@ auto Map<KeyT, ValueT, Hasher>::stats() const -> StatsResult
 
     results.count        = n_items;
     results.capacity     = capacity;
-    results.max_capacity = max_capacity;
 
     results.load_factor 
         = static_cast<double>(n_items) / static_cast<double>(capacity);
