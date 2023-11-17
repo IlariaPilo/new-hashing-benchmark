@@ -56,6 +56,7 @@ class Map
 
     // The maximum number of buckets beyond which further
     // inserations will no longer trigger a resize.
+    // (same as capacity)
     std::size_t const max_capacity;
     
     // the array of buckets that composes the table
@@ -215,19 +216,16 @@ public:
     LookupKVTask(LookupKVTask const&) = delete;
 
     LookupKVTask(LookupKVTask&& rhs) 
-        : handle{rhs.handle}
-    {
+        : handle{rhs.handle} {
         rhs.handle = nullptr;
     }
 
-    struct promise_type
-    {
+    struct promise_type {
         // pointer to the owning throttler instance for this promise
         Throttler<Scheduler>* owning_throttler{nullptr};
 
         // utilize the custom recycling allocator
-        void* operator new(std::size_t n)
-        {
+        void* operator new(std::size_t n) {
             // NOTE: in multithtreaded interleaved run this gives segfaults
             // in fact timewise on a single thread there is no difference
             // not tested memory usage...
@@ -236,47 +234,38 @@ public:
         }
 
         // utilize the custom recycling allocator
-        void operator delete(void* ptr/*, std::size_t n*/)
-        {
+        void operator delete(void* ptr/*, std::size_t n*/) {
             // inline_recycling_allocator.free(ptr, n);
             // NOTE: same as right above
             std::free(ptr);
         }
 
-        LookupKVTask get_return_object()
-        {
+        LookupKVTask get_return_object() {
             return LookupKVTask{*this};
         }
 
-        auto initial_suspend()
-        {
+        auto initial_suspend() {
             return std::suspend_always{};
         }
 
-        auto final_suspend() noexcept
-        {
+        auto final_suspend() noexcept {
             return std::suspend_never{};
         }
 
-        void return_void()
-        {
+        void return_void() {
             owning_throttler->on_task_complete();
         }
 
-        void unhandled_exception() noexcept
-        {
+        void unhandled_exception() noexcept {
             std::terminate();
         }
     };
 
     // make the throttler the "owner" of this coroutine
-    auto set_owner(Throttler<Scheduler>* owner)
-    {
+    auto set_owner(Throttler<Scheduler>* owner) {
         auto result = handle;
-        
         // modify the promise to point to the owning throttler
         handle.promise().owning_throttler = owner;
-        
         // reset our handle
         handle = nullptr;
 
@@ -308,18 +297,15 @@ public:
     LookupKVResult(KeyT const& key_, ValueT& value_)
         : key{&key_}, value{&value_} {}
 
-    KeyT const& get_key() const
-    {
+    KeyT const& get_key() const {
         return *key;
     }
 
-    ValueT& get_value() const
-    {
+    ValueT& get_value() const {
         return *value;
     }
 
-    explicit operator bool() const
-    {
+    explicit operator bool() const {
         return (key != nullptr);
     }
 };
@@ -344,18 +330,15 @@ public:
         , value{&value_}
         , inserted{inserted_} {}
 
-    KeyT const& get_key() const
-    {
+    KeyT const& get_key() const {
         return *key;
     }
 
-    ValueT& get_value() const
-    {
+    ValueT& get_value() const {
         return *value;
     }
 
-    explicit operator bool() const
-    {
+    explicit operator bool() const {
         return inserted;
     }
 };
@@ -377,28 +360,23 @@ public:
     RemoveKVResult(KeyT&& key_, ValueT&& value_)
         : key{std::move(key_)}, value{std::move(value_)} {}
 
-    KeyT& get_key()
-    {
+    KeyT& get_key() {
         return *key;
     }
 
-    ValueT& get_value()
-    {
+    ValueT& get_value() {
         return *value;
     }
 
-    KeyT take_key()
-    {
+    KeyT take_key() {
         return *std::move(key);
     }
 
-    ValueT take_value()
-    {
+    ValueT take_value() {
         return *std::move(value);
     }
 
-    explicit operator bool()
-    {
+    explicit operator bool() {
         return static_cast<bool>(key);
     }
 };
@@ -442,20 +420,18 @@ template <
 Map<KeyT, ValueT, Hasher>::Map(
     std::size_t const max_capacity_, const Hasher hashfn)
     : n_items{0}
-    , capacity{0}
-    , max_capacity{max_capacity_}
-    , buckets{nullptr}
-    , hasher(hashfn)
-{
-    if (0 == max_capacity)
-    {
+    , buckets{nullptr} {
+
+    hasher = hashfn;
+    if (0 == max_capacity_) {
         throw std::runtime_error{"maximum capacity must be nonzero"};
     }
 
     // ensure the initial capacity is a power of 2
-    auto const init_capacity = next_power_of_2(max_capacity) >> 1;
+    auto const init_capacity = next_power_of_2(max_capacity_) >> 1;
 
     capacity = init_capacity;
+    max_capacity = init_capacity;
     buckets  = new Bucket[init_capacity];
 }
 
@@ -463,8 +439,7 @@ template <
     typename KeyT, 
     typename ValueT, 
     typename Hasher>
-Map<KeyT, ValueT, Hasher>::~Map()
-{
+Map<KeyT, ValueT, Hasher>::~Map() {
     delete[] buckets;
 }
 
@@ -472,31 +447,25 @@ template <
     typename KeyT, 
     typename ValueT, 
     typename Hasher>
-auto Map<KeyT, ValueT, Hasher>::lookup(KeyT const& key) -> LookupKVResult
-{
+auto Map<KeyT, ValueT, Hasher>::lookup(KeyT const& key) -> LookupKVResult {
+
     auto const index = bucket_index_for_key(key);
 
     auto& bucket = buckets[index];
-    if (0 == bucket.n_items)
-    {
+    if (0 == bucket.n_items) {
         // not found
         return LookupKVResult{};
     }
 
     auto* entry = bucket.first;
-    for (;;)
-    {
-        if (key == entry->key)
-        {
+    for (;;) {
+        if (key == entry->key) {
             return LookupKVResult{entry->key, entry->value};
         }
-
-        if (nullptr == entry->next)
-        {
+        if (nullptr == entry->next) {
             // reached the end of the bucket chain
             break;
         }
-
         // traverse the linked-list of entries for this bucket
         entry = entry->next;
     }
@@ -511,13 +480,13 @@ template <
     typename Hasher>
 auto Map<KeyT, ValueT, Hasher>::insert(
     KeyT const& key, 
-    ValueT      value) -> InsertKVResult
-{
+    ValueT      value) -> InsertKVResult {
+
+    // take index
     auto const index = bucket_index_for_key(key);
     
     auto& bucket = buckets[index];
-    if (0 == bucket.n_items)
-    {
+    if (0 == bucket.n_items) {
         // empty bucket chain
         auto* new_entry = new Entry{key, value};
         bucket.first = new_entry;
@@ -528,20 +497,15 @@ auto Map<KeyT, ValueT, Hasher>::insert(
     }
 
     auto* entry = bucket.first;
-    for (;;)
-    {
-        if (key == entry->key)
-        {
+    for (;;) {
+        if (key == entry->key) {
             // collision; do not insert
             return InsertKVResult{entry->key, entry->value, false};
         }
-
-        if (nullptr == entry->next)
-        {
+        if (nullptr == entry->next) {
             // reached the end of the bucket chain
             break;
         }
-
         entry = entry->next;
     }
 
@@ -562,13 +526,12 @@ template <
     typename Hasher>
 auto Map<KeyT, ValueT, Hasher>::update(
     KeyT const& key, 
-    ValueT      value) -> InsertKVResult
-{
+    ValueT      value) -> InsertKVResult {
+
     auto const index = bucket_index_for_key(key);
     
     auto& bucket = buckets[index];
-    if (0 == bucket.n_items)
-    {
+    if (0 == bucket.n_items) {
         // empty bucket chain
         auto* new_entry = new Entry{key, value};
         bucket.first = new_entry;
@@ -579,22 +542,17 @@ auto Map<KeyT, ValueT, Hasher>::update(
     }
 
     auto* entry = bucket.first;
-    for (;;)
-    {
-        if (key == entry->key)
-        {
+    for (;;) {
+        if (key == entry->key) {
             // found a matching key; update the associated value
             entry->value.~ValueT();
             entry->value = value;
             return InsertKVResult{entry->key, entry->value, true};
         }
-
-        if (nullptr == entry->next)
-        {
+        if (nullptr == entry->next) {
             // reached the end of the bucket chain
             break;
         }
-
         entry = entry->next;
     }
 
@@ -614,31 +572,26 @@ template <
     typename ValueT, 
     typename Hasher>
 auto Map<KeyT, ValueT, Hasher>::remove(
-    KeyT const& key) -> RemoveKVResult
-{
+    KeyT const& key) -> RemoveKVResult {
+
     auto const index = bucket_index_for_key(key);
 
     auto& bucket = buckets[index];
-    if (0 == bucket.n_items)
-    {
+    if (0 == bucket.n_items) {
         // key not present in the map
         return RemoveKVResult{};
     }
 
     Entry* prev = nullptr;
     auto* entry = bucket.first;
-    for (;;)
-    {
-        if (key == entry->key)
-        {
+    for (;;) {
+        if (key == entry->key) {
             // found a matching key; remove the key value pair
             auto result = RemoveKVResult{std::move(entry->key), std::move(entry->value)};
-            if (prev != nullptr)
-            {
+            if (prev != nullptr) {
                 prev->next = entry->next;
             }
-            else
-            {
+            else {
                 bucket.first = entry->next;
             }
             
@@ -649,8 +602,7 @@ auto Map<KeyT, ValueT, Hasher>::remove(
             return result;
         }
 
-        if (nullptr == entry->next)
-        {
+        if (nullptr == entry->next) {
             // reached the end of the bucket chain
             break;
         }
@@ -673,10 +625,9 @@ template <
 auto Map<KeyT, ValueT, Hasher>::sequential_multilookup(
     BeginInputIter begin_keys,
     EndInputIter   end_keys,
-    OutputIter     begin_results) -> void
-{
-    for (auto iter = begin_keys; iter != end_keys; ++iter)
-    {
+    OutputIter     begin_results) -> void {
+
+    for (auto iter = begin_keys; iter != end_keys; ++iter) {
         *begin_results = lookup(*iter);
         ++begin_results;
     }
