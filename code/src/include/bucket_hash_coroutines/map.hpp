@@ -424,9 +424,6 @@ Map<KeyT, ValueT, Hasher>::Map(
 
     capacity = init_capacity;
     buckets  = new Bucket[init_capacity];
-
-    // TODO remove
-    std::cout << "init capacity is " << init_capacity << "\n";
 }
 
 template <

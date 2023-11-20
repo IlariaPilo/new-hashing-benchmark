@@ -725,8 +725,6 @@ namespace bm {
         }
 
         const std::string label = "Coro:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
-        // TODO remove
-        std::cout << "BEGIN " + label + "\n";
 
         // Compute capacity given the laod% and the dataset_size
         // --> must be a power of 2! (but it is done automatically)
@@ -770,8 +768,6 @@ namespace bm {
         if (table.count() != dataset_size) {
             throw std::runtime_error("\033[1;91mAssertion failed\033[0m table.count()==dataset_size\n           In --> " + label + "\n           [table.count()] " + std::to_string(table.count()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
-        // TODO remove
-        std::cout << "Everything is fine!!\n";
 
         // prepare output array   
         std::vector<ResultType<HashFn>> results{};
