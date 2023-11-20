@@ -433,10 +433,10 @@ template <
 Map<KeyT, ValueT, Hasher>::~Map() {
     // remove every element in the table
     for (std::size_t i=0; i<capacity; i++) {
-        auto& bucket = buckets[i];
-        auto entry = bucket.first;
+        Bucket& bucket = buckets[i];
+        Entry* entry = bucket.first;
         for (std::size_t _ = 0; _<bucket.n_items; _++) {
-            auto next = entry->next;
+            Entry* next = entry->next;
             entry->next = nullptr;
             delete entry;
             entry = next;
