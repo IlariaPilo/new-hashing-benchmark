@@ -434,7 +434,21 @@ template <
     typename ValueT, 
     typename Hasher>
 Map<KeyT, ValueT, Hasher>::~Map() {
+    // remove every element in the table
+    for (std::size_t i=0; i<n_items; i++) {
+        auto& bucket = buckets[i];
+        auto entry = bucket.first;
+        for (std::size_t _ = 0; _<bucket.n_items; _++) {
+            auto next = entry->next;
+            entry->next = nullptr;
+            delete entry;
+            entry = next;
+        }
+        bucket.first = nullptr;
+        bucket.n_items = 0;
+    }
     delete[] buckets;
+    buckets = nullptr;
 }
 
 template <
@@ -729,16 +743,14 @@ auto Map<KeyT, ValueT, Hasher>::lookup_task(
 {
     auto const index = bucket_index_for_key(key);
 
-    // assume that the bucket array itself is cached
-    // TODO: can we avoid this assumption?
-    auto& bucket = buckets[index];
-    if (0 == bucket.n_items)
+    auto* bucket = co_await prefetch_and_schedule_on(buckets+(index*sizeof(Bucket)), scheduler);
+    if (0 == bucket->n_items)
     {
         // not found
         co_return on_not_found();
     }
 
-    auto* entry = co_await prefetch_and_schedule_on(bucket.first, scheduler);
+    auto* entry = co_await prefetch_and_schedule_on(bucket->first, scheduler);
     for (;;)
     {
         if (key == entry->key)
