@@ -777,8 +777,7 @@ namespace bm {
         std::vector<ResultType<HashFn>> results{};
         results.reserve(dataset_size);
 
-        size_t count = 0;
-        auto lookup = make_lookup_vector(ds, order_probe, &count);
+        auto lookup = make_lookup_vector(ds, order_probe, &probe_count);
 
         if (is_perf)
             e.startCounters();
@@ -790,8 +789,8 @@ namespace bm {
         tot_for_probe = end_for - start_for;
 
         // check if everything went well!
-        if (results.size() != count) {
-            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==order_probe.size()\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [order_probe.size()] " + std::to_string(count) + "\n");
+        if (results.size() != probe_count) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==probe_count\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [probe_count] " + std::to_string(probe_count) + "\n");
         }
 
         json benchmark;
