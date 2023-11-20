@@ -432,7 +432,7 @@ template <
     typename Hasher>
 Map<KeyT, ValueT, Hasher>::~Map() {
     // remove every element in the table
-    for (std::size_t i=0; i<n_items; i++) {
+    for (std::size_t i=0; i<capacity; i++) {
         auto& bucket = buckets[i];
         auto entry = bucket.first;
         for (std::size_t _ = 0; _<bucket.n_items; _++) {
