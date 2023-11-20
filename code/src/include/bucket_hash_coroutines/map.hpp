@@ -658,7 +658,7 @@ auto Map<KeyT, ValueT, Hasher>::interleaved_multilookup(
     using MapType    = Map<KeyT, ValueT, Hasher>;
     using ResultType = typename MapType::LookupKVResult;
 
-    StaticQueueScheduler<16> scheduler{};
+    StaticQueueScheduler<MAX_CORO+1> scheduler{};
 
     // instantiate a throttler for this multilookup
     Throttler throttler{scheduler, n_streams};

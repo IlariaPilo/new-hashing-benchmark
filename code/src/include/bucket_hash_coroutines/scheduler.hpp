@@ -41,6 +41,7 @@ public:
 
     void run() const
     {
+        // this is confusing the case where the queue is empty with the one where it is full!
         while (auto handle = try_remove_next_task())
         {
             handle.resume();

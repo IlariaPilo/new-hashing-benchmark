@@ -13,7 +13,7 @@
     std::string input_dir = "";
     std::string output_dir = "";
     size_t threads;
-    size_t n_coro = 4;
+    size_t n_coro = 8;
     std::string filter = "all";
 /* ========================= */
 
@@ -23,7 +23,7 @@ void show_usage() {
     std::cout << "Arguments:" << std::endl;
     std::cout << "  -i, --input INPUT_DIR     Directory storing the datasets" << std::endl;
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
-    std::cout << "  -c, --coro COROUTINES     Number of streams in the coroutines (default: 4)" << std::endl;
+    std::cout << "  -c, --coro COROUTINES     Number of streams in the coroutines (default: 8, maximum: "<< MAX_CORO << ")" << std::endl;
     // std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
     std::cout << "                            Options = probe[80_20],all" << std::endl;    // TODO - add more
@@ -60,6 +60,11 @@ int pars_args(const int& argc, char* const* const& argv) {
             if (i + 1 < argc) {
                 n_coro = std::stoi(argv[i + 1]);
                 i++; // Skip the next argument
+                if (n_coro > MAX_CORO) {
+                    std::cerr << "Error: --coro value is greater than the maximum allowed ["<< MAX_CORO <<"].\n";
+                    std::cerr << "Hint: Still want to use all these streams?\n      Go in 'code/src/include/bucket_hash_coroutines/cppcoro/coroutine.hpp' and change the MAX_CORO definition!\n";
+                    return 2;
+                }
                 continue;
             } else {
                 std::cerr << "Error: --coro requires an argument." << std::endl;

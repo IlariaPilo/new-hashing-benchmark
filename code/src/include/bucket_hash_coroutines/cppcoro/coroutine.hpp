@@ -15,6 +15,9 @@
 #ifndef CONFIG_COROUTINE_CONFIG_HPP
 #define CONFIG_COROUTINE_CONFIG_HPP
 
+// the maximum number of concurrent streams allowed 
+#define MAX_CORO 16
+
 #if defined(__clang__)
     #define CORO_COMPILER_CLANG (__clang_major__ * 10000 + \
                                  __clang_minor__ * 100 + \
