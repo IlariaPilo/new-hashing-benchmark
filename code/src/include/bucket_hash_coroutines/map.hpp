@@ -743,7 +743,9 @@ auto Map<KeyT, ValueT, Hasher>::lookup_task(
 {
     auto const index = bucket_index_for_key(key);
 
-    auto* bucket = co_await prefetch_and_schedule_on(buckets+(index*sizeof(Bucket)), scheduler);
+    // TODO re-enable
+    //auto* bucket = co_await prefetch_and_schedule_on(buckets+index, scheduler);
+    auto* bucket = buckets+index;
     if (0 == bucket->n_items)
     {
         // not found

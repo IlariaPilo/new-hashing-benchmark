@@ -690,11 +690,11 @@ namespace bm {
 
     // ********************** COROUTINES ********************** //
 
-    inline static coro::generator<int> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const &order_probe) {
+    inline static coro::generator<Data> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const &order_probe) {
         size_t dataset_size = ds.size();
         for (int idx : order_probe) {
             if (idx < (int)dataset_size)
-                co_yield static_cast<int>(ds[idx]);
+                co_yield ds[idx];
         }
     }
 
