@@ -690,10 +690,11 @@ namespace bm {
 
     // ********************** COROUTINES ********************** //
 
-    inline static coro::generator<Data> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const &order_probe) {
+    inline static coro::generator<Data> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const *order_probe, size_t *count) {
         size_t dataset_size = ds.size();
-        for (int idx : order_probe) {
+        for (int idx : *order_probe) {
             if (idx < (int)dataset_size) {
+                (*count)++;
                 Data data = ds[idx];
                 co_yield data;
             }
@@ -776,7 +777,8 @@ namespace bm {
         std::vector<ResultType<HashFn>> results{};
         results.reserve(dataset_size);
 
-        auto lookup = make_lookup_vector(ds, *order_probe);
+        size_t count = 0;
+        auto lookup = make_lookup_vector(ds, order_probe, &count);
 
         if (is_perf)
             e.startCounters();
@@ -788,8 +790,8 @@ namespace bm {
         tot_for_probe = end_for - start_for;
 
         // check if everything went well!
-        if (results.size() != dataset_size) {
-            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==dataset_size\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+        if (results.size() != count) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==order_probe.size()\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [order_probe.size()] " + std::to_string(count) + "\n");
         }
 
         json benchmark;
