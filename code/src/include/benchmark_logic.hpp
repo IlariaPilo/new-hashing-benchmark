@@ -693,8 +693,10 @@ namespace bm {
     inline static coro::generator<Data> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const &order_probe) {
         size_t dataset_size = ds.size();
         for (int idx : order_probe) {
-            if (idx < (int)dataset_size)
-                co_yield ds[idx];
+            if (idx < (int)dataset_size) {
+                Data data = ds[idx];
+                co_yield data;
+            }
         }
     }
 
