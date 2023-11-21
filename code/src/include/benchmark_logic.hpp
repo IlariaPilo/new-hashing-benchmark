@@ -690,13 +690,24 @@ namespace bm {
 
     // ********************** COROUTINES ********************** //
 
-    inline static coro::generator<Data> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const *order_probe, size_t *count) {
+    // inline static coro::generator<Data> make_lookup_vector(std::vector<Data> const &ds, std::vector<int> const *order_probe, size_t *count) {
+    //     size_t dataset_size = ds.size();
+    //     for (int idx : *order_probe) {
+    //         if (idx < (int)dataset_size) {
+    //             (*count)++;
+    //             Data data = ds[idx];
+    //             co_yield data;
+    //         }
+    //     }
+    // }
+    inline static void make_lookup_vector(std::vector<Data> const &ds, std::vector<Data>& lookup, std::vector<int> const *order_probe, size_t *count) {
         size_t dataset_size = ds.size();
+        lookup.reserve(dataset_size);
         for (int idx : *order_probe) {
             if (idx < (int)dataset_size) {
                 (*count)++;
                 Data data = ds[idx];
-                co_yield data;
+                lookup.push_back(data);
             }
         }
     }
@@ -725,6 +736,8 @@ namespace bm {
         }
 
         const std::string label = "Coro:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
+        // TODO remove
+        std::cout << "BEGIN " + label + "\n";
 
         // Compute capacity given the laod% and the dataset_size
         // --> must be a power of 2! (but it is done automatically)
@@ -768,12 +781,17 @@ namespace bm {
         if (table.count() != dataset_size) {
             throw std::runtime_error("\033[1;91mAssertion failed\033[0m table.count()==dataset_size\n           In --> " + label + "\n           [table.count()] " + std::to_string(table.count()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
         }
+        // TODO remove
+        std::cout << "Insertion complete!\n";
 
-        // prepare output array   
+        // prepare lookup and output arrays   
         std::vector<ResultType<HashFn>> results{};
-        results.reserve(dataset_size);
+        std::vector<Data> lookup;
+        make_lookup_vector(ds, lookup, order_probe, &probe_count);
+        results.reserve(probe_count);
 
-        auto lookup = make_lookup_vector(ds, order_probe, &probe_count);
+        // TODO remove
+        std::cout << "Begin interleaved multilookup..\n";
 
         if (is_perf)
             e.startCounters();
