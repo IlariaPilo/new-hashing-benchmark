@@ -26,7 +26,7 @@ void show_usage() {
     std::cout << "  -c, --coro COROUTINES     Number of streams in the coroutines (default: 8, maximum: "<< MAX_CORO << ")" << std::endl;
     // std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = probe[80_20],all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = rmi,probe[80_20],all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -62,7 +62,7 @@ int pars_args(const int& argc, char* const* const& argv) {
                 i++; // Skip the next argument
                 if (n_coro > MAX_CORO) {
                     std::cerr << "Error: --coro value is greater than the maximum allowed ["<< MAX_CORO <<"].\n";
-                    std::cerr << "Hint: Still want to use all these streams?\n      Go in 'code/src/include/bucket_hash_coroutines/cppcoro/coroutine.hpp' and change the MAX_CORO definition!\n";
+                    std::cerr << "Hint: Still want to use all these streams?\n      Go in 'code/src/include/coroutines/cppcoro/coroutine.hpp' and change the MAX_CORO definition!\n";
                     return 2;
                 }
                 continue;
@@ -100,8 +100,18 @@ void dilate_coro_fn(std::vector<bm::BM>& bm_out, dataset::ID id, bm::ProbeType t
     }
 }
 
+template <class RMI>
+void dilate_rmi_fn(std::vector<bm::BMtype>& bm_out) {
+    auto cp = n_coro;
+    bm::BMtype lambda = [cp](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+        bm::rmi_coro_throughput<RMI>(ds_obj, writer, cp);
+    };
+    bm_out.push_back(lambda);
+}
+
 void load_bm_list(std::vector<bm::BM>& bm_list,
-        const std::vector<bm::BM>& probe_bm, const std::vector<bm::BM>& probe_pareto_bm
+        const std::vector<bm::BM>& probe_bm, const std::vector<bm::BM>& probe_pareto_bm,
+        const std::vector<bm::BMtype>& rmi_bm
         /*TODO - add more*/) {
     std::string part;
     size_t start;
@@ -118,6 +128,13 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
         if (part == "probe80_20" || part == "all") {
             for (const bm::BM& bm_struct : probe_pareto_bm) {
                 bm_list.push_back(bm_struct);
+            }
+            if (part != "all") continue;
+        }
+        if (part == "rmi" || part == "all") {
+            for (const bm::BMtype& bm_fn : rmi_bm) {
+                for (dataset::ID id : collisions_ds)
+                    bm_list.push_back({bm_fn, id});
             }
             //if (part != "all") continue;
             continue;
@@ -151,6 +168,19 @@ int main(int argc, char* argv[]) {
 
     // Benchmark arrays definition
     std::vector<bm::BM> bm_list;
+    // rmi
+    // ------------- collisions ------------- //
+    std::vector<bm::BMtype> rmi_bm = {};
+    dilate_rmi_fn<RMICoro_2>(rmi_bm);
+    dilate_rmi_fn<RMICoro_10>(rmi_bm);
+    dilate_rmi_fn<RMICoro_100>(rmi_bm);
+    dilate_rmi_fn<RMICoro_1k>(rmi_bm);
+    dilate_rmi_fn<RMICoro_10k>(rmi_bm);
+    dilate_rmi_fn<RMICoro_100k>(rmi_bm);
+    dilate_rmi_fn<RMICoro_1M>(rmi_bm);
+    dilate_rmi_fn<RMICoro_10M>(rmi_bm);
+    dilate_rmi_fn<RMICoro_100M>(rmi_bm);
+
     // ---------------- probe --------------- //
     std::vector<bm::BM> probe_bm = {};
     dilate_coro_fn<RMIHash_10>(probe_bm,dataset::ID::GAP_10);
@@ -184,10 +214,10 @@ int main(int argc, char* argv[]) {
 
     }
 
-    load_bm_list(bm_list, probe_bm, probe_pareto_bm);
+    load_bm_list(bm_list, probe_bm, probe_pareto_bm, rmi_bm);
 
     if (bm_list.size()==0) {
-        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: collisions,gaps,probe[80_20],build,distribution,point[80_20],range[80_20],join,all." << std::endl;   // TODO - add more
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: rmi,probe[80_20],all." << std::endl;   // TODO - add more
         return 1;
     }
 

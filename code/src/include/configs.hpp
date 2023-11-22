@@ -11,7 +11,8 @@
 // Datasets
 #include "datasets.hpp"
 // Coroutines
-#include "bucket_hash_coroutines/map.hpp"
+#include "coroutines/map.hpp"
+#include "coroutines/rmi-coro.hpp"
 
 // ********************* CONFIGS ********************* //
 
@@ -118,7 +119,20 @@ constexpr size_t coro_lf[] = {25,50,75,200};
 template <class HashFn>
 using ChainedTableCoro = Map<Key, Payload, HashFn>;
 template <class HashFn>
-using ResultType = typename Map<Key, Payload, HashFn>::LookupResultType; 
+using ResultType = typename ChainedTableCoro<HashFn>::LookupResultType;
+
+using RMICoro_2 = rmi_coro::RMIHash<Data, 2>;
+using RMICoro_10 = rmi_coro::RMIHash<Data, 10>;
+using RMICoro_100 = rmi_coro::RMIHash<Data, 100>;
+using RMICoro_1k = rmi_coro::RMIHash<Data, 1000>;
+using RMICoro_10k = rmi_coro::RMIHash<Data, 10000>;
+using RMICoro_100k = rmi_coro::RMIHash<Data, 100000>;
+using RMICoro_1M = rmi_coro::RMIHash<Data, 1000000>;
+using RMICoro_10M = rmi_coro::RMIHash<Data, 10000000>;
+using RMICoro_100M = rmi_coro::RMIHash<Data, 100000000>;
+
+template <class RMI>
+using ResultRMIType = typename RMI::template HashResult<Key>;
 
 // ********************* HASH TABLES ********************* //
 using FastModulo = hashing::reduction::FastModulo<Key>;

@@ -12,8 +12,8 @@
 #include "configs.hpp"
 #include "thirdparty/perfevent/PerfEvent.hpp"
 
-#include "bucket_hash_coroutines/cppcoro/coroutine.hpp"
-#include "bucket_hash_coroutines/cppcoro/generator.hpp"
+#include "coroutines/cppcoro/coroutine.hpp"
+#include "coroutines/cppcoro/generator.hpp"
 
 // For a detailed description of the benchmarks, please consult the README of the project
 
@@ -735,7 +735,7 @@ namespace bm {
                 probe_label = "80-20";
         }
 
-        const std::string label = "Coro:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label;
+        const std::string label = "Coro:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label + ":" + std::to_string(n_coro);
         // TODO remove
         std::cout << "BEGIN " + label + "\n";
 
@@ -820,6 +820,7 @@ namespace bm {
         benchmark["insert_fail_message"] = fail_what;
         benchmark["label"] = label;
         benchmark["probe_type"] = probe_label;
+        benchmark["n_coro"] = n_coro;
 
         if (insert_fail)
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
@@ -831,5 +832,71 @@ namespace bm {
             e.printReport(perf_out, dataset_size, /*printHeader*/ false, /*printData*/ true);
         }
     }
+
+    // RMI coro
+    template <class RMI>
+    void rmi_coro_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer,
+            /* coroutines stuff */ size_t n_coro) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
+
+        RMI fn(ds.begin(), ds.end(), dataset_size);
+        const std::string label = "Coro-RMI:" + fn.name() + ":" + dataset_name + ":" + std::to_string(n_coro);
+
+        // ====================== throughput counters ====================== //
+        /*volatile*/ std::chrono::high_resolution_clock::time_point start_for, end_for;
+        /*volatile*/ std::chrono::duration<double> tot_sequential(0), tot_interleaved(0);
+        size_t insert_count = 0;
+        // ================================================================ //
+
+        // prepare lookup and output arrays   
+        std::vector<ResultRMIType<RMI>> results{};
+        results.reserve(dataset_size);
+
+        std::vector<Data> lookup;
+        make_lookup_vector(ds, lookup, &order_insert, &insert_count);
+        // check if everything went well!
+        if (insert_count != dataset_size) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m dataset_size==insert_count\n           In --> " + label + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n           [insert_count] " + std::to_string(insert_count) + "\n");
+        }
+        
+        // sequential
+        start_for = std::chrono::high_resolution_clock::now();
+        fn.sequential_multihash(lookup.begin(), lookup.end(), std::back_inserter(results));
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_sequential = end_for - start_for;
+
+        // check if everything went well!
+        if (results.size() != dataset_size) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==dataset_size\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+        }
+        results.clear();
+        results.reserve(dataset_size);
+
+        // interleaved
+        start_for = std::chrono::high_resolution_clock::now();
+        fn.interleaved_multihash(lookup.begin(), lookup.end(), std::back_inserter(results), n_coro);
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_interleaved = end_for - start_for;
+
+        // check if everything went well!
+        if (results.size() != dataset_size) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==dataset_size\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+        }
+
+        json benchmark;
+
+        benchmark["dataset_size"] = dataset_size;
+        benchmark["tot_interleaved_time_s"] = tot_interleaved.count();
+        benchmark["tot_sequential_time_s"] = tot_sequential.count();
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["label"] = label;
+        benchmark["n_coro"] = n_coro; 
+        std::cout << label + "\n";
+        writer.add_data(benchmark);
+    }
+    
 
 }
