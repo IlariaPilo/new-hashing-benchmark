@@ -450,7 +450,7 @@ namespace rmi_coro
       using FunType = RMIHash<Key, MaxSecondLevelModelCount, MinAvgDatapointsPerModel, Precision, RootModel, SecondLevelModel>;
       using ResultType = typename FunType::HashResult<Result>;
 
-      StaticQueueScheduler<MAX_CORO + 1> scheduler{};
+      StaticQueueScheduler<MAX_CORO+1> scheduler{};
 
       // instantiate a throttler for this multilookup
       Throttler throttler{scheduler, n_streams};
@@ -484,7 +484,7 @@ namespace rmi_coro
     {
       for (auto iter = begin_keys; iter != end_keys; ++iter)
       {
-        *begin_results = hash<>(*iter);
+        *begin_results = hash<Result>(*iter);
         ++begin_results;
       }
     }

@@ -715,8 +715,7 @@ namespace bm {
     // probe coroutines
     template <class HashFn>
     void probe_coroutines(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type,
-            /* coroutines stuff */ size_t n_coro, 
-            /* perf stuff */ std::string perf_config = "", std::ostream& perf_out = std::cout) {
+            /* coroutines stuff */ size_t n_coro) {
         // Extract variables
         const size_t dataset_size = ds_obj.get_size();
         const std::string dataset_name = dataset::name(ds_obj.get_id());
@@ -750,12 +749,11 @@ namespace bm {
         
         // ====================== throughput counters ====================== //
         /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
-        /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_for_insert(0), tot_for_probe(0);
+        /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_for_insert(0), tot_for_interleaved(0), tot_for_sequential(0);
         size_t insert_count = 0;
         size_t probe_count = 0;
         std::string fail_what = "";
         bool insert_fail = false;
-        PerfEvent e(!is_perf);      /* silence errors if it's not perf */
         // ================================================================ //
 
         // Build the table
@@ -793,14 +791,26 @@ namespace bm {
         // TODO remove
         std::cout << "Begin interleaved multilookup..\n";
 
-        if (is_perf)
-            e.startCounters();
         start_for = std::chrono::high_resolution_clock::now();
         table.interleaved_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results), n_coro);
         end_for = std::chrono::high_resolution_clock::now();
-        if (is_perf)
-            e.stopCounters();
-        tot_for_probe = end_for - start_for;
+        tot_for_interleaved = end_for - start_for;
+
+        // check if everything went well!
+        if (results.size() != probe_count) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==probe_count\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [probe_count] " + std::to_string(probe_count) + "\n");
+        }
+
+        results.clear();
+        results.reserve(probe_count);
+
+        // TODO remove
+        std::cout << "Begin sequential multilookup..\n";
+
+        start_for = std::chrono::high_resolution_clock::now();
+        table.sequential_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results));
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_for_sequential = end_for - start_for;
 
         // check if everything went well!
         if (results.size() != probe_count) {
@@ -812,7 +822,8 @@ namespace bm {
         benchmark["probe_elem_count"] = probe_count;
         benchmark["insert_elem_count"] = insert_count;
         benchmark["tot_time_insert_s"] = tot_time_insert.count();
-        benchmark["tot_for_time_probe_s"] = tot_for_probe.count();
+        benchmark["tot_for_time_interleaved_s"] = tot_for_interleaved.count();
+        benchmark["tot_for_time_sequential_s"] = tot_for_sequential.count();
         benchmark["tot_for_time_insert_s"] = tot_for_insert.count();
         benchmark["capacity"] = capacity;
         benchmark["dataset_name"] = dataset_name;
@@ -826,11 +837,6 @@ namespace bm {
             std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
         else std::cout << label + "\n";
         writer.add_data(benchmark);
-        if (is_perf) {
-            // print data
-            perf_out << perf_config;
-            e.printReport(perf_out, dataset_size, /*printHeader*/ false, /*printData*/ true);
-        }
     }
 
     // RMI coro
