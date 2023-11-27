@@ -608,7 +608,7 @@ namespace rmi_coro
         : handle{CoroHandle::from_promise(p)} {}
   };
 
-  // The type returned by Map::lookup() operations.
+  // The type returned by () operations.
   template <class Key, size_t MaxSecondLevelModelCount,
             size_t MinAvgDatapointsPerModel, class Precision,
             class RootModel,

@@ -11,7 +11,7 @@
 // Datasets
 #include "datasets.hpp"
 // Coroutines
-#include "coroutines/map.hpp"
+#include "coroutines/chained-coro.hpp"
 #include "coroutines/rmi-coro.hpp"
 
 // ********************* CONFIGS ********************* //
@@ -113,27 +113,6 @@ using MWHC = exotic_hashing::MWHC<Data>;
 using BitMWHC = exotic_hashing::BitMWHC<Data>;
 using RecSplit = exotic_hashing::RecSplit<Data>;
 
-// ********************* COROUTINES ********************* //
-constexpr size_t coro_lf[] = {25,50,75,200};
-
-template <class HashFn>
-using ChainedTableCoro = Map<Key, Payload, HashFn>;
-template <class HashFn>
-using ResultType = typename ChainedTableCoro<HashFn>::LookupResultType;
-
-using RMICoro_2 = rmi_coro::RMIHash<Data, 2>;
-using RMICoro_10 = rmi_coro::RMIHash<Data, 10>;
-using RMICoro_100 = rmi_coro::RMIHash<Data, 100>;
-using RMICoro_1k = rmi_coro::RMIHash<Data, 1000>;
-using RMICoro_10k = rmi_coro::RMIHash<Data, 10000>;
-using RMICoro_100k = rmi_coro::RMIHash<Data, 100000>;
-using RMICoro_1M = rmi_coro::RMIHash<Data, 1000000>;
-using RMICoro_10M = rmi_coro::RMIHash<Data, 10000000>;
-using RMICoro_100M = rmi_coro::RMIHash<Data, 100000000>;
-
-template <class RMI>
-using ResultRMIType = typename RMI::template HashResult<Key>;
-
 // ********************* HASH TABLES ********************* //
 using FastModulo = hashing::reduction::FastModulo<Key>;
 
@@ -152,6 +131,27 @@ template <class HashFn>
 using ChainedRange = hashtable::Chained<Key, Payload, RANGE_BUCKETS /*BucketSize*/, HashFn, FastModulo>;
 template <class HashFn>
 using RMISortRange = hashtable::RMISort<Key, Payload, HashFn>;
+
+
+// ********************* COROUTINES ********************* //
+template <class HashFn>
+using ChainedTableCoro = hashtable_coro::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, FastModulo>;
+template <class HashFn>
+using ResultType = typename ChainedTableCoro<HashFn>::LookupResult;
+
+using RMICoro_2 = rmi_coro::RMIHash<Data, 2>;
+using RMICoro_10 = rmi_coro::RMIHash<Data, 10>;
+using RMICoro_100 = rmi_coro::RMIHash<Data, 100>;
+using RMICoro_1k = rmi_coro::RMIHash<Data, 1000>;
+using RMICoro_10k = rmi_coro::RMIHash<Data, 10000>;
+using RMICoro_100k = rmi_coro::RMIHash<Data, 100000>;
+using RMICoro_1M = rmi_coro::RMIHash<Data, 1000000>;
+using RMICoro_10M = rmi_coro::RMIHash<Data, 10000000>;
+using RMICoro_100M = rmi_coro::RMIHash<Data, 100000000>;
+
+template <class RMI>
+using ResultRMIType = typename RMI::template HashResult<Key>;
+
 
 // ********************* MACROS ********************* //
 #define M(n)    \

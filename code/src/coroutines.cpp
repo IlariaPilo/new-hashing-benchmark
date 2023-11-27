@@ -92,7 +92,7 @@ int pars_args(const int& argc, char* const* const& argv) {
 template <class HashFn>
 void dilate_coro_fn(std::vector<bm::BM>& bm_out, dataset::ID id, bm::ProbeType type = bm::ProbeType::UNIFORM) {
     auto cp = n_coro;
-    for (size_t lf : coro_lf) {
+    for (size_t lf : chained_lf) {
         bm::BMtype lambda = [lf, cp, type](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
             bm::probe_coroutines<HashFn>(ds_obj, writer, lf, type, cp);
         };

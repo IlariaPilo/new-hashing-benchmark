@@ -739,8 +739,7 @@ namespace bm {
         std::cout << "BEGIN " + label + "\n";
 
         // Compute capacity given the laod% and the dataset_size
-        // --> must be a power of 2! (but it is done automatically)
-        std::size_t capacity = next_power_of_2(dataset_size*100/load_perc);
+        std::size_t capacity = dataset_size*100/load_perc;
         
         // now, create the table
         HashFn fn;
@@ -757,6 +756,7 @@ namespace bm {
         // ================================================================ //
 
         // Build the table
+        bool done = true;
         Payload count = 0;
         start_for = std::chrono::high_resolution_clock::now();
         for (int i : order_insert) {
@@ -765,7 +765,7 @@ namespace bm {
                 // get the data
                 Data data = ds[i];
                 _start_ = std::chrono::high_resolution_clock::now();
-                table.insert(data, count);
+                done &= table.insert(data, count);
                 _end_ = std::chrono::high_resolution_clock::now();
                 count++;
                 insert_count++;
@@ -776,8 +776,8 @@ namespace bm {
         tot_for_insert = end_for - start_for;
 
         // check if everything went well!
-        if (table.count() != dataset_size) {
-            throw std::runtime_error("\033[1;91mAssertion failed\033[0m table.count()==dataset_size\n           In --> " + label + "\n           [table.count()] " + std::to_string(table.count()) + "\n           [dataset_size] " + std::to_string(dataset_size) + "\n");
+        if (!done) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m done\n           In --> " + label + "\n");
         }
         // TODO remove
         std::cout << "Insertion complete!\n";
@@ -825,7 +825,7 @@ namespace bm {
         benchmark["tot_for_time_interleaved_s"] = tot_for_interleaved.count();
         benchmark["tot_for_time_sequential_s"] = tot_for_sequential.count();
         benchmark["tot_for_time_insert_s"] = tot_for_insert.count();
-        benchmark["capacity"] = capacity;
+        benchmark["load_factor_%"] = load_perc;
         benchmark["dataset_name"] = dataset_name;
         benchmark["function_name"] = HashFn::name();
         benchmark["insert_fail_message"] = fail_what;
