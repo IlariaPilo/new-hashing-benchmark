@@ -735,7 +735,7 @@ namespace bm {
         }
 
         const std::string label = "Coro:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label + ":" + std::to_string(n_coro);
-        // TODO remove
+
         std::cout << "BEGIN " + label + "\n";
 
         // Compute capacity given the laod% and the dataset_size
@@ -779,17 +779,12 @@ namespace bm {
         if (!done) {
             throw std::runtime_error("\033[1;91mAssertion failed\033[0m done\n           In --> " + label + "\n");
         }
-        // TODO remove
-        std::cout << "Insertion complete!\n";
 
         // prepare lookup and output arrays   
         std::vector<ResultType<HashFn>> results{};
         std::vector<Data> lookup;
         make_lookup_vector(ds, lookup, order_probe, &probe_count);
         results.reserve(probe_count);
-
-        // TODO remove
-        std::cout << "Begin interleaved multilookup..\n";
 
         start_for = std::chrono::high_resolution_clock::now();
         table.interleaved_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results), n_coro);
@@ -800,12 +795,10 @@ namespace bm {
         if (results.size() != probe_count) {
             throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==probe_count\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [probe_count] " + std::to_string(probe_count) + "\n");
         }
+        std::cout << " |- [t] interleaved lookup: " << tot_for_interleaved.count() << "s\n";
 
         results.clear();
         results.reserve(probe_count);
-
-        // TODO remove
-        std::cout << "Begin sequential multilookup..\n";
 
         start_for = std::chrono::high_resolution_clock::now();
         table.sequential_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results));
@@ -816,6 +809,7 @@ namespace bm {
         if (results.size() != probe_count) {
             throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==probe_count\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [probe_count] " + std::to_string(probe_count) + "\n");
         }
+        std::cout << " |- [t] sequential lookup: " << tot_for_sequential.count() << "s\n";
 
         json benchmark;
         benchmark["dataset_size"] = dataset_size;
@@ -834,8 +828,8 @@ namespace bm {
         benchmark["n_coro"] = n_coro;
 
         if (insert_fail)
-            std::cout << "\033[1;91mInsert failed >\033[0m " + label + "\n";
-        else std::cout << label + "\n";
+            std::cout << " `- \033[1;91mInsert failed\033[0m\n";
+        else std::cout << " `- DONE\n";
         writer.add_data(benchmark);
     }
 
