@@ -134,7 +134,7 @@ using RMISortRange = hashtable::RMISort<Key, Payload, HashFn>;
 
 
 // ********************* COROUTINES ********************* //
-constexpr size_t coro_lf[] = {25,50,200,500,1000};
+constexpr size_t coro_lf[] = {25,50,200,10000,100000};
 
 template <class HashFn>
 using ChainedTableCoro = hashtable_coro::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, FastModulo>;
