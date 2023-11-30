@@ -102,6 +102,26 @@ sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
 ```
 If you are using the Docker container, don't forget to add the `--perf` option when executing `run.sh`.
 
+### 🌀 [ new! ] Coroutines
+Coroutine-powered benchmarks can be run with the `cmake-build-release/src/coroutines` executable.
+```
+./coroutines [ARGS]
+Arguments:
+  -i, --input INPUT_DIR     Directory storing the datasets
+  -o, --output OUTPUT_DIR   Directory that will store the output
+  -c, --coro COROUTINES     Number of streams (default: 8, maximum: 16)
+  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)
+                            Options = rmi,probe[80_20],all
+  -h, --help                Display this help message
+```
+Results are saved in the specified output directory, in a file called `coroutines-<filter>_<timestamp>.json`.
+
+Here are the available coroutine benchmarks:
+- _rmi_ : compute the hashing throughput for RMI functions with different number of submodels, in a sequential and an interleaved fashion
+- _probe_ : compute the probe throughput for hash tables using different functions, in a sequential and an interleaved fashion
+- _probe80\_20_ : the _probe_ experiment using the 80-20 distribution to simulate real-world data access
+
+
 ## 3 | Process the results
 ### 🎨 Figure generation
 The [`print_figures`](./scripts/print_figures.py) Python script can be used to generate all possible plots included in the original article starting from a .json or .csv output file. 
@@ -149,5 +169,6 @@ This repository is based on the following components:
 - [`exotic-hashing`](https://github.com/DominikHorn/exotic-hashing) by Dominik Horn — A C++ library exposing various state-of-the-art exotic hash functions;
 - [`learned-hashing`](https://github.com/DominikHorn/learned-hashing) by Dominik Horn — A C++ library exposing various state-of-the-art learned hash functions;
 - [`json`](https://github.com/nlohmann/json) by Niels Lohmann — A library to handle json serialization in C++;
-- [`perfevent`](https://github.com/viktorleis/perfevent), by Viktor Leis — A header-only C++ wrapper for Linux' perf event API.
+- [`perfevent`](https://github.com/viktorleis/perfevent) by Viktor Leis — A header-only C++ wrapper for Linux' perf event API.
+- [`coroutines`](https://github.com/turingcompl33t/coroutines) by Kyle Dotterrer — A repository exploring behavior and applications of C++ coroutines.
 

@@ -23,7 +23,7 @@ void show_usage() {
     std::cout << "Arguments:" << std::endl;
     std::cout << "  -i, --input INPUT_DIR     Directory storing the datasets" << std::endl;
     std::cout << "  -o, --output OUTPUT_DIR   Directory that will store the output" << std::endl;
-    std::cout << "  -c, --coro COROUTINES     Number of streams in the coroutines (default: 8, maximum: "<< MAX_CORO << ")" << std::endl;
+    std::cout << "  -c, --coro COROUTINES     Number of streams (default: 8, maximum: "<< MAX_CORO << ")" << std::endl;
     // std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
     std::cout << "                            Options = rmi,probe[80_20],all" << std::endl;    // TODO - add more
