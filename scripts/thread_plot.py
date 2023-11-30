@@ -179,7 +179,7 @@ def print_ratio_img():
     BUILD = 0
     PROBE = 1
     handles = []
-    fig, axes = plt.subplots(2, 2, figsize=(7.5, 5))  # Adjust figsize as needed
+    fig, axes = plt.subplots(2, 2, figsize=(6, 4))  # Adjust figsize as needed
 
     for i,size in enumerate(sizes):
         ax = axes[i]
@@ -221,7 +221,7 @@ def print_ratio_img():
     axes[1,0].set_ylabel('(25Mx25M)')
 
     labels.insert(0, 'Ideal Trend')
-    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(labels)//2+len(labels)%2, bbox_to_anchor=(0.5, 1.12))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(labels)//3+len(labels)%3, bbox_to_anchor=(0.5, 1.2))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Thread Number')
