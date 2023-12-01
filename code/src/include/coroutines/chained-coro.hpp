@@ -1,5 +1,8 @@
 #pragma once
 
+// An implementation of the Bucket chaining hash table by Dominik Horn, 
+// using coroutines to prefetch buckets from linked lists.
+
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -17,6 +20,7 @@
 #include "prefetch.hpp"
 #include "scheduler.hpp"
 #include "throttler.hpp"
+// ------------------------- //
 
 namespace hashtable_coro
 {
@@ -28,10 +32,10 @@ namespace hashtable_coro
         using KeyType = Key;
         using PayloadType = Payload;
 
-        // Coroutine things
+        // A class representing the lookup task [coroutines]
         template <typename Scheduler>
         class LookupTask;
-        // template <class Result = size_t>
+        // A class representing the lookup result [coroutines]
         class LookupResult;
 
     private:
@@ -118,7 +122,7 @@ namespace hashtable_coro
          * Retrieves the associated payload/value for a given key.
          *
          * @param key
-         * @return the payload or nullptr if key was not found in the Hashtable
+         * @return a pair <key,value>, where `value` is the payload or nullptr, if `key` was not found.
          */
         LookupResult lookup(const Key &key) const
         {
@@ -155,6 +159,15 @@ namespace hashtable_coro
             return LookupResult{};;
         }
 
+        /**
+         * Retrieves the associated payload/value for a given key.
+         *
+         * @param key
+         * @param scheduler The scheduler that is handling the different streams.
+         * @param on_found The lambda function that is called when the key is found.
+         * @param on_not_found The lambda function that is called when the key is NOT found.
+         * @return a pair <key,value>, where `value` is the payload or nullptr, if `key` was not found.
+         */
         template <
             typename Scheduler,
             typename OnFound,
@@ -172,6 +185,7 @@ namespace hashtable_coro
             }
 
             // Using template functor should successfully inline actual hash computation
+            // TODO - is it interesting to prefetch this one too?
             const FirstLevelSlot &slot = slots[reductionfn(hashfn(key))];
 
             if (slot.key == key)
@@ -200,7 +214,15 @@ namespace hashtable_coro
             co_return on_not_found();
         }
 
-        // ------ this is the function we want to add coroutines to ------ //
+        /**
+         * Retrieves the associated payload/value for multiple keys, using coroutines and prefetching.
+         *
+         * @param begin_keys Begin iterator for the keys collection.
+         * @param end_keys End iterator for the keys collection.
+         * @param begin_results Begin iterator for the result array [this will contain the output]
+         * @param n_streams The number of streams to be used [minimum 1, maximum MAX_CORO]
+         * @return Fills the `begin_results` array with `LookupResult` objects (that is, <key,value> pairs)
+         */
         template <
             typename BeginInputIter,
             typename EndInputIter,
@@ -239,6 +261,14 @@ namespace hashtable_coro
             throttler.run();
         }
 
+        /**
+         * Retrieves the associated payload/value for multiple keys, in a classic sequential manner.
+         *
+         * @param begin_keys Begin iterator for the keys collection.
+         * @param end_keys End iterator for the keys collection.
+         * @param begin_results Begin iterator for the result array [this will contain the output]
+         * @return Fills the `begin_results` array with `LookupResult` objects (that is, <key,value> pairs)
+         */
         template <
             typename BeginInputIter,
             typename EndInputIter,
@@ -355,6 +385,12 @@ namespace hashtable_coro
         std::vector<FirstLevelSlot> slots;
     };
 
+    // ------------------------------------------------------------------- //
+
+    // ========================================================= //
+    // Adapted from https://github.com/turingcompl33t/coroutines //
+    // ========================================================= //
+
     // The task type used to represent interleaved lookup operations.
     template <class Key, class Payload, size_t BucketSize, class HashFn, class ReductionFn, Key Sentinel>
     template <typename Scheduler>
@@ -453,6 +489,12 @@ namespace hashtable_coro
         LookupTask(promise_type &p)
             : handle{CoroHandle::from_promise(p)} {}
     };
+
+    // ------------------------------------------------------------------- //
+
+    // ========================================================= //
+    // Adapted from https://github.com/turingcompl33t/coroutines //
+    // ========================================================= //
 
     // The type returned by lookup operations.
     template <class Key, class Payload, size_t BucketSize, class HashFn, class ReductionFn, Key Sentinel>

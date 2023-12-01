@@ -298,7 +298,7 @@ def gaps(df):
         y = _df_['count'].values[0]
         y = y[:min(len(y)+1,6)]
         x = np.arange(min(len(y),6))
-        plt.plot(x, y, marker=SHAPES_DS[_d_], markersize=4, label=_d_) # MARKER TODO
+        plt.plot(x, y, marker=SHAPES_DS[_d_], markersize=4, label=_d_)
 
     plt.xlabel('Gap value')
     plt.ylabel('Count')

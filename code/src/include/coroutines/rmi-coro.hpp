@@ -1,5 +1,8 @@
 #pragma once
 
+// An implementation of the RMI-Hash by Dominik Horn, 
+// using coroutines to prefetch from the submodel array.
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -19,6 +22,7 @@
 #include "prefetch.hpp"
 #include "scheduler.hpp"
 #include "throttler.hpp"
+// ------------------------- //
 
 namespace rmi_coro
 {
@@ -207,12 +211,13 @@ namespace rmi_coro
     size_t max_output = 0;
 
   public:
-    // Coroutine things
+    // A class representing the hash task [coroutines]
     template <typename Scheduler>
     class HashTask;
-
+    // A class representing the hash result [coroutines]
     template <class Result = size_t>
     class HashResult;
+
     /**
      * Constructs an empty, untrained RMI. to train, manually
      * train by invoking the train() function
@@ -385,6 +390,7 @@ namespace rmi_coro
      *
      * @tparam Result result data type. Defaults to size_t
      * @param key
+     * @return The hash value of key.
      */
     template <class Result = size_t>
     forceinline Result operator()(const Key &key) const
@@ -403,6 +409,13 @@ namespace rmi_coro
       return result;
     }
 
+    /**
+     * Compute hash value for key.
+     *
+     * @tparam Result result data type. Defaults to size_t
+     * @param key
+     * @return The pair <key, hash>.
+     */
     template <class Result = size_t>
     HashResult<Result> hash(Key const &key)
     {
@@ -410,6 +423,14 @@ namespace rmi_coro
       return HashResult<Result>{key, hash_value};
     }
 
+    /**
+     * Compute hash value for key, using coroutines and prefetching.
+     *
+     * @param key
+     * @param scheduler The scheduler that is handling the different streams.
+     * @param append The lambda function that is called once the hash value is found.
+     * @return The pair <key, hash>.
+     */
     template <
         typename Scheduler,
         typename Append>
@@ -435,7 +456,16 @@ namespace rmi_coro
       co_return append(key, result);
     }
 
-    // ------ this is the function we want to add coroutines to ------ //
+    /**
+     * Compute hash values for multiple keys, using coroutines and prefetching.
+     *
+     * @tparam Result result data type. Defaults to size_t
+     * @param begin_keys Begin iterator for the keys collection.
+     * @param end_keys End iterator for the keys collection.
+     * @param begin_results Begin iterator for the result array [this will contain the output]
+     * @param n_streams The number of streams to be used [minimum 1, maximum MAX_CORO]
+     * @return Fills the `begin_results` array with `HashResult` objects (that is, <key,hash> pairs)
+     */
     template <
         typename BeginInputIter,
         typename EndInputIter,
@@ -472,6 +502,15 @@ namespace rmi_coro
       throttler.run();
     }
 
+    /**
+     * Compute hash values for multiple keys, in a classic sequential manner.
+     *
+     * @tparam Result result data type. Defaults to size_t
+     * @param begin_keys Begin iterator for the keys collection.
+     * @param end_keys End iterator for the keys collection.
+     * @param begin_results Begin iterator for the result array [this will contain the output]
+     * @return Fills the `begin_results` array with `HashResult` objects (that is, <key,hash> pairs)
+     */
     template <
         typename BeginInputIter,
         typename EndInputIter,
@@ -504,7 +543,11 @@ namespace rmi_coro
     }
   };
 
-  // ----------------------------------------------------------------------------
+  // ------------------------------------------------------------------- //
+
+  // ========================================================= //
+  // Adapted from https://github.com/turingcompl33t/coroutines //
+  // ========================================================= //
 
   // The task type used to represent interleaved () operations.
   template <class Key, size_t MaxSecondLevelModelCount,
@@ -607,6 +650,12 @@ namespace rmi_coro
     HashTask(promise_type &p)
         : handle{CoroHandle::from_promise(p)} {}
   };
+
+  // ------------------------------------------------------------------- //
+
+  // ========================================================= //
+  // Adapted from https://github.com/turingcompl33t/coroutines //
+  // ========================================================= //
 
   // The type returned by () operations.
   template <class Key, size_t MaxSecondLevelModelCount,
