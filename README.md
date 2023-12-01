@@ -147,7 +147,8 @@ This script can be particularly useful to leverage the average capability of `pr
 
 1. [`benchmarks.sh`](./code/benchmarks.sh) : a shortcut to run the benchmark program using the default folders `data/` and `output/` as input and output folders, respectively.
 2. [`build.sh`](./code/build.sh), to build the project.
-3. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh), to run the `perf` experiments.
+3. [`coro.sh`](./code/build.sh) : a shortcut to run the coroutine program using the default folders `data/` and `output/` as input and output folders, respectively.
+4. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh), to run the `perf` experiments.
 
 [`docker/`](./docker/) : contains all the needed files to build and run the Docker container of the project.
 

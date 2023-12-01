@@ -1,3 +1,7 @@
+// ================================================= //
+// from https://github.com/turingcompl33t/coroutines //
+// ================================================= //
+
 // coroutine.hpp
 //
 // Internal configuration to account for different 

@@ -1,3 +1,7 @@
+// ================================================= //
+// from https://github.com/turingcompl33t/coroutines //
+// ================================================= //
+
 // static_queue_scheduler.hpp
 
 #ifndef STATIC_QUEUE_SCHEDULER_HPP

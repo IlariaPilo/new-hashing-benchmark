@@ -1,3 +1,7 @@
+// ================================================= //
+// from https://github.com/turingcompl33t/coroutines //
+// ================================================= //
+
 ///////////////////////////////////////////////////////////////////////////////
 // Copyright (c) Lewis Baker
 // Licenced under MIT license. See LICENSE.txt for details.
