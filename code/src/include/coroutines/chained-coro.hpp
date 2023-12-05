@@ -680,7 +680,8 @@ namespace hashtable_coro
 
             // Using template functor should successfully inline actual hash computation
 
-            size_t hash_value = std::numeric_limits<size_t>::max();
+            size_t hash_value; // = std::numeric_limits<size_t>::max();
+            
             // ----------------------- embed hash computation! ----------------------- //
             const auto second_level_index =
                 hashfn.root_model(key, hashfn.second_level_models.size() - 1);
@@ -689,10 +690,9 @@ namespace hashtable_coro
             hash_value = (*second_level_model)(key, hashfn.max_output);
             // --------------------------------- end --------------------------------- //
 
-            // TODO remove
-            if (hash_value == std::numeric_limits<size_t>::max()) {
-                throw std::runtime_error("\033[1;91mHash task is broken...\033[0m\n");
-            }
+            // if (hash_value == std::numeric_limits<size_t>::max()) {
+            //     throw std::runtime_error("\033[1;91mHash task is broken...\033[0m\n");
+            // }
             const FirstLevelSlot &slot = slots[reductionfn(hash_value)];
 
             if (slot.key == key)
