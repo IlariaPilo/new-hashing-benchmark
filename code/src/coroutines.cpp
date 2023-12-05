@@ -26,7 +26,7 @@ void show_usage() {
     std::cout << "  -c, --coro COROUTINES     Number of streams (default: 8, maximum: "<< MAX_CORO << ")" << std::endl;
     // std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = rmi,probe[80_20],all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = rmi,probe[80_20],probe_rmi,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -89,12 +89,12 @@ int pars_args(const int& argc, char* const* const& argv) {
     return 0;
 }
 
-template <class HashFn>
+template <class HashFn, class CoroTable = ChainedTableCoro<HashFn>>
 void dilate_coro_fn(std::vector<bm::BM>& bm_out, dataset::ID id, bm::ProbeType type = bm::ProbeType::UNIFORM) {
     auto cp = n_coro;
     for (size_t lf : coro_lf) {
         bm::BMtype lambda = [lf, cp, type](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_coroutines<HashFn>(ds_obj, writer, lf, type, cp);
+            bm::probe_coroutines<HashFn, CoroTable>(ds_obj, writer, lf, type, cp);
         };
         bm_out.push_back({lambda,id});
     }
@@ -111,6 +111,7 @@ void dilate_rmi_fn(std::vector<bm::BMtype>& bm_out) {
 
 void load_bm_list(std::vector<bm::BM>& bm_list,
         const std::vector<bm::BM>& probe_bm, const std::vector<bm::BM>& probe_pareto_bm,
+        const std::vector<bm::BM>& probe_rmi_bm,
         const std::vector<bm::BMtype>& rmi_bm
         /*TODO - add more*/) {
     std::string part;
@@ -135,6 +136,12 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
             for (const bm::BMtype& bm_fn : rmi_bm) {
                 for (dataset::ID id : collisions_ds)
                     bm_list.push_back({bm_fn, id});
+            }
+            if (part != "all") continue;
+        }
+        if (part == "probe_rmi" || part == "all") {
+            for (const bm::BM& bm_struct : probe_rmi_bm) {
+                bm_list.push_back(bm_struct);
             }
             //if (part != "all") continue;
             continue;
@@ -195,8 +202,8 @@ int main(int argc, char* argv[]) {
         dilate_coro_fn<MURMUR>(probe_bm,id);
         dilate_coro_fn<MultPrime64>(probe_bm,id);
         dilate_coro_fn<MWHC>(probe_bm,id);
-
     }
+
     // ---------------- probe PARETO --------------- //
     std::vector<bm::BM> probe_pareto_bm = {};
     dilate_coro_fn<RMIHash_10>(probe_pareto_bm,dataset::ID::GAP_10,bm::ProbeType::PARETO_80_20);
@@ -211,10 +218,17 @@ int main(int argc, char* argv[]) {
         dilate_coro_fn<MURMUR>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
         dilate_coro_fn<MultPrime64>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
         dilate_coro_fn<MWHC>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
-
     }
 
-    load_bm_list(bm_list, probe_bm, probe_pareto_bm, rmi_bm);
+    // ---------------- probe RMI --------------- //
+    std::vector<bm::BM> probe_rmi_bm = {};
+    dilate_coro_fn<RMICoro_10, RMIChainedTableCoro<RMICoro_10>>(probe_rmi_bm,dataset::ID::GAP_10);
+    dilate_coro_fn<RMICoro_100, RMIChainedTableCoro<RMICoro_100>>(probe_rmi_bm,dataset::ID::NORMAL);
+    dilate_coro_fn<RMICoro_1k, RMIChainedTableCoro<RMICoro_1k>>(probe_rmi_bm,dataset::ID::WIKI);
+    dilate_coro_fn<RMICoro_10M, RMIChainedTableCoro<RMICoro_10M>>(probe_rmi_bm,dataset::ID::FB);
+    dilate_coro_fn<RMICoro_10M, RMIChainedTableCoro<RMICoro_10M>>(probe_rmi_bm,dataset::ID::OSM);
+
+    load_bm_list(bm_list, probe_bm, probe_pareto_bm, probe_rmi_bm, rmi_bm);
 
     if (bm_list.size()==0) {
         std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: rmi,probe[80_20],all." << std::endl;   // TODO - add more

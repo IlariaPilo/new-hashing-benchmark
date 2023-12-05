@@ -713,7 +713,7 @@ namespace bm {
     }
 
     // probe coroutines
-    template <class HashFn>
+    template <class HashFn, class CoroTable>
     void probe_coroutines(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type,
             /* coroutines stuff */ size_t n_coro) {
         // Extract variables
@@ -744,7 +744,7 @@ namespace bm {
         // now, create the table
         HashFn fn;
         _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
-        ChainedTableCoro<HashFn> table(capacity, fn);
+        CoroTable table(capacity, fn);
         
         // ====================== throughput counters ====================== //
         /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
@@ -781,7 +781,7 @@ namespace bm {
         }
 
         // prepare lookup and output arrays   
-        std::vector<ResultType<HashFn>> results{};
+        std::vector<ResultType> results{};
         std::vector<Data> lookup;
         make_lookup_vector(ds, lookup, order_probe, &probe_count);
         results.reserve(probe_count);

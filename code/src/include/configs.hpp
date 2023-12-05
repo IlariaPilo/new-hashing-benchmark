@@ -138,8 +138,10 @@ constexpr size_t coro_lf[] = {25,50,200,1000,10000};
 
 template <class HashFn>
 using ChainedTableCoro = hashtable_coro::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, FastModulo>;
-template <class HashFn>
-using ResultType = typename ChainedTableCoro<HashFn>::LookupResult;
+template <class RMIFn>
+using RMIChainedTableCoro = hashtable_coro::ChainedRMICoro<Key, Payload, 1 /*BucketSize*/, RMIFn, FastModulo>;
+
+using ResultType = hashtable_coro::LookupResult<Key,Payload>;
 
 using RMICoro_2 = rmi_coro::RMIHash<Data, 2>;
 using RMICoro_10 = rmi_coro::RMIHash<Data, 10>;

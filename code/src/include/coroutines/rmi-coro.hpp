@@ -434,7 +434,7 @@ namespace rmi_coro
     template <
         typename Scheduler,
         typename Append>
-    HashTask<Scheduler> hash_task(
+    HashTask<Scheduler> hash_task (
         Key const key,
         Scheduler const &scheduler,
         Append append)
