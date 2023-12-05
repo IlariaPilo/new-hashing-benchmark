@@ -24,6 +24,8 @@
 #include "throttler.hpp"
 // ------------------------- //
 
+#include "chained-coro.hpp"
+
 namespace rmi_coro
 {
   template <class X, class Y>
@@ -200,6 +202,10 @@ namespace rmi_coro
   class RMIHash
   {
     using Datapoint = DatapointImpl<Key, Precision>;
+    
+    // declare friendship with ChainedRMICoro
+    template <class T1, class T2, size_t T3, class T4, class T5, T1 T6>
+    friend struct hashtable_coro::ChainedRMICoro;
 
     /// Root model
     RootModel root_model;

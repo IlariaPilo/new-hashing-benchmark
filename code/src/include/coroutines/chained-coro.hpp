@@ -521,6 +521,7 @@ namespace hashtable_coro
     // A variant of the Chained table supporting prefetching of RMI submodels
     template <class Key, class Payload, size_t BucketSize, class HashFn, class ReductionFn,
               Key Sentinel = std::numeric_limits<Key>::max()>
+
     struct ChainedRMICoro
     {
     public:
@@ -679,24 +680,20 @@ namespace hashtable_coro
 
             // Using template functor should successfully inline actual hash computation
 
-            // TODO swap
-            // size_t hash;
-            size_t hash = std::numeric_limits<size_t>::max();
+            size_t hash_value = std::numeric_limits<size_t>::max();
+            // ----------------------- embed hash computation! ----------------------- //
+            const auto second_level_index =
+                hashfn.root_model(key, hashfn.second_level_models.size() - 1);
 
-            // Call hash_task
-            hashfn.hash_task(
-                key,
-                scheduler,
-                [&hash](Key const &k, size_t const &v) mutable
-                {
-                  UNUSED(k);
-                  hash = v;
-                });
+            auto *second_level_model = co_await prefetch_and_schedule_on(hashfn.second_level_models.data() + second_level_index, scheduler);
+            hash_value = (*second_level_model)(key, hashfn.max_output);
+            // --------------------------------- end --------------------------------- //
+
             // TODO remove
-            if (hash == std::numeric_limits<size_t>::max()) {
+            if (hash_value == std::numeric_limits<size_t>::max()) {
                 throw std::runtime_error("\033[1;91mHash task is broken...\033[0m\n");
             }
-            const FirstLevelSlot &slot = slots[reductionfn(hash)];
+            const FirstLevelSlot &slot = slots[reductionfn(hash_value)];
 
             if (slot.key == key)
             {

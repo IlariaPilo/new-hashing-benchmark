@@ -160,3 +160,5 @@ using ResultRMIType = typename RMI::template HashResult<Key>;
 // ********************* MACROS ********************* //
 #define M(n)    \
     n##000000
+#define k(n)    \
+    n##000
