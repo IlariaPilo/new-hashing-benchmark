@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
     load_bm_list(bm_list, probe_bm, probe_pareto_bm, probe_rmi_bm, rmi_bm);
 
     if (bm_list.size()==0) {
-        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: rmi,probe[80_20],all." << std::endl;   // TODO - add more
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: rmi,probe[80_20],probe_rmi,all." << std::endl;   // TODO - add more
         return 1;
     }
 

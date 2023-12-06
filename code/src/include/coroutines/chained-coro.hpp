@@ -294,7 +294,7 @@ namespace hashtable_coro
         }
 
         /**
-         * Retrieves the associated payload/value for a given key.
+         * Retrieves the associated payload/value for a given key, using prefetch of buckets.
          *
          * @param key
          * @param scheduler The scheduler that is handling the different streams.
@@ -519,6 +519,7 @@ namespace hashtable_coro
     // ------------------------------------------------------------------- //
 
     // A variant of the Chained table supporting prefetching of RMI submodels
+    // ** It should be used only with HashFn = some kind of RMIHash function ** //
     template <class Key, class Payload, size_t BucketSize, class HashFn, class ReductionFn,
               Key Sentinel = std::numeric_limits<Key>::max()>
 
@@ -654,7 +655,7 @@ namespace hashtable_coro
         }
 
         /**
-         * Retrieves the associated payload/value for a given key.
+         * Retrieves the associated payload/value for a given key, using prefetch of buckets AND submodels.
          *
          * @param key
          * @param scheduler The scheduler that is handling the different streams.
