@@ -102,6 +102,26 @@ sudo sh -c 'echo 1 >/proc/sys/kernel/perf_event_paranoid'
 ```
 If you are using the Docker container, don't forget to add the `--perf` option when executing `run.sh`.
 
+### 🌀 [ new! ] Coroutines
+Coroutine-powered benchmarks can be run with the `cmake-build-release/src/coroutines` executable.
+```
+./coroutines [ARGS]
+Arguments:
+  -i, --input INPUT_DIR     Directory storing the datasets
+  -o, --output OUTPUT_DIR   Directory that will store the output
+  -c, --coro COROUTINES     Number of streams (default: 8, maximum: 16)
+  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)
+                            Options = rmi,probe[80_20],probe_rmi,all
+  -h, --help                Display this help message
+```
+Results are saved in the specified output directory, in a file called `coroutines-<filter>_<timestamp>.json`.
+
+Here are the available coroutine benchmarks:
+- _rmi_ : compute the hashing throughput for RMI functions with different number of submodels, in a sequential and an interleaved fashion
+- _probe_ : compute the probe throughput for hash tables using different functions, in a sequential and an interleaved fashion
+- _probe80\_20_ : the _probe_ experiment using the 80-20 distribution to simulate real-world data access
+- _probe\_rmi_ : compute the probe throughput for hash tables using different RMI functions, in a sequential and an interleaved fashion. In this case, the hash computation is embedded in the lookup function, to enable the submodel prefetching
+
 ## 3 | Process the results
 ### 🎨 Figure generation
 The [`print_figures`](./scripts/print_figures.py) Python script can be used to generate all possible plots included in the original article starting from a .json or .csv output file. 
@@ -127,7 +147,8 @@ This script can be particularly useful to leverage the average capability of `pr
 
 1. [`benchmarks.sh`](./code/benchmarks.sh) : a shortcut to run the benchmark program using the default folders `data/` and `output/` as input and output folders, respectively.
 2. [`build.sh`](./code/build.sh), to build the project.
-3. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh), to run the `perf` experiments.
+3. [`coro.sh`](./code/build.sh) : a shortcut to run the coroutine program using the default folders `data/` and `output/` as input and output folders, respectively.
+4. [`perf-benchmarks.sh`](./code/perf-benchmarks.sh), to run the `perf` experiments.
 
 [`docker/`](./docker/) : contains all the needed files to build and run the Docker container of the project.
 
@@ -135,19 +156,21 @@ This script can be particularly useful to leverage the average capability of `pr
 
 [`output/`](./output/) : stores experimental results run on the research group's server. Such results were used to generate the available plots.
 
-[`scripts/`](./scripts/) : contains four utility scripts.
+[`scripts/`](./scripts/) : contains five utility scripts.
 
-1. [`merge_results.py`](./scripts/merge_results.py) : allows to merge two or more .json files containing benchmark results.  
-2. [`print_figures.py`](./scripts/merge_results.py) : generates plots starting from a .json or .csv result file.
-3. [`setup_datasets.sh`](./scripts/setup_datasets.sh) : downloads SOSD datasets required to run the benchmarks.
-4. [`thread_plot.py`](./scripts/thread_plot.py) : generates the [`join_cmp.png`](./figs/join_cmp.png) plot.
+1. [`coro_plot.py`](./scripts/coro_plot.py) : generates the [`coroutines_cmp_ratio.png`](./figs/coroutines_cmp_ratio.png) and the [`coroutines_cmp_throughput.png`](./figs/coroutines_cmp_throughput.png) plots.
+2. [`merge_results.py`](./scripts/merge_results.py) : allows to merge two or more .json files containing benchmark results.  
+3. [`print_figures.py`](./scripts/merge_results.py) : generates plots starting from a .json or .csv result file.
+4. [`setup_datasets.sh`](./scripts/setup_datasets.sh) : downloads SOSD datasets required to run the benchmarks.
+5. [`thread_plot.py`](./scripts/thread_plot.py) : generates the [`join_cmp.png`](./figs/join_cmp.png) plot.
 
 ## 🧩 Third party components
 This repository is based on the following components:
-- [`hashtable`](https://github.com/DominikHorn/hashtable) by Dominik Horn — A C++ library exposing various hashtable implementations;
-- [`hashing`](https://github.com/DominikHorn/hashing) by Dominik Horn — A C++ library exposing various state-of-the-art non-cryptographic hash functions and reduction algorithms;
+- [`coroutines`](https://github.com/turingcompl33t/coroutines) by Kyle Dotterrer — A repository exploring behavior and applications of C++ coroutines;
 - [`exotic-hashing`](https://github.com/DominikHorn/exotic-hashing) by Dominik Horn — A C++ library exposing various state-of-the-art exotic hash functions;
-- [`learned-hashing`](https://github.com/DominikHorn/learned-hashing) by Dominik Horn — A C++ library exposing various state-of-the-art learned hash functions;
+- [`hashing`](https://github.com/DominikHorn/hashing) by Dominik Horn — A C++ library exposing various state-of-the-art non-cryptographic hash functions and reduction algorithms;
+- [`hashtable`](https://github.com/DominikHorn/hashtable) by Dominik Horn — A C++ library exposing various hashtable implementations;
 - [`json`](https://github.com/nlohmann/json) by Niels Lohmann — A library to handle json serialization in C++;
-- [`perfevent`](https://github.com/viktorleis/perfevent), by Viktor Leis — A header-only C++ wrapper for Linux' perf event API.
+- [`learned-hashing`](https://github.com/DominikHorn/learned-hashing) by Dominik Horn — A C++ library exposing various state-of-the-art learned hash functions;
+- [`perfevent`](https://github.com/viktorleis/perfevent) by Viktor Leis — A header-only C++ wrapper for Linux' perf event API.
 

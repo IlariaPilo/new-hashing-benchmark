@@ -24,8 +24,8 @@ FILE_8 = BASE_DIR + 'output/bonette/join_8.json'
 FILE_16 = BASE_DIR + 'output/bonette/join_16.json'
 FILE_24 = BASE_DIR + 'output/bonette/join_24.json'
 
-t_numbers = [1,2,4,5,6,8,16,24]
-f_names = [FILE_1, FILE_2, FILE_4, FILE_5, FILE_6, FILE_8, FILE_16, FILE_24]
+t_numbers = [1,2,4,8,16,24]
+f_names = [FILE_1, FILE_2, FILE_4, FILE_8, FILE_16, FILE_24]
 bm_dict = {}
 
 prefix = BASE_DIR + 'figs/join_cmp'
@@ -179,7 +179,7 @@ def print_ratio_img():
     BUILD = 0
     PROBE = 1
     handles = []
-    fig, axes = plt.subplots(2, 2, figsize=(7.5, 5))  # Adjust figsize as needed
+    fig, axes = plt.subplots(2, 2, figsize=(6, 4))  # Adjust figsize as needed
 
     for i,size in enumerate(sizes):
         ax = axes[i]
@@ -206,8 +206,8 @@ def print_ratio_img():
 
             ax[BUILD].set_xlim([1,24])
             ax[PROBE].set_xlim([1,24])
-            ax[BUILD].set_ylim([0,5.7])
-            ax[PROBE].set_ylim([0,5.7])
+            ax[BUILD].set_ylim([0,5.5])
+            ax[PROBE].set_ylim([0,22])
             ax[BUILD].set_xticks(t_numbers, [f'{t}' for t in t_numbers])
             ax[PROBE].set_xticks(t_numbers, [f'{t}' for t in t_numbers])
 
@@ -221,7 +221,7 @@ def print_ratio_img():
     axes[1,0].set_ylabel('(25Mx25M)')
 
     labels.insert(0, 'Ideal Trend')
-    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(labels)//2+len(labels)%2, bbox_to_anchor=(0.5, 1.12))
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(labels)//3+len(labels)%3, bbox_to_anchor=(0.5, 1.2))
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('Thread Number')

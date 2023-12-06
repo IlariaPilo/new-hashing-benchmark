@@ -271,7 +271,7 @@ int main(int argc, char* argv[]) {
         // Perfect
         &bm::collision_stats<MWHC>,
         &bm::collision_stats<BitMWHC>,
-        &bm::collision_stats<RecSplit>
+        //&bm::collision_stats<RecSplit>
     };
     // ---------------- gaps ---------------- //
     bm::BMtype gap_bm = &bm::gap_stats<RMIHash_1M>;

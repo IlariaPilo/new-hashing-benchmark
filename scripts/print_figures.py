@@ -64,6 +64,7 @@ SHAPES_DS = {
     'variance_quarter': '>'
 }
 F_MAP = {
+    'Breakeven': -1,
     'RMI': 0,
     'RadixSpline': 1,
     'PGM': 2,
@@ -83,6 +84,9 @@ LAB_MAP = {
     'RMI-LINEAR': 1,
     'MULT-LINEAR': 4,
     'MWHC-LINEAR': 7,
+    'RMI-LP': 1,
+    'MULT-LP': 4,
+    'MWHC-LP': 7,
     'RMI-CUCKOO': 2,
     'MULT-CUCKOO': 5,
     'MWHC-CUCKOO': 8
@@ -274,7 +278,7 @@ def collisions_rmi(df):
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('RMI number of submodels')
-    laby = fig.supylabel('Ratio of\nColliding Keys')
+    laby = fig.supylabel('Ratio of\nColliding Keys', va='center', ha='center')
 
     fig.savefig(f'{prefix}_collisions_RMI.png', bbox_extra_artists=(labx,laby,), bbox_inches='tight')
 
@@ -294,7 +298,7 @@ def gaps(df):
         y = _df_['count'].values[0]
         y = y[:min(len(y)+1,6)]
         x = np.arange(min(len(y),6))
-        plt.plot(x, y, marker=SHAPES_DS[_d_], markersize=4, label=_d_) # MARKER TODO
+        plt.plot(x, y, marker=SHAPES_DS[_d_], markersize=4, label=_d_)
 
     plt.xlabel('Gap value')
     plt.ylabel('Count')
@@ -643,7 +647,6 @@ def perf_join(df):
 
     df = df.copy(deep=True)
     df['label'] = df.apply(lambda x : f"{x['function']}-{x['table']}".upper(), axis=1)
-    df = df.sort_values(by='label')
 
     # prepare the datasets
     def rename_cols(suffix):
@@ -662,6 +665,11 @@ def perf_join(df):
     dfs = [df_sort, df_build, df_probe]
     # join!
     df_join = ft.reduce(lambda left, right: pd.merge(left, right, on=['sizes', 'dataset', 'label']), dfs)
+    def get_map(x):
+        if isinstance(x, pd.Series):
+            return x.apply(lambda i : LAB_MAP[i])
+        return LAB_MAP[x]
+    df_join = df_join.sort_values(by='label', key=lambda l: get_map(l))
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -729,15 +737,16 @@ def perf_join(df):
     for name_ds in datasets:
         group_ds = df_join[df_join['dataset']==name_ds]
         df_merge = groupby_helper(group_ds, ['dataset','label'], [f'{c}-sort' for c in counters] + [f'{c}-build' for c in counters] + [f'{c}-probe' for c in counters])
+        df_merge = df_merge.sort_values(by='label', key=lambda l: get_map(l))
         ax = axes[i]
         ax[0].set_ylabel(name_ds, rotation=0, ha='right', va="center")
         i += 1
         for c_i, c in enumerate(counters):
             # Create the upper part of the bar
-            h3 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-sort'], color='tab:green', alpha=0.8, label='Sort')
-            h1 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-build'], color='tab:blue', alpha=0.8, bottom=df_merge[c+'-sort'], label='Build')
+            h3 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-sort'], color='tab:green', alpha=0.7, label='Sort')
+            h1 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-build'], color='tab:blue', alpha=0.7, bottom=df_merge[c+'-sort'], label='Build')
             # Create the lower part of the bar, starting from the top of the upper part
-            h2 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-probe'], color='tab:orange', alpha=0.8, bottom=df_merge[c+'-sort']+df_merge[c+'-build'], label='Probe')
+            h2 = ax[c_i].bar(range(len(df_merge['label'])), df_merge[c+'-probe'], color='tab:orange', alpha=0.7, bottom=df_merge[c+'-sort']+df_merge[c+'-build'], label='Probe')
 
             if i == 1:
                 ax[c_i].set_title(counters_label[c_i])
@@ -755,7 +764,6 @@ def perf_join(df):
     laby = fig.supylabel('Normalized Performance Counter')
     name = prefix + '_' + 'size-avg.png'
     fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')    
-
 
 # -------- point+range -------- # 
 def point_range(df, pareto=False):
@@ -862,7 +870,11 @@ def join(df):
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df['table_label'] = df.apply(lambda x : get_table_label(x['function'],x['table_type']).upper(), axis=1)
     df = groupby_helper(df, ['dataset_name','table_label','function','join_size'], ['tot_time_sort_s', 'tot_time_build_s', 'tot_time_join_s'])
-    df = df.sort_values(by='table_label')
+    def get_map(x):
+        if isinstance(x, pd.Series):
+            return x.apply(lambda i : LAB_MAP[i])
+        return LAB_MAP[x]
+    df = df.sort_values(by='table_label', key=lambda l: get_map(l))
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
@@ -920,6 +932,183 @@ def join(df):
     name = prefix + '_join.png'
     fig.savefig(name, bbox_extra_artists=(lgd,laby,), bbox_inches='tight')
 
+# -------- coroutines probe -------- #
+# available which_y : time_gain, throughput_sequential, throughput_interleaved
+def coro_probe(df, pareto=False, which_y = 'time_gain'):
+    datasets = ['gap_10','normal','wiki','osm','fb']
+    df = df[df["label"].str.lower().str.contains("coro:")].copy(deep=True)
+    if df.empty:
+        return
+    # remove failed experiments
+    df = df[df["insert_fail_message"]=='']
+
+    label_y = ''
+    ylim = []
+    ylabels = []
+    if which_y == 'time_gain':
+        label_y = 'Time Gain\n(Sequential / Interleaved)'
+        ylim = [0, 4.5]
+        ylabels = [1,2,3,4]
+    elif which_y == 'throughput_sequential':
+        label_y = 'Sequential Throughput\n(Million operations/s)'
+        ylim = [-1, 24]
+        ylabels = [0,8,16,24]
+    elif which_y == 'throughput_interleaved':
+        label_y = 'Interleaved Throughput\n(Million operations/s)'
+        ylim = [-0.5, 8]
+        ylabels = [0,2,4,6,8]
+    else:
+        # not supported
+        return
+
+    # Back-compatibility
+    if 'probe_type' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe_type']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+    
+    # Group by
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%','n_coro'], ['dataset_size','probe_elem_count','tot_for_time_interleaved_s', 'tot_for_time_sequential_s'])
+    df['time_gain'] = df['tot_for_time_sequential_s']/df['tot_for_time_interleaved_s']
+    df['throughput_sequential'] = df['probe_elem_count']/(df['tot_for_time_sequential_s']*10**6)
+    df['throughput_interleaved'] = df['probe_elem_count']/(df['tot_for_time_interleaved_s']*10**6)
+    df['load_factor'] = df['load_factor_%']/100
+    df = df.sort_values(by='load_factor')
+    
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+    fig, axes = plt.subplots(1, num_subplots, figsize=(12,2))
+
+    def format_ticks(value, _):
+        if value % 1 == 0:
+            # If the number is an integer, return it without the decimal part
+            return "{:d}".format(int(value))
+        else:
+            # If the number is a float, check for leading zero and format accordingly
+            str_value = "{:.2f}".format(value).rstrip('0')
+            if str_value.startswith("0"):
+                return str_value[1:]
+            return str_value
+    
+    # Create a single legend for all subplots
+    legend_labels = []
+    
+    i = 0
+    # for each dataset
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
+        g_fn = group_ds.groupby('function')
+        ax = axes[i]
+        i += 1
+        
+        # for each function
+        for name_fs, group_fn in g_fn:
+            ax.plot(group_fn['load_factor'], group_fn[which_y], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            if name_fs not in legend_labels:
+                legend_labels.append(name_fs)
+
+        # plot ideal trend
+        if which_y == 'time_gain':
+            ax.axhline(y=1, color='black', linestyle='--', alpha=0.5)
+        
+        # Customize the plot
+        ax.set_title(f'{name_ds}')
+        # Format the y-axis to display only two digits after the decimal point
+        # ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
+        ax.set_ylim(ylim)
+        ax.set_yticks(ylabels, ['' for _ in ylabels])
+        ax.set_xscale('log')
+        ticks = group_ds['load_factor'].unique()
+        ax.set_xticks(ticks, [format_ticks(t, None) for t in ticks])
+        ax.grid(True)
+    
+    axes[0].set_yticks(ylabels, [f'{l}' for l in ylabels])
+
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines[:len(legend_labels)]])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.2))
+
+    # Set a common label for x and y axes
+    labx = fig.supxlabel('Load Factor')
+    laby = fig.supylabel(label_y, va='center', ha='center')
+
+    #plt.show()
+    name = prefix + '_probe_'+ which_y + ('_pareto.png' if pareto else '.png')
+    fig.savefig(name, bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
+
+# -------- coroutines rmi -------- #
+# available which_y : time_gain, throughput_sequential, throughput_interleaved
+def coro_rmi(df, which_y = 'time_gain'):
+    datasets = ['gap_10','fb']
+    df = df[df["label"].str.lower().str.contains("coro-rmi:")].copy(deep=True)
+    if df.empty:
+        return
+    
+    label_y = ''
+    ylim = []
+    ylabels = []
+    if which_y == 'time_gain':
+        label_y = 'Time Gain\n(Sequential / Interleaved)'
+        ylim = [0.13, 1.05]
+        ylabels = [0.25,0.50,0.75,1]
+    elif which_y == 'throughput_sequential':
+        label_y = 'Sequential Throughput\n(Million operations/s)'
+        ylim = [20, 170]
+        ylabels = [20,60,100,140]
+    elif which_y == 'throughput_interleaved':
+        label_y = 'Interleaved Throughput\n(Million operations/s)'
+        ylim = [20, 35]
+        ylabels = [20,25,30,35]
+    else:
+        # not supported
+        return
+    
+    # Group by
+    df = groupby_helper(df, ['dataset_name','label','function', 'n_coro'], ['dataset_size','tot_sequential_time_s','tot_interleaved_time_s'])
+    df["models"] = df["label"].apply(lambda x : get_rmi_models(x))
+    df['time_gain'] = df['tot_sequential_time_s']/df['tot_interleaved_time_s']
+    df['throughput_sequential'] = df['dataset_size']/(df['tot_sequential_time_s']*10**6)
+    df['throughput_interleaved'] = df['dataset_size']/(df['tot_interleaved_time_s']*10**6)
+    df = df.sort_values(by='models')
+
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+    fig, axes = plt.subplots(1, num_subplots, figsize=(4.5,2))
+
+    i = 0
+    # for each dataset
+    for name_ds in datasets:
+        group_ds = df[df['dataset_name']==name_ds]
+        ax = axes[i]
+        i += 1
+        # make ticks
+        ticks = group_ds['models'].apply(lambda x : log10(x))
+        tick_labels = [f"$10^{int(tick)}$" for tick in ticks]
+        ax.set_xticks(ticks[1::2], tick_labels[1::2])
+        ax.set_ylim(ylim)
+        ax.set_yticks(ylabels, ['' for _ in ylabels])
+        # plot ideal trend
+        if which_y == 'time_gain':
+            ax.axhline(y=1, color='black', linestyle='--', alpha=0.5)
+        # for each function
+        ax.plot(ticks, group_ds[which_y], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])
+        # Customize the plot
+        ax.set_title(f'{name_ds}')
+        ax.grid(True)
+        
+    
+    axes[0].set_yticks(ylabels, [f'{l}' for l in ylabels])
+    # Set a common label for x and y axes
+    labx = fig.supxlabel('RMI number of submodels')
+    laby = fig.supylabel(label_y, va='center', ha='center')
+
+    #plt.show()
+    name = prefix + '_rmi_' + which_y + '.png'
+    fig.savefig(name, bbox_extra_artists=(labx,laby,), bbox_inches='tight')
 
 # =============================== MAINS =============================== #l
 
@@ -943,6 +1132,12 @@ def main_json():
         point_range(df)
         point_range(df, pareto=True)
         join(df)
+        coro_probe(df, which_y='time_gain')
+        coro_probe(df, which_y='throughput_interleaved')
+        coro_probe(df, which_y='throughput_sequential')
+        coro_rmi(df, which_y='time_gain')
+        coro_rmi(df, which_y='throughput_interleaved')
+        coro_rmi(df, which_y='throughput_sequential')
 
 def main_csv():
     df = pd.read_csv(file_path)

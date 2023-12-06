@@ -1,0 +1,371 @@
+{
+    "benchmarks": [
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_2:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.226888253,
+            "tot_sequential_time_s": 0.656266775
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_10000:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.162259769,
+            "tot_sequential_time_s": 0.70879562
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_100000000:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.340182435,
+            "tot_sequential_time_s": 3.49468895
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_10:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.092146137,
+            "tot_sequential_time_s": 0.64936936
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_100000:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.176261553,
+            "tot_sequential_time_s": 1.029835573
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_10000000:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.117165,
+            "tot_sequential_time_s": 3.174146809
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_100:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.087489462,
+            "tot_sequential_time_s": 0.647497841
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_1000:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.109463812,
+            "tot_sequential_time_s": 0.680194245
+        },
+        {
+            "dataset_name": "gap_10",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_1000000:gap_10:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.368383624,
+            "tot_sequential_time_s": 1.907101553
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_2:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.2229049,
+            "tot_sequential_time_s": 0.647612627
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_10000:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.118094067,
+            "tot_sequential_time_s": 0.719656984
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_100000:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.16946488,
+            "tot_sequential_time_s": 1.014513077
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_1000:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.10522202,
+            "tot_sequential_time_s": 0.677548238
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_1000000:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.368212355,
+            "tot_sequential_time_s": 1.89736045
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_100:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.107759803,
+            "tot_sequential_time_s": 0.657672783
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_10000000:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.123118803,
+            "tot_sequential_time_s": 3.194172519
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_10:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.041575636,
+            "tot_sequential_time_s": 0.647946886
+        },
+        {
+            "dataset_name": "uniform",
+            "dataset_size": 100000000,
+            "label": "Coro-RMI:coro_rmi_hash_100000000:uniform:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.335142012,
+            "tot_sequential_time_s": 3.488291904
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_1000000:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.736059771,
+            "tot_sequential_time_s": 0.968763838
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_100000:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.306650178,
+            "tot_sequential_time_s": 0.699856549
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_10000000:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.723716391,
+            "tot_sequential_time_s": 2.09912874
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_100000000:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.647607636,
+            "tot_sequential_time_s": 2.624994563
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_10000:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.701546896,
+            "tot_sequential_time_s": 0.615621952
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_1000:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.695116238,
+            "tot_sequential_time_s": 0.574827437
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_100:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.698279194,
+            "tot_sequential_time_s": 0.569836413
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_10:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.698286446,
+            "tot_sequential_time_s": 0.567237282
+        },
+        {
+            "dataset_name": "fb",
+            "dataset_size": 86976117,
+            "label": "Coro-RMI:coro_rmi_hash_2:fb:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.805289149,
+            "tot_sequential_time_s": 0.566552958
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_1000:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.780343265,
+            "tot_sequential_time_s": 0.595234433
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_100000000:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.804749732,
+            "tot_sequential_time_s": 2.706041097
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_100000:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.943074892,
+            "tot_sequential_time_s": 0.677640919
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_100:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.753622232,
+            "tot_sequential_time_s": 0.593489968
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_2:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.916919033,
+            "tot_sequential_time_s": 0.585540703
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_1000000:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.780599265,
+            "tot_sequential_time_s": 0.968537184
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_10000:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.801458758,
+            "tot_sequential_time_s": 0.621623246
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_10:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 2.754705127,
+            "tot_sequential_time_s": 0.58955311
+        },
+        {
+            "dataset_name": "wiki",
+            "dataset_size": 90437012,
+            "label": "Coro-RMI:coro_rmi_hash_10000000:wiki:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.885634741,
+            "tot_sequential_time_s": 1.833576983
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_100:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.040948641,
+            "tot_sequential_time_s": 0.648780174
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_2:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.24250595,
+            "tot_sequential_time_s": 0.64271048
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_100000000:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.266586084,
+            "tot_sequential_time_s": 3.421353189
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_10:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.042360384,
+            "tot_sequential_time_s": 0.640044615
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_10000000:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.108812699,
+            "tot_sequential_time_s": 3.062967735
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_1000000:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.309273224,
+            "tot_sequential_time_s": 1.581347315
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_1000:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.118936792,
+            "tot_sequential_time_s": 0.670338322
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_100000:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 4.085638659,
+            "tot_sequential_time_s": 0.973334001
+        },
+        {
+            "dataset_name": "normal",
+            "dataset_size": 99730075,
+            "label": "Coro-RMI:coro_rmi_hash_10000:normal:10",
+            "n_coro": 10,
+            "tot_interleaved_time_s": 3.149279049,
+            "tot_sequential_time_s": 0.717450585
+        }
+    ],
+    "context": {
+        "date": "2023-11-24T12:33:56+00:00",
+        "executable": "cmake-build-release/src/coroutines",
+        "host_name": "cb7449d7ddb4",
+        "num_cpus": 24,
+        "num_threads": 1
+    }
+}

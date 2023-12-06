@@ -10,6 +10,9 @@
 #include "rmi_sort.hpp"
 // Datasets
 #include "datasets.hpp"
+// Coroutines
+#include "coroutines/chained-coro.hpp"
+#include "coroutines/rmi-coro.hpp"
 
 // ********************* CONFIGS ********************* //
 
@@ -110,7 +113,6 @@ using MWHC = exotic_hashing::MWHC<Data>;
 using BitMWHC = exotic_hashing::BitMWHC<Data>;
 using RecSplit = exotic_hashing::RecSplit<Data>;
 
-
 // ********************* HASH TABLES ********************* //
 using FastModulo = hashing::reduction::FastModulo<Key>;
 
@@ -130,6 +132,33 @@ using ChainedRange = hashtable::Chained<Key, Payload, RANGE_BUCKETS /*BucketSize
 template <class HashFn>
 using RMISortRange = hashtable::RMISort<Key, Payload, HashFn>;
 
+
+// ********************* COROUTINES ********************* //
+constexpr size_t coro_lf[] = {25,50,200,1000,10000};
+
+template <class HashFn>
+using ChainedTableCoro = hashtable_coro::Chained<Key, Payload, 1 /*BucketSize*/, HashFn, FastModulo>;
+template <class RMIFn>
+using RMIChainedTableCoro = hashtable_coro::ChainedRMICoro<Key, Payload, 1 /*BucketSize*/, RMIFn, FastModulo>;
+
+using ResultType = hashtable_coro::LookupResult<Key,Payload>;
+
+using RMICoro_2 = rmi_coro::RMIHash<Data, 2>;
+using RMICoro_10 = rmi_coro::RMIHash<Data, 10>;
+using RMICoro_100 = rmi_coro::RMIHash<Data, 100>;
+using RMICoro_1k = rmi_coro::RMIHash<Data, 1000>;
+using RMICoro_10k = rmi_coro::RMIHash<Data, 10000>;
+using RMICoro_100k = rmi_coro::RMIHash<Data, 100000>;
+using RMICoro_1M = rmi_coro::RMIHash<Data, 1000000>;
+using RMICoro_10M = rmi_coro::RMIHash<Data, 10000000>;
+using RMICoro_100M = rmi_coro::RMIHash<Data, 100000000>;
+
+template <class RMI>
+using ResultRMIType = typename RMI::template HashResult<Key>;
+
+
 // ********************* MACROS ********************* //
 #define M(n)    \
     n##000000
+#define k(n)    \
+    n##000
