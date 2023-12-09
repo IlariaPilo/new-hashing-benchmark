@@ -18,8 +18,8 @@ BASE_DIR = os.path.abspath(f'{script_directory}/..')+'/'
 
 FILE_NORMAL = BASE_DIR + 'output/bonette/coroutines-probe.json'
 FILE_RMI = BASE_DIR + 'output/bonette/coroutines-probe_rmi.json'
+FILE_MERGED = ''
 
-f_names = [FILE_NORMAL, FILE_RMI]
 out_ratio = BASE_DIR + 'figs/coroutines_cmp_ratio.png'
 out_throughput = BASE_DIR + 'figs/coroutines_cmp_throughput.png'
 
@@ -61,8 +61,13 @@ def get_fn_name(label):
 # def groupby_helper(df, static_cols, variable_cols):
 #     return df.groupby(static_cols)[variable_cols].mean().reset_index()
 
-def load_and_join():
+def load():
+    f_names = []
     # Load benchmarks from the file
+    if FILE_MERGED == '':
+        f_names = [FILE_NORMAL, FILE_RMI]
+    else:
+        f_names = [FILE_MERGED]
     bms = []
     for file_path in f_names:
         with open(file_path, 'r') as json_file:
@@ -76,9 +81,16 @@ def load_and_join():
             df["models"] = df["function_name"].apply(lambda x : get_rmi_models(x))
             df['load_factor'] = df['load_factor_%']/100
             bms.append(df)
-    # get ready for the join
-    df_normal = bms[0]
-    df_rmi = bms[1]
+    if len(bms) == 2:
+        # done
+        return bms[0], bms[1]
+    # else, we need to split
+    df = bms[0]
+    df_normal = df[df['function']=='RMI']
+    df_rmi = df[df['function']=='RMICoro']
+    return df_normal, df_rmi
+
+def join(df_normal, df_rmi):
     on_cols = ['dataset_name', 'load_factor', 'models']
     proj_cols = ['dataset_name', 'load_factor', 'probe_elem_count', 'models', 'tot_for_time_sequential_s', 'tot_for_time_interleaved_s_x', 'tot_for_time_interleaved_s_y']
     df = pd.merge(df_normal, df_rmi, on=on_cols)
@@ -201,7 +213,8 @@ def print_ratio_imgs(df):
 
 
 if __name__ == '__main__':
-    df = load_and_join()
+    df_normal, df_rmi = load()
+    df = join(df_normal, df_rmi)
     print_ratio_imgs(df)
 
     
