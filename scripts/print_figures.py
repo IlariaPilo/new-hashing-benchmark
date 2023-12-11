@@ -101,6 +101,8 @@ CUCKOO = 2
 
 def get_fn_name(label):
     label = label.lower()
+    if 'coro_rmi' in label:
+        return 'RMICoro'
     if 'rmi' in label:
         return 'RMI'
     if 'pgm' in label:
@@ -153,9 +155,13 @@ def get_struct_type(label):
         return 'RMI-Chain'
     
 def get_rmi_models(label):
-    pattern = r'rmi_hash_(\d+):'
+    pattern = r'rmi_hash_(\d+)(?::|$)'
     match = re.search(pattern, label)
-    return int(match.group(1))
+    try:
+        models = int(match.group(1))
+    except:
+        models = 0
+    return models
 
 def prepare_fn_colormap():
     functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit'][::-1]
@@ -941,6 +947,13 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # remove double prefetch experiments
+    df = df[df['function']!='RMICoro']
+    if df.empty:
+        return
+    
+    # get models
+    df['models'] = df['function_name'].apply(lambda x : get_rmi_models(x))
 
     label_y = ''
     ylim = []
@@ -972,7 +985,7 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
         return
     
     # Group by
-    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%','n_coro'], ['dataset_size','probe_elem_count','tot_for_time_interleaved_s', 'tot_for_time_sequential_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%','n_coro','models'], ['dataset_size','probe_elem_count','tot_for_time_interleaved_s', 'tot_for_time_sequential_s'])
     df['time_gain'] = df['tot_for_time_sequential_s']/df['tot_for_time_interleaved_s']
     df['throughput_sequential'] = df['probe_elem_count']/(df['tot_for_time_sequential_s']*10**6)
     df['throughput_interleaved'] = df['probe_elem_count']/(df['tot_for_time_interleaved_s']*10**6)
@@ -1001,6 +1014,11 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
     # for each dataset
     for name_ds in datasets:
         group_ds = df[df['dataset_name']==name_ds]
+        # keep only default models
+        if name_ds == 'fb':
+            group_ds = group_ds[(group_ds['models']==10000000) | (group_ds['models']==0)]
+        if name_ds == 'wiki':
+            group_ds = group_ds[(group_ds['models']==1000) | (group_ds['models']==0)]
         g_fn = group_ds.groupby('function')
         ax = axes[i]
         i += 1
@@ -1022,7 +1040,11 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
         ax.set_ylim(ylim)
         ax.set_yticks(ylabels, ['' for _ in ylabels])
         ax.set_xscale('log')
-        ticks = group_ds['load_factor'].unique()
+        ticks = list(group_ds['load_factor'].unique())
+        try:
+            ticks.remove(70)
+        except:
+            pass
         ax.set_xticks(ticks, [format_ticks(t, None) for t in ticks])
         ax.grid(True)
     
