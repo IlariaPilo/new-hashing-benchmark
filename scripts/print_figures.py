@@ -320,6 +320,10 @@ def probe(df, pareto=False):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # check we are not in the high load factor case
+    load_factor_min = min(df['load_factor_%'].unique())
+    if load_factor_min>=1000:
+        return
 
     # Back-compatibility
     if 'probe_type' in df.columns:
@@ -409,6 +413,79 @@ def probe(df, pareto=False):
     name = prefix + '_probe' + ('_pareto.png' if pareto else '.png')
     fig.savefig(name, bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
+# ------- probe ------- #
+def probe_extra_lf(df, pareto=False):
+    datasets = ['gap_10','normal','wiki','osm','fb']
+    df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
+    if df.empty:
+        return
+    # remove failed experiments
+    df = df[df["insert_fail_message"]=='']
+    # get only high load factors
+    df = df[df['load_factor_%']>=1000]
+    if df.empty:
+        return
+    
+    # Back-compatibility
+    if 'probe_type' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe_type']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+    
+    # Group by
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
+    df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
+    df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
+    df['load_factor'] = df['load_factor_%']/100
+    df = df.sort_values(by='load_factor')
+    
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+    fig, axes = plt.subplots(1, num_subplots, figsize=(10.5, 2))  # Adjust figsize as needed
+    
+    # Create a single legend for all subplots
+    legend_labels = []
+    lf = df['load_factor'].unique()
+    
+    # for each dataset
+    for i,name_ds in enumerate(datasets):
+        group_ds = df[df['dataset_name']==name_ds]
+        g_fn = group_ds.groupby('function')
+        ax = axes[i]
+        
+        # for each function
+        for name_fs, group_fn in g_fn:
+            ax.plot(group_fn['load_factor'], group_fn['throughput_M'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            if name_fs not in legend_labels:
+                legend_labels.append(name_fs)
+        
+        # Customize the plot
+        ax.set_title(f'{name_ds}')
+        #ax.set_xscale('log')
+        ax.set_xticks(lf, [f'{int(_lf_)}' for _lf_ in lf])
+        
+        ax.set_ylim([0,1.55])
+        ax.set_yticks([0,0.5,1,1.5], ['','','',''])
+        ax.grid(True)
+        
+    axes[0].set_yticks([0,0.5,1,1.5], ['0','0.5','1','1.5'])
+
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.18))
+
+    # Set a common label for x and y axes
+    labx = fig.supxlabel('Load Factor')
+    laby = fig.supylabel('Probe Throughput\n(Million operations/s)', ha='center', va="center")
+
+    #plt.show()
+    name = prefix + '_probe_more_lf' + ('_pareto.png' if pareto else '.png')
+    fig.savefig(name, bbox_extra_artists=(lgd,labx,laby), bbox_inches='tight')
+
 # ------- insert ------- #
 def insert(df, pareto=False):
     datasets = ['wiki','fb']
@@ -417,6 +494,10 @@ def insert(df, pareto=False):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # check we are not in the high load factor case
+    load_factor_min = min(df['load_factor_%'].unique())
+    if load_factor_min>=1000:
+        return
 
     # Back-compatibility
     if 'probe_type' in df.columns:
@@ -1148,6 +1229,7 @@ def main_json():
         gaps(df)
         probe(df)
         probe(df, pareto=True)
+        probe_extra_lf(df)
         insert(df)
         insert(df, pareto=True)
         build(df)
