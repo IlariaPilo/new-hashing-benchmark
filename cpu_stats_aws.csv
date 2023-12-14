@@ -1,0 +1,57 @@
+instance,model,turbofrequencyGHz,cacheMB,priceFor64RAM_USDperHour,comments
+#                 #
+# general purpose #
+#                 #
+M7i,Sapphire Rapids 8488C,3.2,105,0.8568
+M7i-flex,Sapphire Rapids 8488C,3.2,105,0.814
+M6i,Ice Lake 8375C,3.5,55,0.816
+M6in,Ice Lake 8375C,3.5,55,1.184
+M5,Skylake 8175M,3.1,33,0.816
+M5,Cascade Lake 8259CL,3.1,36,0.816
+M5n,Cascade Lake 8259CL,3.1,36,,not available
+M5n,Cascade Lake 8259CL,3.1,36,,not available
+M5n,Cascade Lake 8259C,4.5,99,,not available
+M4,Broadwell E5-2686 v4,2.4,45,,not available
+M4,Haswell E5-2676 v3,2.4,30,,not available
+T3,Skylake 8175M,3.1,33,0.3456,for 32RAM
+T3,Cascade Lake 8259CL,3.1,36,0.3456,for 32RAM
+T2,Broadwell E5-2686 v4,2.4,45,,not available
+T2,Haswell E5-2676 v3,2.4,30,,not available
+#                   #
+# compute optimized #
+#                   #
+C7i,Sapphire Rapids 8488C,3.2,105,1.5288
+C6i,Ice Lake 8375C,3.5,55,1.456
+C6in,Ice Lake 8375C,3.5,55,1.9488
+C5,Cascade Lake 8223CL,3.4,25,1.638,for 72RAM
+C5,Skylake 8124M,3.4,25,1.638,for 72RAM
+C4,Haswell E5-2666 v3,2.9,25,,not available
+#                  #
+# memory optimized #
+#                  #
+R7i,Sapphire Rapids 8488C,3.2,105,0.5628
+R7iz,Sapphire Rapids 6455B,3.9,60,,not available
+R6i,Ice Lake 8375C,3.5,55,0.536
+R6in,Ice Lake 8375C,3.5,55,,not available
+R5,Skylake 8175M,3.1,33,0.536
+R5,Cascade Lake 8259CL,3.1,36,0.536
+R5n,Cascade Lake 8259CL,3.1,36,0.636
+R5b,Cascade Lake 8259CL,3.1,36,0.63176
+R4,Broadwell E5-2686 v4,2.4,45,,not available
+X2idn,Ice Lake 8375C,3.5,55,,too much RAM! (min 1024GB)
+X2iedn,Ice Lake 8375C,3.5,55,0.95072,for 128RAM
+X2iezn,Cascade Lake 8252C,4.5,99,,not available
+X1,Haswell E7-8880 v3,3.1,45,,not available
+X1e,Haswell E7-8880 v3,3.1,45,,not available
+z1d,Skylake 8151,4.0,25,,not available
+#                   #
+# storage optimized #
+#                   #
+I4i,Ice Lake 8375C,3.5,55,0.717
+I3,Broadwell E5-2686 v4,2.4,45,0.652,for 61RAM
+I3en,Skylake 8175M,3.1,33,0.948
+I3en,Cascade Lake 8259CL,3.1,36,0.948
+D2,Haswell E5-2676 v3,2.4,30,1.396,for 61RAM
+D3,Cascade Lake 8259CL,3.1,36,,not available
+D3en,Cascade Lake 8259CL,3.1,36,,not available
+H1,Broadwell E5-2686 v4,2.4,45,,not available
