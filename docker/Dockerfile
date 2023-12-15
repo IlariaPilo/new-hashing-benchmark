@@ -7,7 +7,7 @@ ARG GROUP_ID
 
 # Install some stuff
 RUN apt-get update && \
-    apt-get install -y vim clang cmake sudo git llvm libomp-dev linux-tools-generic busybox && \
+    apt-get install -y vim clang cmake sudo git llvm libomp-dev linux-tools-generic heaptrack && \
     rm -rf /var/lib/apt/lists/*
 
 # # Create a new user called "aligner" (the default user)
