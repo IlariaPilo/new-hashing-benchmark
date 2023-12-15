@@ -143,6 +143,8 @@ Results are saved in the specified `<merged_file>.json` and `<merged_file>.csv` 
 This script can be particularly useful to leverage the average capability of `print_figures`.
 
 ## 🌳 Repository structure
+[`cloud/`](./cloud/) : contains some csv files useful to run the repository on Cloud platforms like Azure or AWS.
+
 [`code/`](./code/) : contains the source code of the repository, as well as three bash scripts.
 
 1. [`benchmarks.sh`](./code/benchmarks.sh) : a shortcut to run the benchmark program using the default folders `data/` and `output/` as input and output folders, respectively.
