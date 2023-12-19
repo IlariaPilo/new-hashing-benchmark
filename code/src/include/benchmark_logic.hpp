@@ -937,7 +937,7 @@ namespace bm {
         std::vector<ResultType> results{};
         std::vector<Data> lookup;
         // begin iterating over the possible batches
-        int batch_number = std::ceil(dataset_size/n_coro);
+        int batch_number = std::ceil(N/n_coro);
         //             //
         // INTERLEAVED //
         //             //
@@ -948,6 +948,8 @@ namespace bm {
                 results.clear();
                 results.reserve(n_coro);
                 make_lookup_batch(ds, n_coro, (size_t)i, lookup, order_probe, &_probe_count_);
+                if (_probe_count_ == 0)
+                    continue;
                 probe_count += _probe_count_;
                 _start_ = std::chrono::high_resolution_clock::now();
                 table.interleaved_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results), n_coro);
@@ -970,7 +972,8 @@ namespace bm {
                 results.clear();
                 results.reserve(n_coro);
                 make_lookup_batch(ds, n_coro, (size_t)i, lookup, order_probe, &_probe_count_);
-                probe_count += _probe_count_;
+                if (_probe_count_ == 0)
+                    continue;
                 _start_ = std::chrono::high_resolution_clock::now();
                 table.sequential_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results));
                 _end_ = std::chrono::high_resolution_clock::now();
@@ -986,6 +989,7 @@ namespace bm {
         json benchmark;
         benchmark["dataset_size"] = dataset_size;
         benchmark["probe_elem_count"] = probe_count;
+        benchmark["batch_number"] = std::ceil(probe_count/n_coro);
         benchmark["insert_elem_count"] = insert_count;
         benchmark["tot_time_insert_s"] = tot_time_insert.count();
         benchmark["tot_for_time_interleaved_s"] = tot_for_interleaved.count();
