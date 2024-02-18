@@ -26,7 +26,7 @@ void show_usage() {
     std::cout << "  -c, --coro COROUTINES     Number of streams (default: 8, maximum: "<< MAX_CORO << ")" << std::endl;
     // std::cout << "  -t, --threads THREADS     Number of threads to use (default: all)" << std::endl;
     std::cout << "  -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)" << std::endl;
-    std::cout << "                            Options = rmi,probe[80_20],probe_rmi,all" << std::endl;    // TODO - add more
+    std::cout << "                            Options = rmi,probe[80_20],probe_rmi,batch,all" << std::endl;    // TODO - add more
     std::cout << "  -h, --help                Display this help message\n" << std::endl;
 }
 int pars_args(const int& argc, char* const* const& argv) {
@@ -89,12 +89,11 @@ int pars_args(const int& argc, char* const* const& argv) {
     return 0;
 }
 
-template <class HashFn, class CoroTable = ChainedTableCoro<HashFn>>
-void dilate_coro_fn(std::vector<bm::BM>& bm_out, dataset::ID id, bm::ProbeType type = bm::ProbeType::UNIFORM) {
+void dilate_coro_fn(std::vector<bm::BM>& bm_out, const bm::BMcoroutine _bm_function_, dataset::ID id, bm::ProbeType type = bm::ProbeType::UNIFORM) {
     auto cp = n_coro;
     for (size_t lf : coro_lf) {
-        bm::BMtype lambda = [lf, cp, type](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
-            bm::probe_coroutines<HashFn, CoroTable>(ds_obj, writer, lf, type, cp);
+        bm::BMtype lambda = [lf, cp, type, _bm_function_](const dataset::Dataset<Data>& ds_obj, JsonOutput& writer) {
+            _bm_function_(ds_obj, writer, lf, type, cp);
         };
         bm_out.push_back({lambda,id});
     }
@@ -112,7 +111,8 @@ void dilate_rmi_fn(std::vector<bm::BMtype>& bm_out) {
 void load_bm_list(std::vector<bm::BM>& bm_list,
         const std::vector<bm::BM>& probe_bm, const std::vector<bm::BM>& probe_pareto_bm,
         const std::vector<bm::BM>& probe_rmi_bm,
-        const std::vector<bm::BMtype>& rmi_bm
+        const std::vector<bm::BMtype>& rmi_bm,
+        const std::vector<bm::BM>& batch_bm
         /*TODO - add more*/) {
     std::string part;
     size_t start;
@@ -128,6 +128,12 @@ void load_bm_list(std::vector<bm::BM>& bm_list,
         }
         if (part == "probe80_20" || part == "all") {
             for (const bm::BM& bm_struct : probe_pareto_bm) {
+                bm_list.push_back(bm_struct);
+            }
+            if (part != "all") continue;
+        }
+        if (part == "batch" || part == "all") {
+            for (const bm::BM& bm_struct : batch_bm) {
                 bm_list.push_back(bm_struct);
             }
             if (part != "all") continue;
@@ -190,48 +196,64 @@ int main(int argc, char* argv[]) {
 
     // ---------------- probe --------------- //
     std::vector<bm::BM> probe_bm = {};
-    dilate_coro_fn<RMIHash_10>(probe_bm,dataset::ID::GAP_10);
-    dilate_coro_fn<RMIHash_100>(probe_bm,dataset::ID::NORMAL);
-    dilate_coro_fn<RMIHash_1k>(probe_bm,dataset::ID::WIKI);
-    dilate_coro_fn<RMIHash_10M>(probe_bm,dataset::ID::FB);
-    dilate_coro_fn<RMIHash_10M>(probe_bm,dataset::ID::OSM);
+    dilate_coro_fn(probe_bm,&bm::probe_coroutines<RMIHash_100>,dataset::ID::GAP_10);
+    dilate_coro_fn(probe_bm,&bm::probe_coroutines<RMIHash_100>,dataset::ID::NORMAL);
+    dilate_coro_fn(probe_bm,&bm::probe_coroutines<RMIHash_1k>,dataset::ID::WIKI);
+    dilate_coro_fn(probe_bm,&bm::probe_coroutines<RMIHash_10M>,dataset::ID::FB);
+    dilate_coro_fn(probe_bm,&bm::probe_coroutines<RMIHash_10M>,dataset::ID::OSM);
     // for each dataset
     for (dataset::ID id : probe_insert_ds) {
-        dilate_coro_fn<RadixSplineHash_128>(probe_bm,id);
-        dilate_coro_fn<PGMHash_100>(probe_bm,id);
-        dilate_coro_fn<MURMUR>(probe_bm,id);
-        dilate_coro_fn<MultPrime64>(probe_bm,id);
-        dilate_coro_fn<MWHC>(probe_bm,id);
+        dilate_coro_fn(probe_bm,&bm::probe_coroutines<RadixSplineHash_128>,id);
+        dilate_coro_fn(probe_bm,&bm::probe_coroutines<PGMHash_100>,id);
+        dilate_coro_fn(probe_bm,&bm::probe_coroutines<MURMUR>,id);
+        dilate_coro_fn(probe_bm,&bm::probe_coroutines<MultPrime64>,id);
+        dilate_coro_fn(probe_bm,&bm::probe_coroutines<MWHC>,id);
     }
 
     // ---------------- probe PARETO --------------- //
     std::vector<bm::BM> probe_pareto_bm = {};
-    dilate_coro_fn<RMIHash_10>(probe_pareto_bm,dataset::ID::GAP_10,bm::ProbeType::PARETO_80_20);
-    dilate_coro_fn<RMIHash_100>(probe_pareto_bm,dataset::ID::NORMAL,bm::ProbeType::PARETO_80_20);
-    dilate_coro_fn<RMIHash_1k>(probe_pareto_bm,dataset::ID::WIKI,bm::ProbeType::PARETO_80_20);
-    dilate_coro_fn<RMIHash_10M>(probe_pareto_bm,dataset::ID::FB,bm::ProbeType::PARETO_80_20);
-    dilate_coro_fn<RMIHash_10M>(probe_pareto_bm,dataset::ID::OSM,bm::ProbeType::PARETO_80_20);
+    dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<RMIHash_10>,dataset::ID::GAP_10,bm::ProbeType::PARETO_80_20);
+    dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<RMIHash_100>,dataset::ID::NORMAL,bm::ProbeType::PARETO_80_20);
+    dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<RMIHash_1k>,dataset::ID::WIKI,bm::ProbeType::PARETO_80_20);
+    dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<RMIHash_10M>,dataset::ID::FB,bm::ProbeType::PARETO_80_20);
+    dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<RMIHash_10M>,dataset::ID::OSM,bm::ProbeType::PARETO_80_20);
     // for each dataset
     for (dataset::ID id : probe_insert_ds) {
-        dilate_coro_fn<RadixSplineHash_128>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
-        dilate_coro_fn<PGMHash_100>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
-        dilate_coro_fn<MURMUR>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
-        dilate_coro_fn<MultPrime64>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
-        dilate_coro_fn<MWHC>(probe_pareto_bm,id,bm::ProbeType::PARETO_80_20);
+        dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<RadixSplineHash_128>,id,bm::ProbeType::PARETO_80_20);
+        dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<PGMHash_100>,id,bm::ProbeType::PARETO_80_20);
+        dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<MURMUR>,id,bm::ProbeType::PARETO_80_20);
+        dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<MultPrime64>,id,bm::ProbeType::PARETO_80_20);
+        dilate_coro_fn(probe_pareto_bm,&bm::probe_coroutines<MWHC>,id,bm::ProbeType::PARETO_80_20);
+    }
+
+    // ---------------- batch --------------- //
+    std::vector<bm::BM> batch_bm = {};
+    dilate_coro_fn(batch_bm,&bm::batch_coroutines<RMIHash_100>,dataset::ID::GAP_10);
+    dilate_coro_fn(batch_bm,&bm::batch_coroutines<RMIHash_100>,dataset::ID::NORMAL);
+    dilate_coro_fn(batch_bm,&bm::batch_coroutines<RMIHash_1k>,dataset::ID::WIKI);
+    dilate_coro_fn(batch_bm,&bm::batch_coroutines<RMIHash_10M>,dataset::ID::FB);
+    dilate_coro_fn(batch_bm,&bm::batch_coroutines<RMIHash_10M>,dataset::ID::OSM);
+    // for each dataset
+    for (dataset::ID id : probe_insert_ds) {
+        dilate_coro_fn(batch_bm,&bm::batch_coroutines<RadixSplineHash_128>,id);
+        dilate_coro_fn(batch_bm,&bm::batch_coroutines<PGMHash_100>,id);
+        dilate_coro_fn(batch_bm,&bm::batch_coroutines<MURMUR>,id);
+        dilate_coro_fn(batch_bm,&bm::batch_coroutines<MultPrime64>,id);
+        dilate_coro_fn(batch_bm,&bm::batch_coroutines<MWHC>,id);
     }
 
     // ---------------- probe RMI --------------- //
     std::vector<bm::BM> probe_rmi_bm = {};
-    dilate_coro_fn<RMICoro_10, RMIChainedTableCoro<RMICoro_10>>(probe_rmi_bm,dataset::ID::GAP_10);
-    dilate_coro_fn<RMICoro_100, RMIChainedTableCoro<RMICoro_100>>(probe_rmi_bm,dataset::ID::NORMAL);
-    dilate_coro_fn<RMICoro_1k, RMIChainedTableCoro<RMICoro_1k>>(probe_rmi_bm,dataset::ID::WIKI);
-    dilate_coro_fn<RMICoro_10M, RMIChainedTableCoro<RMICoro_10M>>(probe_rmi_bm,dataset::ID::FB);
-    dilate_coro_fn<RMICoro_10M, RMIChainedTableCoro<RMICoro_10M>>(probe_rmi_bm,dataset::ID::OSM);
+    dilate_coro_fn(probe_rmi_bm,&bm::probe_coroutines<RMICoro_10, RMIChainedTableCoro<RMICoro_10>>,dataset::ID::GAP_10);
+    dilate_coro_fn(probe_rmi_bm,&bm::probe_coroutines<RMICoro_100, RMIChainedTableCoro<RMICoro_100>>,dataset::ID::NORMAL);
+    dilate_coro_fn(probe_rmi_bm,&bm::probe_coroutines<RMICoro_1k, RMIChainedTableCoro<RMICoro_1k>>,dataset::ID::WIKI);
+    dilate_coro_fn(probe_rmi_bm,&bm::probe_coroutines<RMICoro_10M, RMIChainedTableCoro<RMICoro_10M>>,dataset::ID::FB);
+    dilate_coro_fn(probe_rmi_bm,&bm::probe_coroutines<RMICoro_10M, RMIChainedTableCoro<RMICoro_10M>>,dataset::ID::OSM);
 
-    load_bm_list(bm_list, probe_bm, probe_pareto_bm, probe_rmi_bm, rmi_bm);
+    load_bm_list(bm_list, probe_bm, probe_pareto_bm, probe_rmi_bm, rmi_bm, batch_bm);
 
     if (bm_list.size()==0) {
-        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: rmi,probe[80_20],probe_rmi,all." << std::endl;   // TODO - add more
+        std::cerr << "Error: no benchmark functions selected.\nHint: double-check your filters! \nAvailable filters: rmi,probe[80_20],probe_rmi,batch,all." << std::endl;   // TODO - add more
         return 1;
     }
 

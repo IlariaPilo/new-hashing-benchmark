@@ -111,7 +111,7 @@ Arguments:
   -o, --output OUTPUT_DIR   Directory that will store the output
   -c, --coro COROUTINES     Number of streams (default: 8, maximum: 16)
   -f, --filter FILTER       Type of benchmark to execute, *comma-separated* (default: all)
-                            Options = rmi,probe[80_20],probe_rmi,all
+                            Options = rmi,probe[80_20],probe_rmi,batch,all
   -h, --help                Display this help message
 ```
 Results are saved in the specified output directory, in a file called `coroutines-<filter>_<timestamp>.json`.
@@ -121,6 +121,7 @@ Here are the available coroutine benchmarks:
 - _probe_ : compute the probe throughput for hash tables using different functions, in a sequential and an interleaved fashion
 - _probe80\_20_ : the _probe_ experiment using the 80-20 distribution to simulate real-world data access
 - _probe\_rmi_ : compute the probe throughput for hash tables using different RMI functions, in a sequential and an interleaved fashion. In this case, the hash computation is embedded in the lookup function, to enable the submodel prefetching
+- _batch_ : compute the probe throughput using data batches (instead of the full dataset), in a sequential and an interleaved fashion
 
 ## 3 | Process the results
 ### 🎨 Figure generation
@@ -142,7 +143,20 @@ Results are saved in the specified `<merged_file>.json` and `<merged_file>.csv` 
 
 This script can be particularly useful to leverage the average capability of `print_figures`.
 
+## 🔎 RAM peak usage analysis
+The provided Docker Image comes with the [`heaptrack`](https://github.com/KDE/heaptrack) tool already installed. `heaptrack` can be used to detect (among other statistics) the RAM peak usage during the program run.
+```sh
+heaptrack <benchmark_executable> <bechmark_arguments>
+```
+The tool will generate an output file in the current directory, called `heaptrack.<benchmark_executable>.<some_number>.gz`. The file is not human-readable, but it can be interpreted by running:
+```sh
+heaptrack --analyze heaptrack.<benchmark_executable>.<some_number>.gz
+```
+As the output file size might be quite big, it is recommended to remove the output file once done.
+
 ## 🌳 Repository structure
+[`cloud/`](./cloud/) : contains some csv files useful to run the repository on Cloud platforms like Azure or AWS.
+
 [`code/`](./code/) : contains the source code of the repository, as well as three bash scripts.
 
 1. [`benchmarks.sh`](./code/benchmarks.sh) : a shortcut to run the benchmark program using the default folders `data/` and `output/` as input and output folders, respectively.

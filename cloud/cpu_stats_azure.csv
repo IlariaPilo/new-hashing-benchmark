@@ -1,0 +1,29 @@
+model,frequencyGHz,cacheMB,comments
+#                   #
+# common processors #
+#                   #
+Ice Lake 8370C,2.8,48,standard frequency
+Cascade Lake 8272CL,2.6,36,standard frequency
+Skylake 8171M,2.1,36,standard frequency
+Broadwell E5-2673 v4,2.3,50,standard frequency --> Standard_A4m_v2-Standard_D4_v2-Standard_D32_v3-Standard_E32_v3
+Haswell E5-2673 v3,2.4,30,standard frequency
+Ice Lake 8370C,3.5,48,same as above but with turbo frequency
+Cascade Lake 8272CL,3.5,36,same as above but with turbo frequency
+#                 #
+# general purpose #
+#                 #
+Coffee Lake E-2288G,5.0,16,cache is 'smart' --> Standard_DC8_v2 [UNAVAILABLE]
+Sapphire Rapids 8473C,3.4,105,cache is 'smart' --> Standard_D8_v4 [UNAVAILABLE]
+#                   #
+# compute optimized #
+#                   #
+Skylake 8168,3.5,33
+Cascade Lake 6246R,3.4,36
+#                  #
+# memory optimized #
+#                  #
+Cascade Lake 8280M,2.7,39,standard frequency
+Intel Xeon CPU E7-8890 v3,2.5,45,standard 
+#
+# run "cat /proc/cpuinfo" to get more infos on the CPU #
+#

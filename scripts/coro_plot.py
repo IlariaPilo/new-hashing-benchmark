@@ -18,7 +18,7 @@ BASE_DIR = os.path.abspath(f'{script_directory}/..')+'/'
 
 FILE_NORMAL = BASE_DIR + 'output/bonette/coroutines-probe.json'
 FILE_RMI = BASE_DIR + 'output/bonette/coroutines-probe_rmi.json'
-FILE_MERGED = ''
+FILE_MERGED = 'output/bonette/coroutines-merged.json'
 
 out_ratio = BASE_DIR + 'figs/coroutines_cmp_ratio.png'
 out_throughput = BASE_DIR + 'figs/coroutines_cmp_throughput.png'
@@ -141,6 +141,11 @@ def print_ratio_imgs(df):
     # for each dataset
     for name_ds in datasets:
         group_ds = df[df['dataset_name']==name_ds]
+        # keep only default models
+        if name_ds == 'fb':
+            group_ds = group_ds[group_ds['models']==10000000]
+        if name_ds == 'wiki':
+            group_ds = group_ds[group_ds['models']==1000]
         ax = axes[i]
         i += 1
         ax.plot(group_ds['load_factor'], group_ds['time_gain_normal'], color='tab:blue', alpha=0.7, marker='s')
@@ -156,7 +161,8 @@ def print_ratio_imgs(df):
         ax.set_ylim([0, 5])
         ax.set_yticks(ylabels, ['' for _ in ylabels])
         ax.set_xscale('log')
-        ticks = group_ds['load_factor'].unique()
+        ticks = list(group_ds['load_factor'].unique())
+        ticks.remove(70)
         ax.set_xticks(ticks, [format_ticks(t, None) for t in ticks])
         ax.grid(True)
     
@@ -185,6 +191,11 @@ def print_ratio_imgs(df):
     # for each dataset
     for i,name_ds in enumerate(datasets):
         group_ds = df[df['dataset_name']==name_ds]
+        # keep only default models
+        if name_ds == 'fb':
+            group_ds = group_ds[group_ds['models']==10000000]
+        if name_ds == 'wiki':
+            group_ds = group_ds[group_ds['models']==1000]
         ax = axes[i]
         ax.plot(group_ds['load_factor'], group_ds['throughput_sequential'], color='tab:green', alpha=0.7, marker='s')
         ax.plot(group_ds['load_factor'], group_ds['throughput_interleaved_normal'], color='tab:blue', alpha=0.7, marker='s')
@@ -198,7 +209,8 @@ def print_ratio_imgs(df):
         ax.set_ylim(ylims[i])
         ax.set_yticks(yticks[i], ylabels[i])
         ax.set_xscale('log')
-        ticks = group_ds['load_factor'].unique()
+        ticks = list(group_ds['load_factor'].unique())
+        ticks.remove(70)
         ax.set_xticks(ticks, [format_ticks(t, None) for t in ticks])
         ax.grid(True)
 

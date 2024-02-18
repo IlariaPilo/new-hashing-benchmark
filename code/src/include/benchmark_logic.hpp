@@ -4,6 +4,7 @@
 #include <omp.h>
 #include <cstdint>
 #include <random>
+#include <cmath>
 
 #include "generic_function.hpp"
 #include "npj.hpp"
@@ -18,10 +19,16 @@
 // For a detailed description of the benchmarks, please consult the README of the project
 
 namespace bm {
+    enum class ProbeType {
+        UNIFORM = 0,
+        PARETO_80_20 = 1
+    };
     // bm function pointer type
     using BMtype = std::function<void(const dataset::Dataset<Data>&, JsonOutput&)>;
     // utility version
     using BMtemplate = std::function<void(const dataset::Dataset<Data>&, JsonOutput&, size_t)>;
+    // coroutine version
+    using BMcoroutine = std::function<void(const dataset::Dataset<Data>&, JsonOutput&, size_t, ProbeType, size_t)>;
     // struct function+dataset
     typedef struct BM {
         BMtype function;
@@ -36,10 +43,6 @@ namespace bm {
     std::vector<int> order_probe_80_20;     // will store sampled values from 0 to N-1 using the 80-20 rule
     std::vector<int> ranges;                // will store random values in the interval [25,50]
 
-    enum class ProbeType {
-        UNIFORM = 0,
-        PARETO_80_20 = 1
-    };
     void generate_insert_order(size_t N = 100000000) {
         std::random_device rd;
         std::default_random_engine rng(rd());
@@ -711,9 +714,38 @@ namespace bm {
             }
         }
     }
+    /**
+     * A function to generate a lookup batch of size `batch_size`.
+     * @param ds the dataset array
+     * @param batch_size the size of the batch, should be equal to the number of coroutines
+     * @param batch_index the number of batch we are considering right now
+     * @param lookup the output array
+     * @param order_probe the pointer to the probe order array we are considering (uniform vs pareto)
+     * @param count the effective size of the batch we generate
+    */
+    inline static void make_lookup_batch(std::vector<Data> const &ds, size_t batch_size, size_t batch_index, std::vector<Data>& lookup, std::vector<int> const *order_probe, size_t *count) {
+        // check if batch_index is valid
+        size_t dataset_size = ds.size(), _count_ = 0, batch_count = 0, idx;
+        lookup.clear();
+        lookup.reserve(batch_size);
+        // look for this specific batch
+        for (idx=0; idx<N && (batch_count%batch_size==0 && batch_count/batch_size==batch_index); idx++) {
+            if (idx < dataset_size) {
+                batch_count++;
+            }
+        }
+        for (; idx<N && _count_<batch_size; idx++) {
+            if (idx < dataset_size) {
+                _count_++;
+                Data data = ds[idx];
+                lookup.push_back(data);
+            }
+        }
+        *count = _count_;
+    }
 
     // probe coroutines
-    template <class HashFn, class CoroTable>
+    template <class HashFn, class CoroTable = ChainedTableCoro<HashFn>>
     void probe_coroutines(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type,
             /* coroutines stuff */ size_t n_coro) {
         // Extract variables
@@ -833,6 +865,150 @@ namespace bm {
         writer.add_data(benchmark);
     }
 
+    // probe coroutines
+    template <class HashFn, class CoroTable = ChainedTableCoro<HashFn>>
+    void batch_coroutines(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer, size_t load_perc, ProbeType probe_type,
+            /* coroutines stuff */ size_t n_coro) {
+        // Extract variables
+        const size_t dataset_size = ds_obj.get_size();
+        const std::string dataset_name = dataset::name(ds_obj.get_id());
+        const std::vector<Data>& ds = ds_obj.get_ds();
+
+        // Choose probe distribution
+        std::vector<int>* order_probe = nullptr;
+        std::string probe_label;
+        switch(probe_type) {
+            case ProbeType::UNIFORM:
+                order_probe = &order_probe_uniform;
+                probe_label = "uniform";
+                break;
+            case ProbeType::PARETO_80_20:
+                order_probe = &order_probe_80_20;
+                probe_label = "80-20";
+        }
+
+        const std::string label = "Coro-batch:" + HashFn::name() + ":" + dataset_name + ":" + std::to_string(load_perc) + ":" + probe_label + ":" + std::to_string(n_coro);
+
+        std::cout << "BEGIN " + label + "\n";
+
+        // Compute capacity given the laod% and the dataset_size
+        std::size_t capacity = dataset_size*100/load_perc;
+        
+        // now, create the table
+        HashFn fn;
+        _generic_::GenericFn<HashFn>::init_fn(fn,ds.begin(),ds.end(),capacity);
+        CoroTable table(capacity, fn);
+        
+        // ====================== throughput counters ====================== //
+        /*volatile*/ std::chrono::high_resolution_clock::time_point _start_, _end_, start_for, end_for;
+        /*volatile*/ std::chrono::duration<double> tot_time_insert(0), tot_for_insert(0), tot_for_interleaved(0), tot_for_sequential(0);
+        size_t insert_count = 0;
+        size_t probe_count = 0, _probe_count_;
+        std::string fail_what = "";
+        bool insert_fail = false;
+        // ================================================================ //
+
+        // Build the table
+        bool done = true;
+        Payload count = 0;
+        start_for = std::chrono::high_resolution_clock::now();
+        for (int i : order_insert) {
+            // check if the index exists
+            if (i < (int)dataset_size) {
+                // get the data
+                Data data = ds[i];
+                _start_ = std::chrono::high_resolution_clock::now();
+                done &= table.insert(data, count);
+                _end_ = std::chrono::high_resolution_clock::now();
+                count++;
+                insert_count++;
+                tot_time_insert += _end_ - _start_;
+            }
+        }
+        end_for = std::chrono::high_resolution_clock::now();
+        tot_for_insert = end_for - start_for;
+
+        // check if everything went well!
+        if (!done) {
+            throw std::runtime_error("\033[1;91mAssertion failed\033[0m done\n           In --> " + label + "\n");
+        }
+
+        // prepare lookup and output arrays   
+        std::vector<ResultType> results{};
+        std::vector<Data> lookup;
+        // begin iterating over the possible batches
+        int batch_number = std::ceil(N/n_coro);
+        //             //
+        // INTERLEAVED //
+        //             //
+        for (int i : order_insert) {
+            // check if the index exists
+            if (i < batch_number) {
+                // get the batch
+                results.clear();
+                results.reserve(n_coro);
+                make_lookup_batch(ds, n_coro, (size_t)i, lookup, order_probe, &_probe_count_);
+                if (_probe_count_ == 0)
+                    continue;
+                probe_count += _probe_count_;
+                _start_ = std::chrono::high_resolution_clock::now();
+                table.interleaved_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results), n_coro);
+                _end_ = std::chrono::high_resolution_clock::now();
+                tot_for_interleaved += _end_ - _start_;
+                // check if everything went well!
+                if (results.size() != _probe_count_) {
+                    throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==probe_count\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [probe_count] " + std::to_string(probe_count) + "\n");
+                }
+            }
+        }
+        std::cout << " |- [t] interleaved lookup: " << tot_for_interleaved.count() << "s\n";
+        //            //
+        // SEQUENTIAL //
+        //            //
+        for (int i : order_insert) {
+            // check if the index exists
+            if (i < batch_number) {
+                // get the batch
+                results.clear();
+                results.reserve(n_coro);
+                make_lookup_batch(ds, n_coro, (size_t)i, lookup, order_probe, &_probe_count_);
+                if (_probe_count_ == 0)
+                    continue;
+                _start_ = std::chrono::high_resolution_clock::now();
+                table.sequential_multilookup(lookup.begin(), lookup.end(), std::back_inserter(results));
+                _end_ = std::chrono::high_resolution_clock::now();
+                tot_for_sequential += _end_ - _start_;
+                // check if everything went well!
+                if (results.size() != _probe_count_) {
+                    throw std::runtime_error("\033[1;91mAssertion failed\033[0m results.size()==probe_count\n           In --> " + label + "\n           [results.size()] " + std::to_string(results.size()) + "\n           [probe_count] " + std::to_string(probe_count) + "\n");
+                }
+            }
+        }
+        std::cout << " |- [t] sequential lookup: " << tot_for_sequential.count() << "s\n";
+
+        json benchmark;
+        benchmark["dataset_size"] = dataset_size;
+        benchmark["probe_elem_count"] = probe_count;
+        benchmark["batch_number"] = std::ceil(probe_count/n_coro);
+        benchmark["insert_elem_count"] = insert_count;
+        benchmark["tot_time_insert_s"] = tot_time_insert.count();
+        benchmark["tot_for_time_interleaved_s"] = tot_for_interleaved.count();
+        benchmark["tot_for_time_sequential_s"] = tot_for_sequential.count();
+        benchmark["tot_for_time_insert_s"] = tot_for_insert.count();
+        benchmark["load_factor_%"] = load_perc;
+        benchmark["dataset_name"] = dataset_name;
+        benchmark["function_name"] = HashFn::name();
+        benchmark["insert_fail_message"] = fail_what;
+        benchmark["label"] = label;
+        benchmark["probe_type"] = probe_label;
+        benchmark["n_coro"] = n_coro;
+
+        if (insert_fail)
+            std::cout << " `- \033[1;91mInsert failed\033[0m\n";
+        else std::cout << " `- DONE\n";
+        writer.add_data(benchmark);
+    }
+
     // RMI coro
     template <class RMI>
     void rmi_coro_throughput(const dataset::Dataset<Data>& ds_obj, JsonOutput& writer,
@@ -898,5 +1074,4 @@ namespace bm {
         writer.add_data(benchmark);
     }
     
-
 }

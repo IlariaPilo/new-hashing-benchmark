@@ -2,6 +2,7 @@ import json
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 import numpy as np
 import os
 import re
@@ -101,6 +102,8 @@ CUCKOO = 2
 
 def get_fn_name(label):
     label = label.lower()
+    if 'coro_rmi' in label:
+        return 'RMICoro'
     if 'rmi' in label:
         return 'RMI'
     if 'pgm' in label:
@@ -153,9 +156,13 @@ def get_struct_type(label):
         return 'RMI-Chain'
     
 def get_rmi_models(label):
-    pattern = r'rmi_hash_(\d+):'
+    pattern = r'rmi_hash_(\d+)(?::|$)'
     match = re.search(pattern, label)
-    return int(match.group(1))
+    try:
+        models = int(match.group(1))
+    except:
+        models = 0
+    return models
 
 def prepare_fn_colormap():
     functions = ['RMI','RadixSpline','PGM','Murmur','MultiplyPrime','FibonacciPrime','XXHash','AquaHash','MWHC','BitMWHC','RecSplit'][::-1]
@@ -177,7 +184,7 @@ def sort_labels(labels, handles, map = F_MAP):
 
 # ------- collision plot ------- #
 def collisions(df):
-    datasets = ['gap_10','uniform','normal','wiki','fb']
+    datasets = ['gap_10','uniform','wiki','fb']
     df = df[df["label"].str.lower().str.contains("collision")].copy(deep=True)
     if df.empty:
         return
@@ -193,7 +200,7 @@ def collisions(df):
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
-    fig, axes = plt.subplots(1, num_subplots, figsize=(10, 2))  # Adjust figsize as needed
+    fig, axes = plt.subplots(1, num_subplots, figsize=(8.5, 2))  # Adjust figsize as needed
     
     # Create a single legend for all subplots
     legend_labels = []
@@ -234,6 +241,7 @@ def collisions(df):
 
 # ------- collision RMI plot ------- #
 def collisions_rmi(df):
+    datasets = ['gap_10','uniform','wiki','fb']
     df = df[df["label"].str.lower().str.contains("collision")].copy(deep=True)
     df = df[df["function"] == "RMI"]
     if df.empty:
@@ -247,34 +255,26 @@ def collisions_rmi(df):
     df = groupby_helper(df, ['dataset_name','label','function'], ['dataset_size','collisions','tot_time_s'])
     df["models"] = df["label"].apply(lambda x : get_rmi_models(x))
     df = df.sort_values(by='models')
+ 
+    fig, axes = plt.subplots(1, len(datasets), figsize=(8.5, 2))
 
-    uniform = df[df["dataset_name"] == "uniform"]
-    normal = df[df["dataset_name"] == "normal"]
-    
-    fig, axes = plt.subplots(1, 2, figsize=(5, 2))
+    for i,name_ds in enumerate(datasets):
+        group_ds = df[df['dataset_name']==name_ds]
+        g_fn = group_ds.groupby('function')
+        ax = axes[i]
 
-    uni_ticks = uniform['models'].apply(lambda x : log10(x))
-    normal_ticks = normal['models'].apply(lambda x : log10(x))
-
-    # axes[0].set_xscale('log')
-    # axes[1].set_xscale('log')
-    axes[0].plot(uni_ticks, uniform['collisions']/uniform['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])
-    axes[1].plot(normal_ticks, normal['collisions']/normal['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])        
-
-    # ticks
-    uni_tick_labels = [f"$10^{int(tick)}$" for tick in uni_ticks]
-    normal_tick_labels = [f"$10^{int(tick)}$" for tick in normal_ticks]
-    axes[0].set_xticks(uni_ticks[1::2], uni_tick_labels[1::2])
-    axes[1].set_xticks(normal_ticks[1::2], normal_tick_labels[1::2])
-    
-    axes[0].set_title('uniform')
-    axes[1].set_title('normal')
-    axes[0].yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
-    axes[1].yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
-    axes[0].set_ylim([0, 1])
-    axes[1].set_ylim([0, 1])
-    axes[0].grid(True)
-    axes[1].grid(True)
+        ticks = group_ds['models'].apply(lambda x : log10(x))
+        ax.plot(ticks, group_ds['collisions']/group_ds['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])
+        
+        # Customize the plot
+        ax.set_title(f'{name_ds}')
+        tick_labels = [f"$10^{int(tick)}$" for tick in ticks]
+        ax.set_xticks(ticks[1::2], tick_labels[1::2])
+        ax.set_yticks([0,0.25,0.5,0.75,1],['0','0.25','0.5','0.75','1'])
+        # Format the y-axis to display only two digits after the decimal point
+        ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
+        ax.set_ylim([0, 1.05])
+        ax.grid(True)
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('RMI number of submodels')
@@ -314,6 +314,10 @@ def probe(df, pareto=False):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # check we are not in the high load factor case
+    df = df[df['load_factor_%']<1000]
+    if df.empty:
+        return
 
     # Back-compatibility
     if 'probe_type' in df.columns:
@@ -403,6 +407,157 @@ def probe(df, pareto=False):
     name = prefix + '_probe' + ('_pareto.png' if pareto else '.png')
     fig.savefig(name, bbox_extra_artists=(lgd,labx,laby,), bbox_inches='tight')
 
+# ------- probe ------- #
+def probe_high_lf(df, pareto=False):
+    datasets = ['gap_10','normal','wiki','osm','fb']
+    df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
+    if df.empty:
+        return
+    # remove failed experiments
+    df = df[df["insert_fail_message"]=='']
+    # time to split!
+    df = df[df['load_factor_%']>=1000]
+    if df.empty:
+        return
+    
+    # Back-compatibility
+    if 'probe_type' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe_type']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+    
+    # Group by
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
+    df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
+    df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
+    # get only chained
+    df = df[df['table_type']=='chained']
+    df['load_factor'] = df['load_factor_%']/100
+    df = df.sort_values(by='load_factor')
+    
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+    fig, axes = plt.subplots(1, num_subplots, figsize=(10.5, 2))  # Adjust figsize as needed
+    # Create a single legend for all subplots
+    legend_labels = []
+    lf = df['load_factor'].unique()
+    
+    # for each dataset
+    for i,name_ds in enumerate(datasets):
+        group_ds = df[df['dataset_name']==name_ds]
+        g_fn = group_ds.groupby('function')
+        ax = axes[i]
+        
+        # for each function
+        for name_fs, group_fn in g_fn:
+            ax.plot(group_fn['load_factor'], group_fn['throughput_M'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            if name_fs not in legend_labels:
+                legend_labels.append(name_fs)
+        
+        # Customize the plot
+        ax.set_title(f'{name_ds}')
+        #ax.set_xscale('log')
+        ax.set_xticks(lf, [f'{int(_lf_)}' for _lf_ in lf])
+        
+        ax.set_ylim([0,1.55])
+        ax.set_yticks([0,0.5,1,1.5], ['','','',''])
+        ax.grid(True)
+        
+    axes[0].set_yticks([0,0.5,1,1.5], ['0','0.5','1','1.5'])
+
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.18))
+
+    # Set a common label for x and y axes
+    labx = fig.supxlabel('Load Factor')
+    laby = fig.supylabel('Probe Throughput\n(Million operations/s)', ha='center', va="center")
+
+    name = prefix + '_probe_high_lf' + ('_pareto.png' if pareto else '.png')
+    fig.savefig(name, bbox_extra_artists=(lgd,labx,laby), bbox_inches='tight')
+
+def probe_all_lf(df, pareto=False):
+    datasets = ['gap_10','wiki','fb','osm','normal']
+    ylims = [[0,8],[0,8],[0,6],[0,6],[0,6]]
+    yticks = [[0,2,4,6,8],[0,2,4,6,8],[0,2,4,6],[0,2,4,6],[0,2,4,6]]
+    df = df[df["label"].str.lower().str.contains("probe")].copy(deep=True)
+    if df.empty:
+        return
+    # remove failed experiments
+    df = df[df["insert_fail_message"]=='']
+    # time to split!
+    df_high = df[df['load_factor_%']>=1000]
+    df_low = df[df['load_factor_%']<1000]
+    if df_high.empty or df_low.empty:
+        return
+    
+    # Back-compatibility
+    if 'probe_type' in df.columns:
+        # filter for probe distribution type
+        probe_type = '80-20' if pareto else 'uniform'
+        df = df[df['probe_type']==probe_type]
+        if df.empty:
+            return
+    elif pareto:
+        return
+    
+    # Group by
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%'], ['dataset_size','probe_elem_count','tot_time_probe_s'])
+    df['throughput_M'] = df.apply(lambda x : x['probe_elem_count']/(x['tot_time_probe_s']*10**6), axis=1)
+    df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
+    # get only chained tables
+    df = df[df['table_type']=='chained']
+    df['load_factor'] = df['load_factor_%']/100
+    df = df.sort_values(by='load_factor')
+
+    # Create a single figure with multiple subplots in a row
+    num_subplots = len(datasets)
+    num_rows = num_subplots//2 + num_subplots%2
+    is_odd = (num_subplots%2)==1
+
+    fig = plt.figure(figsize=(7,6))
+    gs = gridspec.GridSpec(num_rows*2,4, figure=fig)
+    
+    # Create a single legend for all subplots
+    legend_labels = []
+    
+    # for each dataset
+    for i,name_ds in enumerate(datasets):
+        group_ds = df[df['dataset_name']==name_ds]
+        g_fn = group_ds.groupby('function')
+        ax = []
+        # if it's the last and they are odd
+        if i==(num_subplots-1) and is_odd:
+            ax = fig.add_subplot(gs[(i//2)*2:(i//2*2+2), 1:3])
+        else: 
+            ax = fig.add_subplot(gs[(i//2)*2:(i//2*2+2), (i%2)*2:(i%2*2+2)])
+        
+        # for each function
+        for name_fs, group_fn in g_fn:
+            ax.plot(group_fn['load_factor'], group_fn['throughput_M'], color=COLORS[name_fs], marker=SHAPES_FN[name_fs], label=name_fs)
+            if name_fs not in legend_labels:
+                legend_labels.append(name_fs)
+        
+        # Customize the plot
+        ax.set_title(f'{name_ds}')
+        ax.set_xscale('log')
+        ax.set_ylim(ylims[i])
+        ax.set_yticks(yticks[i], [f'{int(t)}' for t in yticks[i]])
+        ax.set_xticks([.25,.5,1,2,10,20,50,100],['.25','.5','1','2','10','20','50','100'])
+        ax.grid(True)
+    labels, handles = sort_labels(legend_labels, [line for line in fig.axes[0].lines])
+    # Add a single legend to the entire figure with labels on the same line
+    lgd = fig.legend(handles=handles, loc='upper center', labels=labels, ncol=len(legend_labels), bbox_to_anchor=(0.5, 1.06))
+    # Set a common label for x and y axes
+    labx = fig.supxlabel('Load Factor')
+    laby = fig.supylabel('Probe Throughput (Million operations/s)')
+    name = prefix + '_probe_all_lf' + ('_pareto.png' if pareto else '.png')
+    fig.savefig(name, bbox_extra_artists=(lgd,labx,laby), bbox_inches='tight')
+
 # ------- insert ------- #
 def insert(df, pareto=False):
     datasets = ['wiki','fb']
@@ -411,6 +566,10 @@ def insert(df, pareto=False):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # check we are not in the high load factor case
+    df = df[df['load_factor_%']<1000]
+    if df.empty:
+        return
 
     # Back-compatibility
     if 'probe_type' in df.columns:
@@ -941,6 +1100,13 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
         return
     # remove failed experiments
     df = df[df["insert_fail_message"]=='']
+    # remove double prefetch experiments
+    df = df[df['function']!='RMICoro']
+    if df.empty:
+        return
+    
+    # get models
+    df['models'] = df['function_name'].apply(lambda x : get_rmi_models(x))
 
     label_y = ''
     ylim = []
@@ -972,7 +1138,7 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
         return
     
     # Group by
-    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%','n_coro'], ['dataset_size','probe_elem_count','tot_for_time_interleaved_s', 'tot_for_time_sequential_s'])
+    df = groupby_helper(df, ['dataset_name','label','function','load_factor_%','n_coro','models'], ['dataset_size','probe_elem_count','tot_for_time_interleaved_s', 'tot_for_time_sequential_s'])
     df['time_gain'] = df['tot_for_time_sequential_s']/df['tot_for_time_interleaved_s']
     df['throughput_sequential'] = df['probe_elem_count']/(df['tot_for_time_sequential_s']*10**6)
     df['throughput_interleaved'] = df['probe_elem_count']/(df['tot_for_time_interleaved_s']*10**6)
@@ -1001,6 +1167,11 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
     # for each dataset
     for name_ds in datasets:
         group_ds = df[df['dataset_name']==name_ds]
+        # keep only default models
+        if name_ds == 'fb':
+            group_ds = group_ds[(group_ds['models']==10000000) | (group_ds['models']==0)]
+        if name_ds == 'wiki':
+            group_ds = group_ds[(group_ds['models']==1000) | (group_ds['models']==0)]
         g_fn = group_ds.groupby('function')
         ax = axes[i]
         i += 1
@@ -1022,7 +1193,11 @@ def coro_probe(df, pareto=False, which_y = 'time_gain'):
         ax.set_ylim(ylim)
         ax.set_yticks(ylabels, ['' for _ in ylabels])
         ax.set_xscale('log')
-        ticks = group_ds['load_factor'].unique()
+        ticks = list(group_ds['load_factor'].unique())
+        try:
+            ticks.remove(70)
+        except:
+            pass
         ax.set_xticks(ticks, [format_ticks(t, None) for t in ticks])
         ax.grid(True)
     
@@ -1126,6 +1301,8 @@ def main_json():
         gaps(df)
         probe(df)
         probe(df, pareto=True)
+        probe_high_lf(df)
+        probe_all_lf(df)
         insert(df)
         insert(df, pareto=True)
         build(df)
