@@ -4,6 +4,8 @@ A repository based on the same components of [hashing-benchmark](https://github.
 
 ⚠️ This is the _parallel_ version of the repository, meaning that the _probe_, _point_, _range_ and _join_ experiments build and query the table in a parallel fashion. For the _serial_ version, take a look at the [singleT](https://github.com/IlariaPilo/new-hashing-benchmark) branch.
 
+⚠️ This parallel version doesn't support coroutines.
+
 ## 0 | Clone the repository
 The repository can be cloned by running: 
 ```sh
