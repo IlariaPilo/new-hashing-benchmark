@@ -1,0 +1,24 @@
+bm-name,max-ram,comments
+#               #
+# benchmarks.sh #
+#               #
+collisions,15.20,GB
+gaps,15.20,GB
+probe,19.82,GB
+build,15.20,GB
+distribution,18.40,GB
+point,15.20,GB
+range,15.20,GB
+join,15.20,GB
+#         #
+# perf.sh #
+#         #
+probe,8.55,GB
+join,4.82,GB
+#         #
+# coro.sh #
+#         #
+rmi,15.20,GB
+probe,20.99,GB
+probe_rmi,20.06,GB
+# batch,

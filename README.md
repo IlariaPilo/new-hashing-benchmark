@@ -143,6 +143,17 @@ Results are saved in the specified `<merged_file>.json` and `<merged_file>.csv` 
 
 This script can be particularly useful to leverage the average capability of `print_figures`.
 
+## 🔎 RAM peak usage analysis
+The provided Docker Image comes with the [`heaptrack`](https://github.com/KDE/heaptrack) tool already installed. `heaptrack` can be used to detect (among other statistics) the RAM peak usage during the program run.
+```sh
+heaptrack <benchmark_executable> <bechmark_arguments>
+```
+The tool will generate an output file in the current directory, called `heaptrack.<benchmark_executable>.<some_number>.gz`. The file is not human-readable, but it can be interpreted by running:
+```sh
+heaptrack --analyze heaptrack.<benchmark_executable>.<some_number>.gz
+```
+As the output file size might be quite big, it is recommended to remove the output file once done.
+
 ## 🌳 Repository structure
 [`cloud/`](./cloud/) : contains some csv files useful to run the repository on Cloud platforms like Azure or AWS.
 

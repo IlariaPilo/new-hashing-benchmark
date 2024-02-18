@@ -184,7 +184,7 @@ def sort_labels(labels, handles, map = F_MAP):
 
 # ------- collision plot ------- #
 def collisions(df):
-    datasets = ['gap_10','uniform','normal','wiki','fb']
+    datasets = ['gap_10','uniform','wiki','fb']
     df = df[df["label"].str.lower().str.contains("collision")].copy(deep=True)
     if df.empty:
         return
@@ -200,7 +200,7 @@ def collisions(df):
     
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
-    fig, axes = plt.subplots(1, num_subplots, figsize=(10, 2))  # Adjust figsize as needed
+    fig, axes = plt.subplots(1, num_subplots, figsize=(8.5, 2))  # Adjust figsize as needed
     
     # Create a single legend for all subplots
     legend_labels = []
@@ -241,6 +241,7 @@ def collisions(df):
 
 # ------- collision RMI plot ------- #
 def collisions_rmi(df):
+    datasets = ['gap_10','uniform','wiki','fb']
     df = df[df["label"].str.lower().str.contains("collision")].copy(deep=True)
     df = df[df["function"] == "RMI"]
     if df.empty:
@@ -254,34 +255,26 @@ def collisions_rmi(df):
     df = groupby_helper(df, ['dataset_name','label','function'], ['dataset_size','collisions','tot_time_s'])
     df["models"] = df["label"].apply(lambda x : get_rmi_models(x))
     df = df.sort_values(by='models')
+ 
+    fig, axes = plt.subplots(1, len(datasets), figsize=(8.5, 2))
 
-    uniform = df[df["dataset_name"] == "uniform"]
-    normal = df[df["dataset_name"] == "normal"]
-    
-    fig, axes = plt.subplots(1, 2, figsize=(5, 2))
+    for i,name_ds in enumerate(datasets):
+        group_ds = df[df['dataset_name']==name_ds]
+        g_fn = group_ds.groupby('function')
+        ax = axes[i]
 
-    uni_ticks = uniform['models'].apply(lambda x : log10(x))
-    normal_ticks = normal['models'].apply(lambda x : log10(x))
-
-    # axes[0].set_xscale('log')
-    # axes[1].set_xscale('log')
-    axes[0].plot(uni_ticks, uniform['collisions']/uniform['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])
-    axes[1].plot(normal_ticks, normal['collisions']/normal['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])        
-
-    # ticks
-    uni_tick_labels = [f"$10^{int(tick)}$" for tick in uni_ticks]
-    normal_tick_labels = [f"$10^{int(tick)}$" for tick in normal_ticks]
-    axes[0].set_xticks(uni_ticks[1::2], uni_tick_labels[1::2])
-    axes[1].set_xticks(normal_ticks[1::2], normal_tick_labels[1::2])
-    
-    axes[0].set_title('uniform')
-    axes[1].set_title('normal')
-    axes[0].yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
-    axes[1].yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
-    axes[0].set_ylim([0, 1])
-    axes[1].set_ylim([0, 1])
-    axes[0].grid(True)
-    axes[1].grid(True)
+        ticks = group_ds['models'].apply(lambda x : log10(x))
+        ax.plot(ticks, group_ds['collisions']/group_ds['dataset_size'], color=COLORS['RMI'], marker=SHAPES_FN['RMI'])
+        
+        # Customize the plot
+        ax.set_title(f'{name_ds}')
+        tick_labels = [f"$10^{int(tick)}$" for tick in ticks]
+        ax.set_xticks(ticks[1::2], tick_labels[1::2])
+        ax.set_yticks([0,0.25,0.5,0.75,1],['0','0.25','0.5','0.75','1'])
+        # Format the y-axis to display only two digits after the decimal point
+        ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
+        ax.set_ylim([0, 1.05])
+        ax.grid(True)
 
     # Set a common label for x and y axes
     labx = fig.supxlabel('RMI number of submodels')
