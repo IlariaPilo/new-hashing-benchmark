@@ -83,6 +83,9 @@ LAB_MAP = {
     'RMI-LINEAR': 1,
     'MULT-LINEAR': 4,
     'MWHC-LINEAR': 7,
+    'RMI-LP': 1,
+    'MULT-LP': 4,
+    'MWHC-LP': 7,
     'RMI-CUCKOO': 2,
     'MULT-CUCKOO': 5,
     'MWHC-CUCKOO': 8
@@ -862,7 +865,12 @@ def join(df):
     df['table_type'] = df['label'].apply(lambda x : get_table_type(x))
     df['table_label'] = df.apply(lambda x : get_table_label(x['function'],x['table_type']).upper(), axis=1)
     df = groupby_helper(df, ['dataset_name','table_label','function','join_size'], ['tot_time_sort_s', 'tot_time_build_s', 'tot_time_join_s'])
-    df = df.sort_values(by='table_label')
+
+    def get_map(x):
+        if isinstance(x, pd.Series):
+            return x.apply(lambda i : LAB_MAP[i])
+        return LAB_MAP[x]
+    df = df.sort_values(by='table_label', key=lambda l: get_map(l))
 
     # Create a single figure with multiple subplots in a row
     num_subplots = len(datasets)
